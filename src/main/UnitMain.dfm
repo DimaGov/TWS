@@ -154,7 +154,7 @@ object FormMain: TFormMain
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
-  object Label16: TLabel
+  object lblSimulatorVersionLaunched: TLabel
     Left = 54
     Top = 437
     Width = 207
@@ -182,7 +182,7 @@ object FormMain: TFormMain
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object GroupBox8: TGroupBox
+  object groupBoxSOVIDescription: TGroupBox
     Left = 0
     Top = 0
     Width = 201
@@ -192,7 +192,7 @@ object FormMain: TFormMain
     ParentColor = False
     TabOrder = 9
     Visible = False
-    object Label4: TLabel
+    object lblSOVIrouteSelect: TLabel
       Left = 32
       Top = 16
       Width = 126
@@ -205,7 +205,7 @@ object FormMain: TFormMain
       Font.Style = [fsBold]
       ParentFont = False
     end
-    object Label6: TLabel
+    object lblSOVIselectEK: TLabel
       Left = 48
       Top = 56
       Width = 92
@@ -218,7 +218,7 @@ object FormMain: TFormMain
       Font.Style = [fsBold]
       ParentFont = False
     end
-    object Label8: TLabel
+    object lblSOVImessagesCounter: TLabel
       Left = 8
       Top = 232
       Width = 22
@@ -245,7 +245,7 @@ object FormMain: TFormMain
       TabOrder = 1
       OnChange = ComboBox4Change
     end
-    object GroupBox9: TGroupBox
+    object groupBoxSOVI_EKdescription: TGroupBox
       Left = 8
       Top = 96
       Width = 185
@@ -268,17 +268,17 @@ object FormMain: TFormMain
         TabOrder = 0
       end
     end
-    object Button1: TButton
+    object btnSOVIHelp: TButton
       Left = 8
       Top = 253
       Width = 185
       Height = 20
       Caption = #1055#1086#1084#1086#1097#1100
       TabOrder = 3
-      OnClick = Button1Click
+      OnClick = btnSOVIHelpClick
     end
   end
-  object GroupBox3: TGroupBox
+  object groupBoxLocoSndCheckboxes: TGroupBox
     Left = 0
     Top = 0
     Width = 321
@@ -287,21 +287,21 @@ object FormMain: TFormMain
     Color = clBtnFace
     ParentColor = False
     TabOrder = 3
-    object Label1: TLabel
+    object lblLocoTappingVolume: TLabel
       Left = 172
       Top = 7
       Width = 140
       Height = 13
       Caption = #1043#1088#1086#1084#1082#1086#1089#1090#1100' '#1087#1077#1088#1077#1089#1090#1091#1082#1072' '#1083#1086#1082'-'#1072
     end
-    object Label19: TLabel
+    object lblTEDsVolume: TLabel
       Left = 208
       Top = 45
       Width = 93
       Height = 13
       Caption = #1043#1088#1086#1084#1082#1086#1089#1090#1100' '#1058#1069#1044'-'#1086#1074
     end
-    object Label20: TLabel
+    object lblClicksVolume: TLabel
       Left = 184
       Top = 132
       Width = 101
@@ -315,21 +315,21 @@ object FormMain: TFormMain
       Height = 13
       Caption = #1043#1088#1086#1084#1082#1086#1089#1090#1100' '#1086#1082#1088#1091#1078#1077#1085#1080#1103
     end
-    object Label2: TLabel
+    object lblVspomVolume: TLabel
       Left = 184
       Top = 263
       Width = 124
       Height = 13
       Caption = #1043#1088#1086#1084#1082#1086#1089#1090#1100' '#1074#1089#1087#1086#1084'. '#1084#1072#1096#1080#1085
     end
-    object Label93: TLabel
+    object lblDieselVolume: TLabel
       Left = 184
       Top = 88
       Width = 92
       Height = 13
       Caption = #1043#1088#1086#1084#1082#1086#1089#1090#1100' '#1076#1080#1079#1077#1083#1103
     end
-    object Label3: TLabel
+    object lblHornVolume: TLabel
       Left = 176
       Top = 216
       Width = 127
@@ -472,7 +472,7 @@ object FormMain: TFormMain
       TabOrder = 13
       OnChange = ChangeVolume
     end
-    object GroupBox7: TGroupBox
+    object groupBoxSpeedometerType: TGroupBox
       Left = 8
       Top = 92
       Width = 161
@@ -548,7 +548,7 @@ object FormMain: TFormMain
     Visible = False
     WordWrap = False
   end
-  object GroupBox2: TGroupBox
+  object groupBoxSAVPCheckboxes: TGroupBox
     Left = 0
     Top = 310
     Width = 321
@@ -557,7 +557,7 @@ object FormMain: TFormMain
     Color = clBtnFace
     ParentColor = False
     TabOrder = 2
-    object Label12: TLabel
+    object lblSAVPvolume: TLabel
       Left = 181
       Top = 8
       Width = 125
@@ -652,13 +652,13 @@ object FormMain: TFormMain
     TabOrder = 8
     WordWrap = False
   end
-  object Panel1: TPanel
+  object panelPasswagSounds: TPanel
     Left = 0
     Top = 474
     Width = 329
     Height = 54
     TabOrder = 1
-    object Label7: TLabel
+    object lblPasswagVolume: TLabel
       Left = 195
       Top = 4
       Width = 97
@@ -694,7 +694,7 @@ object FormMain: TFormMain
       OnChange = ChangeVolume
     end
   end
-  object GroupBox4: TGroupBox
+  object groupBoxPRSCheckboxes: TGroupBox
     Left = 0
     Top = 365
     Width = 321
@@ -703,7 +703,7 @@ object FormMain: TFormMain
     Color = clBtnFace
     ParentColor = False
     TabOrder = 4
-    object Label11: TLabel
+    object lblPRSVolume: TLabel
       Left = 146
       Top = 9
       Width = 166
@@ -739,7 +739,7 @@ object FormMain: TFormMain
       OnChange = ChangeVolume
     end
   end
-  object SAVPEBox: TGroupBox
+  object groupBoxSAVPEbox: TGroupBox
     Left = 0
     Top = 1
     Width = 201
@@ -969,7 +969,7 @@ object FormMain: TFormMain
         F7E6}
       Stretch = True
     end
-    object Label43: TLabel
+    object lblSAVPE_selectRoute: TLabel
       Left = 32
       Top = 16
       Width = 126
@@ -1002,14 +1002,14 @@ object FormMain: TFormMain
       Font.Style = [fsBold]
       ParentFont = False
     end
-    object Label122: TLabel
+    object lblSAVPECommertion: TLabel
       Left = 8
       Top = 232
       Width = 59
       Height = 13
       Caption = #1050#1086#1084#1084#1077#1088#1094#1080#1103':'
     end
-    object Label123: TLabel
+    object lblSAVPE_StationsCounter: TLabel
       Left = 8
       Top = 248
       Width = 47
@@ -1033,16 +1033,16 @@ object FormMain: TFormMain
       TabOrder = 0
       OnChange = ComboBox1Change
     end
-    object Button6: TButton
+    object btnSAVPEHelp: TButton
       Left = 8
       Top = 416
       Width = 185
       Height = 20
       Caption = #1055#1086#1084#1086#1097#1100
       TabOrder = 1
-      OnClick = Button6Click
+      OnClick = btnSAVPEHelpClick
     end
-    object GroupBox1: TGroupBox
+    object groupBoxSAVPE_HandMode: TGroupBox
       Left = 8
       Top = 344
       Width = 185
@@ -1138,33 +1138,33 @@ object FormMain: TFormMain
       end
     end
   end
-  object Timer1: TTimer
+  object ClockMain: TTimer
     Interval = 20
-    OnTimer = Timer1Timer
+    OnTimer = ClockMainTimer
     Left = 440
     Top = 160
   end
-  object Timer2: TTimer
+  object timerSoundSlider: TTimer
     Interval = 20
-    OnTimer = Timer2Timer
+    OnTimer = timerSoundSliderTimer
     Left = 440
     Top = 200
   end
-  object Timer3: TTimer
+  object timerPRSswitcher: TTimer
     Interval = 500000
-    OnTimer = Timer3Timer
+    OnTimer = timerPRSswitcherTimer
     Left = 440
     Top = 240
   end
-  object Timer4: TTimer
+  object timerSearchSimulatorWindow: TTimer
     Interval = 500
-    OnTimer = Timer4Timer
+    OnTimer = timerSearchSimulatorWindowTimer
     Left = 440
     Top = 272
   end
-  object TimerPlayPerestuk: TTimer
+  object timerPlayPerestuk: TTimer
     Interval = 35000
-    OnTimer = TimerPlayPerestukTimer
+    OnTimer = timerPlayPerestukTimer
     Left = 440
     Top = 304
   end
@@ -1173,30 +1173,30 @@ object FormMain: TFormMain
     Left = 328
     Top = 40
   end
-  object TimerPerehodUnipulsSwitch: TTimer
+  object timerPerehodUnipulsSwitch: TTimer
     Enabled = False
     Interval = 1100
-    OnTimer = TimerPerehodUnipulsSwitchTimer
+    OnTimer = timerPerehodUnipulsSwitchTimer
     Left = 448
     Top = 376
   end
-  object TimerPerehodDizSwitch: TTimer
+  object timerPerehodDizSwitch: TTimer
     Enabled = False
     Interval = 1550
-    OnTimer = TimerPerehodDizSwitchTimer
+    OnTimer = timerPerehodDizSwitchTimer
     Left = 448
     Top = 440
   end
-  object InformatorDoorCloseDelay: TTimer
+  object timerDoorCloseDelay: TTimer
     Enabled = False
-    OnTimer = InformatorDoorCloseDelayTimer
+    OnTimer = timerDoorCloseDelayTimer
     Left = 440
     Top = 24
   end
-  object Timer3SL2m_3Sec: TTimer
+  object timer3SL2m_3Sec: TTimer
     Enabled = False
     Interval = 5000
-    OnTimer = Timer3SL2m_3SecTimer
+    OnTimer = timer3SL2m_3SecTimer
     Left = 440
     Top = 56
   end
@@ -1244,10 +1244,10 @@ object FormMain: TFormMain
       end
     end
   end
-  object TimerVigilanceUSAVPDelay: TTimer
+  object timerVigilanceUSAVPDelay: TTimer
     Enabled = False
     Interval = 3000
-    OnTimer = TimerVigilanceUSAVPDelayTimer
+    OnTimer = timerVigilanceUSAVPDelayTimer
     Left = 440
     Top = 336
   end

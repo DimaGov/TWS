@@ -7,23 +7,23 @@ interface
       soundDir: String;
       unipulsDir: String;
 
-      // Переменные для контроллера KR21
+      // РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° KR21
       prevKeyA: Byte;
       prevKeyD: Byte;
       prevKeyQ: Byte;
       prevKeyE: Byte;
       KMPrevKey: String;
 
-      // Переменные для корректной работы унипульса //
-      isLaunchedUnipuls:           Boolean; // Запущен ли унипульс?
+      // РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РєРѕСЂСЂРµРєС‚РЅРѕР№ СЂР°Р±РѕС‚С‹ СѓРЅРёРїСѓР»СЊСЃР° //
+      isLaunchedUnipuls:           Boolean; // Р—Р°РїСѓС‰РµРЅ Р»Рё СѓРЅРёРїСѓР»СЊСЃ?
     protected
 
     public
       UnipulsChanNum:              Byte;
       UnipulsFaktVol:              Byte;
       UnipulsTargetVol:            Byte;
-      isStartUnipuls:              Boolean; // Флаг для плавного запуска Унипульса
-      isStopUnipuls:               Boolean; // Флаг для плавной остановки Унипульса
+      isStartUnipuls:              Boolean; // Р¤Р»Р°Рі РґР»СЏ РїР»Р°РІРЅРѕРіРѕ Р·Р°РїСѓСЃРєР° РЈРЅРёРїСѓР»СЊСЃР°
+      isStopUnipuls:               Boolean; // Р¤Р»Р°Рі РґР»СЏ РїР»Р°РІРЅРѕР№ РѕСЃС‚Р°РЅРѕРІРєРё РЈРЅРёРїСѓР»СЊСЃР°
       UnipulsFaktPos:              Integer;
       UnipulsTargetPos:            Byte;
       UnipulsVol1:                 Integer;
@@ -43,7 +43,7 @@ implementation
 uses UnitMain, SoundManager, Windows, Bass, SysUtils;
 
    // ----------------------------------------------------
-   // Конструктор класса ЧС8
+   // РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РєР»Р°СЃСЃР° Р§РЎ8
    // ----------------------------------------------------
    constructor CHS8_.Create;
    begin
@@ -52,7 +52,7 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils;
    end;
 
    // ----------------------------------------------------
-   // Контроллер 21KR
+   // РљРѕРЅС‚СЂРѕР»Р»РµСЂ 21KR
    // ----------------------------------------------------
    procedure chs8_.kr21_step();
    begin
@@ -67,7 +67,7 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils;
             PrevKeyA := 1;
          end;
 
-         // -/- A [ОТП] -/- //
+         // -/- A [РћРўРџ] -/- //
          if (getasynckeystate(65) = 0) and (PrevKeyA <> 0) then begin
             if KMPrevKey <> 'E' then begin
                CabinClicksF := StrNew(PChar(soundDir + '21KR_+_0.wav'));
@@ -86,7 +86,7 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils;
             PrevKeyD := 1;
          end;
 
-         // -/- D [ОТП] -/- //
+         // -/- D [РћРўРџ] -/- //
          if (getasynckeystate(68) = 0) and (PrevKeyD <> 0) then begin
             if KMPrevKey <> 'E' then begin
                CabinClicksF := StrNew(PChar(soundDir + '21KR_-_0.wav'));
@@ -113,7 +113,7 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils;
             PrevKeyQ := 1;
          end;
 
-         // -/- Q [ОТП] -/- //
+         // -/- Q [РћРўРџ] -/- //
          if (getasynckeystate(81) = 0) and (PrevKeyQ <> 0) then begin
             if KMPrevKey <> 'E' then begin
                CabinClicksF := StrNew(PChar(soundDir + '21KR_+A_0.wav'));
@@ -127,7 +127,7 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils;
    end;
 
    // ----------------------------------------------------
-   // Пневмодвигатель 22NP
+   // РџРЅРµРІРјРѕРґРІРёРіР°С‚РµР»СЊ 22NP
    // ----------------------------------------------------
    procedure CHS8_.np22_step();
    begin
@@ -184,7 +184,7 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils;
    end;
 
    // ----------------------------------------------------
-   // Унипульс
+   // РЈРЅРёРїСѓР»СЊСЃ
    // ----------------------------------------------------
    procedure CHS8_.unipuls_step();
    begin

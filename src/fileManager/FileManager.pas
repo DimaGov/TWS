@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------//
 //                                                                              //
-//      Модуль для работы с файлами                                             //
+//      РњРѕРґСѓР»СЊ РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ С„Р°Р№Р»Р°РјРё                                             //
 //      (c) DimaGVRH, Dnepr city, 2019                                          //
 //                                                                              //
 //------------------------------------------------------------------------------//
@@ -16,7 +16,7 @@ implementation
 uses UnitMain, inifiles, SysUtils, UnitSettings;
 
 //------------------------------------------------------------------------------//
-//                Подпрограмма для загрузки настроек TWS из файла               //
+//                РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ Р·Р°РіСЂСѓР·РєРё РЅР°СЃС‚СЂРѕРµРє TWS РёР· С„Р°Р№Р»Р°               //
 //------------------------------------------------------------------------------//
 procedure LoadTWSParams(FileName: String);
 var
@@ -38,7 +38,7 @@ begin
      Temp:=StrToInt(Ini.ReadString('settings', 'CB1', '1'));
      if Temp=1 then cbLocPerestuk.Checked:=True else cbLocPerestuk.Checked:=False;
      Temp:=StrToInt(Ini.ReadString('settings', 'CB2', '1'));
-     if Temp=1 then begin cbWagPerestuk.Checked:=True; Panel1.Enabled:=True; end;
+     if Temp=1 then begin cbWagPerestuk.Checked:=True; panelPasswagSounds.Enabled:=True; end;
      Temp:=StrToInt(Ini.ReadString('settings', 'CB3', '1'));
      if Temp=1 then cbSAUTSounds.Checked:=True else cbSAUTSounds.Checked:=False;
      Temp:=StrToInt(Ini.ReadString('settings', 'CB4', '1'));
@@ -72,7 +72,7 @@ begin
      Temp:=StrToInt(Ini.ReadString('settings', 'CB18', '1'));
      if Temp=1 then cbSAVPESounds.Checked:=True;
      Temp:=StrToInt(Ini.ReadString('settings', 'CB19', '0'));
-     if Temp=1 then FormSettings.CheckBox1.Checked:=True;
+     if Temp=1 then FormSettings.cbSlowComputer.Checked:=True;
      Temp:=StrToInt(Ini.ReadString('settings', 'CB20', '0'));
      if Temp=1 then cbSAVPE_Marketing.Checked:=True;
      Temp:=StrToInt(Ini.ReadString('settings', 'CB21', '0'));
@@ -88,14 +88,14 @@ begin
      Temp:=StrToInt(Ini.ReadString('settings', 'RB4', '0'));
      if Temp=1 then begin RB_AutoEKMode.Checked:=True; end else RB_AutoEKMode.Checked:=False;
      Edit1.Text:=Ini.ReadString('settings', 'TimerSAVPEDoorDelay', '7');
-     Timer1.Interval:=StrToInt(Ini.ReadString('settings', 'Timer1FREQ', '20'));
-     Timer4.Interval:=StrToInt(Ini.ReadString('settings', 'TimerRefresherFREQ', '500'));
+     ClockMain.Interval:=StrToInt(Ini.ReadString('settings', 'Timer1FREQ', '20'));
+     timerSearchSimulatorWindow.Interval:=StrToInt(Ini.ReadString('settings', 'TimerRefresherFREQ', '500'));
      Ini.Free();
      end;
 end;
 
 //------------------------------------------------------------------------------//
-//                Подпрограмма для сохранения настроек TWS в файл               //
+//                РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ РЅР°СЃС‚СЂРѕРµРє TWS РІ С„Р°Р№Р»               //
 //------------------------------------------------------------------------------//
 procedure SaveTWSParams(FileName: String);
 var
@@ -114,26 +114,26 @@ begin
      Ini.WriteString('settings', 'dizel_volume', IntToStr(trcBarDieselVol.Position));
      Ini.WriteString('settings', 'signals_volume', IntToStr(trcBarSignalsVol.Position));
      Ini.WriteString('settings', 'version_id', IntToStr(VersionID));
-     if cbLocPerestuk.Checked=True then Temp:=1 else Temp:=0;      // Записываем состояние перестука локомотива
+     if cbLocPerestuk.Checked=True then Temp:=1 else Temp:=0;      // Р—Р°РїРёСЃС‹РІР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РїРµСЂРµСЃС‚СѓРєР° Р»РѕРєРѕРјРѕС‚РёРІР°
      Ini.WriteString('settings', 'CB1', IntToStr(Temp));
      if cbWagPerestuk.Checked=True then Temp:=1 else Temp:=0;
-     Ini.WriteString('settings', 'CB2', IntToStr(Temp));       // Записываем состояние перестука вагонов
+     Ini.WriteString('settings', 'CB2', IntToStr(Temp));       // Р—Р°РїРёСЃС‹РІР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РїРµСЂРµСЃС‚СѓРєР° РІР°РіРѕРЅРѕРІ
      if cbSAUTSounds.Checked=True then Temp:=1 else Temp:=0;
-     Ini.WriteString('settings', 'CB3', IntToStr(Temp));       // Записываем состояние САУТ
+     Ini.WriteString('settings', 'CB3', IntToStr(Temp));       // Р—Р°РїРёСЃС‹РІР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЎРђРЈРў
      if cbUSAVPSounds.Checked=True then Temp:=1 else Temp:=0;
-     Ini.WriteString('settings', 'CB4', IntToStr(Temp));       // Записываем состояние УСАВП
+     Ini.WriteString('settings', 'CB4', IntToStr(Temp));       // Р—Р°РїРёСЃС‹РІР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЈРЎРђР’Рџ
      if cbGSAUTSounds.Checked=True then Temp:=1 else Temp:=0;
-     Ini.WriteString('settings', 'CB5', IntToStr(Temp));       // Записываем состояние Грузового САУТ
+     Ini.WriteString('settings', 'CB5', IntToStr(Temp));       // Р—Р°РїРёСЃС‹РІР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ Р“СЂСѓР·РѕРІРѕРіРѕ РЎРђРЈРў
      if cbPRS_RZD.Checked=True then Temp:=1 else Temp:=0;
-     Ini.WriteString('settings', 'CB6', IntToStr(Temp));       // Записываем состояние ПРС РЖД
+     Ini.WriteString('settings', 'CB6', IntToStr(Temp));       // Р—Р°РїРёСЃС‹РІР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РџР РЎ Р Р–Р”
      if cbPRS_UZ.Checked=True then Temp:=1 else Temp:=0;
-     Ini.WriteString('settings', 'CB7', IntToStr(Temp));       // Записываем состояние ПРС УЗ
+     Ini.WriteString('settings', 'CB7', IntToStr(Temp));       // Р—Р°РїРёСЃС‹РІР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РџР РЎ РЈР—
      if cbTEDs.Checked=True then Temp:=1 else Temp:=0;
-     Ini.WriteString('settings', 'CB8', IntToStr(Temp));       // Записываем состояние звуков ТЭД-ов
+     Ini.WriteString('settings', 'CB8', IntToStr(Temp));       // Р—Р°РїРёСЃС‹РІР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ Р·РІСѓРєРѕРІ РўР­Р”-РѕРІ
      if cbHeadTrainSound.Checked=True then Temp:=1 else Temp:=0;
-     Ini.WriteString('settings', 'CB9', IntToStr(Temp)); 	    // Записываем состояние звуков встречного поезда
+     Ini.WriteString('settings', 'CB9', IntToStr(Temp)); 	    // Р—Р°РїРёСЃС‹РІР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ Р·РІСѓРєРѕРІ РІСЃС‚СЂРµС‡РЅРѕРіРѕ РїРѕРµР·РґР°
      if cbCabinClicks.Checked=True then Temp:=1 else Temp:=0;
-     Ini.WriteString('settings', 'CB10', IntToStr(Temp));      // Записываем состояние звуков щелчка КМ на ЧС-ах
+     Ini.WriteString('settings', 'CB10', IntToStr(Temp));      // Р—Р°РїРёСЃС‹РІР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ Р·РІСѓРєРѕРІ С‰РµР»С‡РєР° РљРњ РЅР° Р§РЎ-Р°С…
      if cbKLUBSounds.Checked=True then Temp:=1 else Temp:=0;
      Ini.WriteString('settings', 'CB11', IntToStr(Temp));
      if cb3SL2mSounds.Checked=True then Temp:=1 else Temp:=0;
@@ -150,7 +150,7 @@ begin
      Ini.WriteString('settings', 'CB17', IntToStr(Temp));
      if cbSAVPESounds.Checked=True then Temp:=1 else Temp:=0;
      Ini.WriteString('settings', 'CB18', IntToStr(Temp));
-     if FormSettings.CheckBox1.Checked=True then Temp:=1 else Temp:=0;
+     if FormSettings.cbSlowComputer.Checked=True then Temp:=1 else Temp:=0;
      Ini.WriteString('settings', 'CB19', IntToStr(Temp));
      if cbSAVPE_Marketing.Checked=True then Temp:=1 else Temp:=0;
      Ini.WriteString('settings', 'CB20', IntToStr(Temp));
@@ -167,8 +167,8 @@ begin
      if RB_AutoEKMode.Checked=True then Temp:=1 else Temp:=0;
      Ini.WriteString('settings', 'RB4', IntToStr(Temp));
      Ini.WriteString('settings', 'TimerSAVPEDoorDelay', Edit1.Text);
-     Ini.WriteString('settings', 'Timer1FREQ', IntToStr(Timer1.Interval));
-     Ini.WriteString('settings', 'TimerRefresherFREQ', IntToStr(Timer4.Interval));
+     Ini.WriteString('settings', 'Timer1FREQ', IntToStr(ClockMain.Interval));
+     Ini.WriteString('settings', 'TimerRefresherFREQ', IntToStr(timerSearchSimulatorWindow.Interval));
      Ini.Free();
      end;
 end;

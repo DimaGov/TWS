@@ -40,10 +40,10 @@ begin
 
         //if USAVPEnabled = True then begin
            Label1.Font.Color := clGreen;
-           Label1.Caption := '—»—“≈Ã¿ ¿ “»¬Õ¿!';
+           Label1.Caption := '–°–ò–°–¢–ï–ú–ê –ê–ö–¢–ò–í–ù–ê!';
         //end else begin
         //   Label1.Font.Color := clRed;
-        //   Label1.Caption := '—»—“≈Ã¿ Õ≈ ¿ “»¬Õ¿ ¬ —»Ã”Àﬂ“Œ–≈ Õ¿∆Ã»“≈ "NUM1"';
+        //   Label1.Caption := '–°–ò–°–¢–ï–ú–ê –ù–ï –ê–ö–¢–ò–í–ù–ê –í –°–ò–ú–£–õ–Ø–¢–û–†–ï –ù–ê–ñ–ú–ò–¢–ï "NUM1"';
         //end;
 
         PrevKeyNum1 := GetAsyncKeyState(97);

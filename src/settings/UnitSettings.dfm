@@ -16,14 +16,14 @@ object FormSettings: TFormSettings
   Scaled = False
   PixelsPerInch = 96
   TextHeight = 13
-  object GroupBox1: TGroupBox
+  object groupBoxSettings: TGroupBox
     Left = 0
     Top = 0
     Width = 337
     Height = 225
     Caption = #1054#1089#1085#1086#1074#1085#1099#1077' '#1087#1072#1088#1072#1084#1077#1090#1088#1099
     TabOrder = 0
-    object CheckBox1: TCheckBox
+    object cbSlowComputer: TCheckBox
       Left = 16
       Top = 24
       Width = 129
@@ -32,7 +32,7 @@ object FormSettings: TFormSettings
       Caption = #1057#1083#1072#1073#1099#1081' '#1082#1086#1084#1087#1100#1102#1090#1077#1088
       ParentBiDiMode = False
       TabOrder = 0
-      OnClick = CheckBox1Click
+      OnClick = cbSlowComputerClick
     end
     object cbTEDNewSystem: TCheckBox
       Left = 16
@@ -46,7 +46,7 @@ object FormSettings: TFormSettings
       Visible = False
       OnClick = cbTEDNewSystemClick
     end
-    object CheckBox3: TCheckBox
+    object cbHornClick: TCheckBox
       Left = 16
       Top = 56
       Width = 313

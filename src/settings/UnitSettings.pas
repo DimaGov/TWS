@@ -8,12 +8,12 @@ uses
 
 type
   TFormSettings = class(TForm)
-    GroupBox1: TGroupBox;
-    CheckBox1: TCheckBox;
+    groupBoxSettings: TGroupBox;
+    cbSlowComputer: TCheckBox;
     cbTEDNewSystem: TCheckBox;
-    CheckBox3: TCheckBox;
+    cbHornClick: TCheckBox;
     cbCHS4tNewMVSystemOnAllLocoNum: TCheckBox;
-    procedure CheckBox1Click(Sender: TObject);
+    procedure cbSlowComputerClick(Sender: TObject);
     procedure cbTEDNewSystemClick(Sender: TObject);
     procedure cbCHS4tNewMVSystemOnAllLocoNumClick(Sender: TObject);
   private
@@ -28,19 +28,32 @@ var
 implementation
 
 uses UnitMain;
-{$R src/settings/UnitSettings.dfm}
+{$R *.dfm}
 
-procedure TFormSettings.CheckBox1Click(Sender: TObject);
+// -------------------------------------------------
+// Slow computer checkbox click in settings
+// -------------------------------------------------
+procedure TFormSettings.cbSlowComputerClick(Sender: TObject);
 begin
-	if CheckBox1.Checked=True then FormMain.Timer1.Interval := 100 else FormMain.Timer1.Interval := 20;
-        UnitMain.MainCycleFreq := FormMain.Timer1.Interval;
+	if cbSlowComputer.Checked=True then
+           FormMain.ClockMain.Interval := 100
+        else
+           FormMain.ClockMain.Interval := 20;
+
+        UnitMain.MainCycleFreq := FormMain.ClockMain.Interval;
 end;
 
+// -------------------------------------------------
+// New TED system checkbox click (Tempo-Pitch)
+// -------------------------------------------------
 procedure TFormSettings.cbTEDNewSystemClick(Sender: TObject);
 begin
 	UnitMain.TEDNewSystem := cbTEDNewSystem.Checked;
 end;
 
+// -------------------------------------------------
+// CHS4t new motor-fans system (Tempo-Pitch)
+// -------------------------------------------------
 procedure TFormSettings.cbCHS4tNewMVSystemOnAllLocoNumClick(
   Sender: TObject);
 begin

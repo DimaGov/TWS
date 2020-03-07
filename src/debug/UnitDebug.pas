@@ -226,86 +226,86 @@ procedure RefreshDebugger();
 begin
 	FormDebug.ListView1.Items.Clear();
 	With FormMain do begin
-           AddNewLineToDebugger('Скорость', Speed, 'ZDS переменная');
-           AddNewLineToDebugger('Ускорение', Acceleretion, 'ZDS переменная');
-           AddNewLineToDebugger('Трек головы', Track, 'ZDS переменная');
-           AddNewLineToDebugger('Трек хвоста', TrackTail, 'ZDS переменная');
-           AddNewLineToDebugger('Контроллер позиция [1-я секция]', KM_Pos_1, 'ZDS переменная');
-           AddNewLineToDebugger('Контроллер позиция [2-я секция]', KM_Pos_2, 'ZDS переменная');
-           AddNewLineToDebugger('Кран №395(394) положение', KM_395, 'ZDS переменная');
-           AddNewLineToDebugger('Кран №254(локомотивный) положение', KM_294, 'ZDS переменная');
-           AddNewLineToDebugger('Ослабление поля (шунты) позиция', KM_OP, 'ZDS переменная');
-           AddNewLineToDebugger('Сцепка с составом', CoupleStat, 'ZDS переменная'); (*ID=10*)
-           AddNewLineToDebugger('Показание АЛС', Svetofor, 'ZDS переменная');
-           AddNewLineToDebugger('Ограничение скорости', OgrSpeed, 'ZDS переменная');
-           AddNewLineToDebugger('Расстояние до светофора', SvetoforDist, 'ZDS переменная');
-           AddNewLineToDebugger('Номер вида', Camera, 'ZDS переменная');
-           AddNewLineToDebugger('Положение камеры в кабине', CameraX, 'ZDS переменная');
-           AddNewLineToDebugger('Дождь', Rain, 'ZDS переменная');
-           AddNewLineToDebugger('Проверка бдительности', VCheck, 'ZDS переменная');
-           AddNewLineToDebugger('Клавиатура КЛУБ-у', KLUBOpen, 'ZDS переменная');
-           AddNewLineToDebugger('Ток ТЭД', TEDAmperage, 'ZDS переменная');
-           AddNewLineToDebugger('Ток ЭДТ', EDTAmperage, 'ZDS переменная'); (*ID=20*)
-           AddNewLineToDebugger('ТЦ', BrakeCylinders, 'ZDS переменная');
-           AddNewLineToDebugger('Трек встречного поезда', VstrTrack, 'ZDS переменная');
-           AddNewLineToDebugger('Скорость встречного поезда', Vstr_Speed, 'ZDS переменная');
-           AddNewLineToDebugger('Кол-во вагонов встречного поезда', WagNum_Vstr, 'ZDS переменная');
-           AddNewLineToDebugger('Общая длина встречного поезда', Vstrecha_dlina, 'TWS переменная');
-           AddNewLineToDebugger('Статус встречного поезда(из ОЗУ)', VstrechStatus, 'ZDS переменная');
-           AddNewLineToDebugger('Статус встречного поезда', isVstrechDrive, 'TWS переменная');
-           AddNewLineToDebugger('Длина нашего состава', ConsistLength, 'TWS переменная');
-           AddNewLineToDebugger('Длина одного трека', TrackLength, 'TWS переменная');
-           AddNewLineToDebugger('Боксование', Boks_Stat, 'ZDS переменная'); (*ID=30*)
-           AddNewLineToDebugger('Вентилятор №1', Vent, 'ZDS переменная');
-           AddNewLineToDebugger('Вентилятор №2', Vent2, 'ZDS переменная');
-           AddNewLineToDebugger('Вентилятор №3', Vent3, 'ZDS переменная');
-           AddNewLineToDebugger('Вентилятор №4', Vent4, 'ZDS переменная');
-           AddNewLineToDebugger('Компрессора', Compressor, 'ZDS переменная');
-           AddNewLineToDebugger('БВ(ГВ/Статус дизеля)', BV, 'ZDS переменная');
-           AddNewLineToDebugger('Дизель №2', diesel2, 'ZDS переменная');
-           AddNewLineToDebugger('ФР(Фазорасщепитель)', Fazan, 'ZDS переменная');
-           AddNewLineToDebugger('Передний токоприёмник', FrontTP, 'ZDS переменная');
-           AddNewLineToDebugger('Задний токоприёмник', BackTP, 'ZDS переменная'); (*ID=40*)
-           AddNewLineToDebugger('Реверсор', ReversorPos, 'ZDS переменная');
-           AddNewLineToDebugger('Стеклоочиститель', Stochist, 'ZDS переменная');
-           AddNewLineToDebugger('Стеклоочиститель угол поворота', StochistDGR, 'ZDS переменная');
-           AddNewLineToDebugger('Напряжение на эл-возе', Voltage, 'ZDS переменная');
-           AddNewLineToDebugger('Статус реостатного торможения', Reostat, 'ZDS переменная');
-           AddNewLineToDebugger('ЭПТ статус', EPT, 'ZDS переменная');
-           AddNewLineToDebugger('Левые двери(МВПС)', LDOOR, 'ZDS переменная');
-           AddNewLineToDebugger('Правые двери(МВПС)', RDOOR, 'ZDS переменная');
-           AddNewLineToDebugger('Следующее ограничение скорости', NextOgrSpeed, 'ZDS переменная');
-           AddNewLineToDebugger('РБ', RB, 'ZDS переменная'); (*ID=50*)
-           AddNewLineToDebugger('РБС', RBS, 'ZDS переменная');
-           AddNewLineToDebugger('Зарядка АБ №1', AB_ZB_1, 'ZDS переменная');
-           AddNewLineToDebugger('Зарядка АБ №2', AB_ZB_2, 'ZDS переменная');
-           AddNewLineToDebugger('Прожектора', Highlights, 'ZDS переменная');
-           AddNewLineToDebugger('Перестук на станции', Highlights, 'TWS переменная');
-           //AddNewLineToDebugger('Кол-во дорожек САВП', SAVPBaseObjectsCount, 'TWS переменная');
-           AddNewLineToDebugger('Файл сценария', SceneryName, 'ZDS переменная');
-           //AddNewLineToDebugger('Кол-во дорожек лок. ЭК сценария', scBaseInfoCount, 'TWS переменная');
-           //AddNewLineToDebugger('УСАВП Enable', USAVPEnabled, 'TWS переменная');
-           //AddNewLineToDebugger('SAVPE File Prefix', SAVPEFilePrefiks, 'TWS переменная');
-           AddNewLineToDebugger('scSAVPOverrideRouteEK', scSAVPOverrideRouteEK, 'TWS переменная');
-           AddNewLineToDebugger('headTrainEndOfTrain', HeadTrainEndOfTrain, 'TWS переменная');
-           AddNewLineToDebugger('isConnectedMemory', isConnectedMemory, 'TWS переменная'); (*ID=60*)
-           AddNewLineToDebugger('isGameOnPause', isGameOnPause, 'TWS переменная');
-           AddNewLineToDebugger('Ордината', Ordinata, 'ZDS переменная');
-           AddNewLineToDebugger('VentTDPitch', VentTDPitch, 'TWS переменная');
-           AddNewLineToDebugger('VentTDVol', VentTDVol, 'TWS переменная');
-           AddNewLineToDebugger('Ордината рассчёт', OrdinataEstimate, 'TWS переменная');
-           AddNewLineToDebugger('Зона переезда', PereezdZone, 'TWS переменная');
-           AddNewLineToDebugger('Переезд звонок громкость', ZvonokVolume, 'TWS переменная');
-           AddNewLineToDebugger('Переезд звонок частота', ZvonokFreq, 'TWS переменная');
-           AddNewLineToDebugger('VentSingleVolume', VentSingleVolume, 'TWS переменная');
-           AddNewLineToDebugger('VentSingleVolumeIncrementer', VentSingleVolumeIncrementer, 'TWS переменная');
-           AddNewLineToDebugger('VentPitch', VentPitch, 'TWS переменная');
-           AddNewLineToDebugger('TEDVlm', TEDVlm, 'TWS переменная');
-           AddNewLineToDebugger('TEDPitch', TEDPitch, 'TWS переменная');
-           AddNewLineToDebugger('Speed_RRS', UnitSoundRRS.speed, 'RRS переменная');
-           AddNewLineToDebugger('CameraManipulator', UnitSoundRRS.cameraManipulatorView, 'RRS переменная');
-           AddNewLineToDebugger('ReduktorVolume', ReduktorVolume, 'TWS переменная');
-           AddNewLineToDebugger('ReduktorPitch', ReduktorPitch, 'TWS переменная');
+           AddNewLineToDebugger('РЎРєРѕСЂРѕСЃС‚СЊ', Speed, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РЈСЃРєРѕСЂРµРЅРёРµ', Acceleretion, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РўСЂРµРє РіРѕР»РѕРІС‹', Track, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РўСЂРµРє С…РІРѕСЃС‚Р°', TrackTail, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РљРѕРЅС‚СЂРѕР»Р»РµСЂ РїРѕР·РёС†РёСЏ [1-СЏ СЃРµРєС†РёСЏ]', KM_Pos_1, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РљРѕРЅС‚СЂРѕР»Р»РµСЂ РїРѕР·РёС†РёСЏ [2-СЏ СЃРµРєС†РёСЏ]', KM_Pos_2, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РљСЂР°РЅ в„–395(394) РїРѕР»РѕР¶РµРЅРёРµ', KM_395, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РљСЂР°РЅ в„–254(Р»РѕРєРѕРјРѕС‚РёРІРЅС‹Р№) РїРѕР»РѕР¶РµРЅРёРµ', KM_294, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РћСЃР»Р°Р±Р»РµРЅРёРµ РїРѕР»СЏ (С€СѓРЅС‚С‹) РїРѕР·РёС†РёСЏ', KM_OP, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РЎС†РµРїРєР° СЃ СЃРѕСЃС‚Р°РІРѕРј', CoupleStat, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ'); (*ID=10*)
+           AddNewLineToDebugger('РџРѕРєР°Р·Р°РЅРёРµ РђР›РЎ', Svetofor, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РћРіСЂР°РЅРёС‡РµРЅРёРµ СЃРєРѕСЂРѕСЃС‚Рё', OgrSpeed, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р Р°СЃСЃС‚РѕСЏРЅРёРµ РґРѕ СЃРІРµС‚РѕС„РѕСЂР°', SvetoforDist, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РќРѕРјРµСЂ РІРёРґР°', Camera, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РџРѕР»РѕР¶РµРЅРёРµ РєР°РјРµСЂС‹ РІ РєР°Р±РёРЅРµ', CameraX, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р”РѕР¶РґСЊ', Rain, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РџСЂРѕРІРµСЂРєР° Р±РґРёС‚РµР»СЊРЅРѕСЃС‚Рё', VCheck, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РљР»Р°РІРёР°С‚СѓСЂР° РљР›РЈР‘-Сѓ', KLUBOpen, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РўРѕРє РўР­Р”', TEDAmperage, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РўРѕРє Р­Р”Рў', EDTAmperage, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ'); (*ID=20*)
+           AddNewLineToDebugger('РўР¦', BrakeCylinders, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РўСЂРµРє РІСЃС‚СЂРµС‡РЅРѕРіРѕ РїРѕРµР·РґР°', VstrTrack, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РЎРєРѕСЂРѕСЃС‚СЊ РІСЃС‚СЂРµС‡РЅРѕРіРѕ РїРѕРµР·РґР°', Vstr_Speed, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РљРѕР»-РІРѕ РІР°РіРѕРЅРѕРІ РІСЃС‚СЂРµС‡РЅРѕРіРѕ РїРѕРµР·РґР°', WagNum_Vstr, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РћР±С‰Р°СЏ РґР»РёРЅР° РІСЃС‚СЂРµС‡РЅРѕРіРѕ РїРѕРµР·РґР°', Vstrecha_dlina, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РЎС‚Р°С‚СѓСЃ РІСЃС‚СЂРµС‡РЅРѕРіРѕ РїРѕРµР·РґР°(РёР· РћР—РЈ)', VstrechStatus, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РЎС‚Р°С‚СѓСЃ РІСЃС‚СЂРµС‡РЅРѕРіРѕ РїРѕРµР·РґР°', isVstrechDrive, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р”Р»РёРЅР° РЅР°С€РµРіРѕ СЃРѕСЃС‚Р°РІР°', ConsistLength, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р”Р»РёРЅР° РѕРґРЅРѕРіРѕ С‚СЂРµРєР°', TrackLength, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р‘РѕРєСЃРѕРІР°РЅРёРµ', Boks_Stat, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ'); (*ID=30*)
+           AddNewLineToDebugger('Р’РµРЅС‚РёР»СЏС‚РѕСЂ в„–1', Vent, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р’РµРЅС‚РёР»СЏС‚РѕСЂ в„–2', Vent2, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р’РµРЅС‚РёР»СЏС‚РѕСЂ в„–3', Vent3, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р’РµРЅС‚РёР»СЏС‚РѕСЂ в„–4', Vent4, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РљРѕРјРїСЂРµСЃСЃРѕСЂР°', Compressor, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р‘Р’(Р“Р’/РЎС‚Р°С‚СѓСЃ РґРёР·РµР»СЏ)', BV, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р”РёР·РµР»СЊ в„–2', diesel2, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р¤Р (Р¤Р°Р·РѕСЂР°СЃС‰РµРїРёС‚РµР»СЊ)', Fazan, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РџРµСЂРµРґРЅРёР№ С‚РѕРєРѕРїСЂРёС‘РјРЅРёРє', FrontTP, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р—Р°РґРЅРёР№ С‚РѕРєРѕРїСЂРёС‘РјРЅРёРє', BackTP, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ'); (*ID=40*)
+           AddNewLineToDebugger('Р РµРІРµСЂСЃРѕСЂ', ReversorPos, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РЎС‚РµРєР»РѕРѕС‡РёСЃС‚РёС‚РµР»СЊ', Stochist, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РЎС‚РµРєР»РѕРѕС‡РёСЃС‚РёС‚РµР»СЊ СѓРіРѕР» РїРѕРІРѕСЂРѕС‚Р°', StochistDGR, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РќР°РїСЂСЏР¶РµРЅРёРµ РЅР° СЌР»-РІРѕР·Рµ', Voltage, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РЎС‚Р°С‚СѓСЃ СЂРµРѕСЃС‚Р°С‚РЅРѕРіРѕ С‚РѕСЂРјРѕР¶РµРЅРёСЏ', Reostat, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р­РџРў СЃС‚Р°С‚СѓСЃ', EPT, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р›РµРІС‹Рµ РґРІРµСЂРё(РњР’РџРЎ)', LDOOR, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РџСЂР°РІС‹Рµ РґРІРµСЂРё(РњР’РџРЎ)', RDOOR, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РЎР»РµРґСѓСЋС‰РµРµ РѕРіСЂР°РЅРёС‡РµРЅРёРµ СЃРєРѕСЂРѕСЃС‚Рё', NextOgrSpeed, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р Р‘', RB, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ'); (*ID=50*)
+           AddNewLineToDebugger('Р Р‘РЎ', RBS, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р—Р°СЂСЏРґРєР° РђР‘ в„–1', AB_ZB_1, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р—Р°СЂСЏРґРєР° РђР‘ в„–2', AB_ZB_2, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РџСЂРѕР¶РµРєС‚РѕСЂР°', Highlights, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РџРµСЂРµСЃС‚СѓРє РЅР° СЃС‚Р°РЅС†РёРё', Highlights, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           //AddNewLineToDebugger('РљРѕР»-РІРѕ РґРѕСЂРѕР¶РµРє РЎРђР’Рџ', SAVPBaseObjectsCount, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р¤Р°Р№Р» СЃС†РµРЅР°СЂРёСЏ', SceneryName, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           //AddNewLineToDebugger('РљРѕР»-РІРѕ РґРѕСЂРѕР¶РµРє Р»РѕРє. Р­Рљ СЃС†РµРЅР°СЂРёСЏ', scBaseInfoCount, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           //AddNewLineToDebugger('РЈРЎРђР’Рџ Enable', USAVPEnabled, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           //AddNewLineToDebugger('SAVPE File Prefix', SAVPEFilePrefiks, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('scSAVPOverrideRouteEK', scSAVPOverrideRouteEK, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('headTrainEndOfTrain', HeadTrainEndOfTrain, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('isConnectedMemory', isConnectedMemory, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ'); (*ID=60*)
+           AddNewLineToDebugger('isGameOnPause', isGameOnPause, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РћСЂРґРёРЅР°С‚Р°', Ordinata, 'ZDS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('VentTDPitch', VentTDPitch, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('VentTDVol', VentTDVol, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РћСЂРґРёРЅР°С‚Р° СЂР°СЃСЃС‡С‘С‚', OrdinataEstimate, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Р—РѕРЅР° РїРµСЂРµРµР·РґР°', PereezdZone, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РџРµСЂРµРµР·Рґ Р·РІРѕРЅРѕРє РіСЂРѕРјРєРѕСЃС‚СЊ', ZvonokVolume, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('РџРµСЂРµРµР·Рґ Р·РІРѕРЅРѕРє С‡Р°СЃС‚РѕС‚Р°', ZvonokFreq, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('VentSingleVolume', VentSingleVolume, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('VentSingleVolumeIncrementer', VentSingleVolumeIncrementer, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('VentPitch', VentPitch, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('TEDVlm', TEDVlm, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('TEDPitch', TEDPitch, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('Speed_RRS', UnitSoundRRS.speed, 'RRS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('CameraManipulator', UnitSoundRRS.cameraManipulatorView, 'RRS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('ReduktorVolume', ReduktorVolume, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
+           AddNewLineToDebugger('ReduktorPitch', ReduktorPitch, 'TWS РїРµСЂРµРјРµРЅРЅР°СЏ');
         end;
 end;
 
@@ -405,7 +405,7 @@ begin
            end;
         end;
         end;
-	// ***** БЛОК ОБНОВЛЕНИЯ ДАННЫХ ***** //
+	// ***** Р‘Р›РћРљ РћР‘РќРћР’Р›Р•РќРРЇ Р”РђРќРќР«РҐ ***** //
         Label_Route.Caption        := UnitMain.Route + ' | ' +  UnitMain.naprav;
         Label_Loco.Caption         := UnitMain.LocoGlobal + ' | ' + UnitMain.Loco;
         Label19.Caption            := IntToStr(UnitMain.Svistok);
@@ -414,7 +414,7 @@ begin
         //Label_Op_Deg.Caption := IntToStr(UnitMain.KM_OP_Deg);
         if isPlayPerestuk_OnStation=True then Label41.Caption:='1' else Label41.Caption:='0';
         Label45.Caption := FloatToStr(UnitMain.TEDVlm);
-        Label49.Caption := IntToStr(FormMain.Timer3.Interval);
+        Label49.Caption := IntToStr(FormMain.timerPRSswitcher.Interval);
         Label48.Caption := IntToStr(FormMain.TimerPlayPerestuk.Interval);
         Label56.Caption := IntToStr(UnitMain.KME_ED);
         Label35.Caption := IntToStr(UnitMain.MP);
