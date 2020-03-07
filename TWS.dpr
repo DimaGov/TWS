@@ -3,7 +3,7 @@ program TWS;
 uses
   Forms,
   UnitMain in 'src/main/UnitMain.pas' {FormMain},
-  UnitAuthors in 'src/UnitAuthors.pas' {FormAuthors},
+  UnitAuthors in 'src/main/UnitAuthors.pas' {FormAuthors},
   UnitSAVPEHelp in 'src/savp/UnitSAVPEHelp.pas' {FormSAVPEHelp},
   UnitSettings in 'src/settings/UnitSettings.pas' {FormSettings},
   UnitDebug in 'src/debug/UnitDebug.pas' {FormDebug},
@@ -11,7 +11,7 @@ uses
   SAVP in 'src/savp/SAVP.pas',
   RAMMemModule in 'src/ramMemoryModule/RAMMemModule.pas',
   FileManager in 'src/fileManager/FileManager.pas',
-  ExtraUtils in 'src/ExtraUtils.pas',
+  ExtraUtils in 'src/extra/ExtraUtils.pas',
   SoundManager in 'src/soundManager/SoundManager.pas',
   Debug in 'src/debug/Debug.pas',
   UnitSOVIHelp in 'src/savp/UnitSOVIHelp.pas' {FormSOVIHelp},
