@@ -20,6 +20,6 @@ var
 
 implementation
 
-{$R src/savp/UnitSOVIHelp.dfm}
+{$R *.dfm}
 
 end.

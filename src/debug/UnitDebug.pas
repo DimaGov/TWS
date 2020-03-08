@@ -176,7 +176,7 @@ implementation
 
 uses UnitMain, SoundManager, UnitSoundRRS;
 
-{$R src/debug/UnitDebug.dfm}
+{$R *.dfm}
 
 procedure AddNewLineToDebugger(Wname: String; Wariant: Variant; groupp: String);
 var

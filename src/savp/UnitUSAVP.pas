@@ -27,7 +27,7 @@ implementation
 
 uses UnitMain;
 
-{$R src/savp/UnitUSAVP.dfm}
+{$R *.dfm}
 
 procedure TFormUSAVP.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
