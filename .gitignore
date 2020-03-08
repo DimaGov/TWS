@@ -1,0 +1,8 @@
+*.dcu
+*.exe
+
+FETCH_HEAD
+
+/[Ii]con
+/[Mm]atlab
+/BACUPS
