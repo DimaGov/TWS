@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------//
 //                                                                              //
-//      Модуль речевых информаторов (САВП)                                      //
+//      Модуль речевых информаторов (САВП)         //
 //      (c) DimaGVRH, Dnepr city, 2019                                          //
 //                                                                              //
 //------------------------------------------------------------------------------//
@@ -41,6 +41,11 @@ var
      SAVPBaseInfoName1:           Array[0..500] of String; // Первый столбец файла ЭК [САУТ, УСАВПП, САВПЭ]
      SAVPBaseInfoName2:           Array[0..500] of String; // Второй столбец файла ЭК [САУТ, УСАВПП, САВПЭ]
      SAVPBaseInfoName3:           Array[0..500] of String; // Третий столбец файла ЭК [САВПЭ]
+     SAVPEBaseObjectsCount:       Integer;
+     SAVPEBaseInfoTrack:          Array[0..500] of Integer;
+     SAVPEBaseInfoName1:          Array[0..500] of String; // Первый столбец файла ЭК [САУТ, УСАВПП, САВПЭ]
+     SAVPEBaseInfoName2:          Array[0..500] of String; // Второй столбец файла ЭК [САУТ, УСАВПП, САВПЭ]
+     SAVPEBaseInfoName3:          Array[0..500] of String; // Третий столбец файла ЭК [САВПЭ]
      ThirdColumnAval:             Boolean;
      scBaseInfoCount:             Integer;
      scBaseInfoTrack:             Array[0..500] of Integer;
@@ -100,6 +105,22 @@ begin
         if Trim(SAVPBaseInfoName1[I+1])='' then break;
      end;
      SAVPBaseObjectsCount := 0;
+     //FormDebug.Memo1.Clear();
+end;
+
+//------------------------------------------------------------------------------//
+//                  Подпрограмма для очистки базы данных САВП                   //
+//------------------------------------------------------------------------------//
+procedure clearSAVPEBaseData();
+var
+     I: Integer;
+begin
+     for I:=0 to 500 do begin
+        SAVPEBaseInfoTrack[I]:=0; SAVPEBaseInfoName1[I]:=''; SAVPEBaseInfoName2[I]:='';
+        SAVPEBaseInfoName3[I]:='';
+        if Trim(SAVPEBaseInfoName1[I+1])='' then break;
+     end;
+     SAVPEBaseObjectsCount := 0;
      //FormDebug.Memo1.Clear();
 end;
 
@@ -242,7 +263,7 @@ begin
            else Memo7.Text := 'Рэжим - без ЭК';
            wIni.Free;
            // Очищаем базу ЭК САВП
-           clearSAVPBaseData();
+           clearSAVPEBaseData();
 
            // Загружаем ЭК
            FS := TFileStream.Create(fileDir, fmShareDenyNone);
@@ -260,14 +281,14 @@ begin
                     FileLineColumn := ExtractWord(FileLinesList[I], #9);
                     if FileLineColumn.Count >= 3 then begin
                        if Trim(FileLineColumn[0]) <> 'start' then
-                          BaseInfoTrack[TotalInfoFiles] := StrToInt(FileLineColumn[0])
+                          SAVPEBaseInfoTrack[TotalInfoFiles] := StrToInt(FileLineColumn[0])
                        else
-                          BaseInfoTrack[TotalInfoFiles] := 0;
-                       SAVPBaseInfoName1[TotalInfoFiles] := FileLineColumn[1];
-                       SAVPBaseInfoName2[TotalInfoFiles] := FileLineColumn[2];
+                          SAVPEBaseInfoTrack[TotalInfoFiles] := 0;
+                       SAVPEBaseInfoName1[TotalInfoFiles] := FileLineColumn[1];
+                       SAVPEBaseInfoName2[TotalInfoFiles] := FileLineColumn[2];
                        if FileLineColumn.Count >= 4 then begin
                           if Trim(FileLineColumn[3]) <> '' then begin
-                             SAVPBaseInfoName3[TotalInfoFiles] := FileLineColumn[3];
+                             SAVPEBaseInfoName3[TotalInfoFiles] := FileLineColumn[3];
                              ThirdColumnAval := True;
                           end;
                        end;
@@ -837,7 +858,7 @@ begin
            if Speed > 0 then begin
               // --------- Начало движения --------- //
               if ((Floor(TEDAmperage) = 0) and (PrevSpeed_Fakt = 0)) Or
-                 ((Loco = 'ED4M') and (KM_Pos_1 = 0) and (PrevSpeed_Fakt = 0)) then
+                 ((Loco <> 'ED4M')) then
                  DecodeResAndPlay('TWS/SAVP/USAVP/581.res', isPlaySAUTObjects, SAUTF, SAUTChannelObjects, ResPotok, PlayRESFlag);
 
               // --- Система переходит на ЭПТ/ПТ --- //
@@ -1072,13 +1093,13 @@ begin
                  SAVPEInformatorMessages.Clear;
                  SAVPEMessageIndex := 0;
                  if ThirdColumnAval = True then begin
-                    if (InformIndx >= 0) AND (Trim(SAVPBaseInfoName3[InformIndx]) <> '') then
-                       SAVPEInformatorMessages := ExtractWord(SAVPBaseInfoName3[InformIndx], ';')
+                    if (InformIndx >= 0) AND (Trim(SAVPEBaseInfoName3[InformIndx]) <> '') then
+                       SAVPEInformatorMessages := ExtractWord(SAVPEBaseInfoName3[InformIndx], ';')
                  end else begin
-                    SAVPEInformatorMessages := ExtractWord(SAVPBaseInfoName1[0], ';');
+                    SAVPEInformatorMessages := ExtractWord(SAVPEBaseInfoName1[0], ';');
                  end;
                  if (SAVPEInformatorMessages.Count = 0) Or (Trim(SAVPEInformatorMessages[0]) = '') then
-                    SAVPEInformatorMessages := ExtractWord(SAVPBaseInfoName1[0], ';');
+                    SAVPEInformatorMessages := ExtractWord(SAVPEBaseInfoName1[0], ';');
                     DecodeResAndPlay('TWS/SAVPE_INFORMATOR/Info/'+ComboBox1.Items[ComboBox1.ItemIndex]+'/'+SAVPEInformatorMessages[0],
                                      isPlaySAVPEInfo, SAVPEInfoF, SAVPE_INFO_Channel, ResPotok, PlayRESFlag);
               end;
@@ -1091,14 +1112,14 @@ begin
                        if AutoInformDoorFlag = False then begin
                           BASS_ChannelStop(SAVPE_INFO_Channel); BASS_StreamFree(SAVPE_INFO_Channel);
                           SAVPEMessageIndex := 0;
-                          SAVPEInformatorMessages := ExtractWord(SAVPBaseInfoName1[InformIndx], ';');
+                          SAVPEInformatorMessages := ExtractWord(SAVPEBaseInfoName1[InformIndx], ';');
                           DecodeResAndPlay('TWS/SAVPE_INFORMATOR/Info/'+ComboBox1.Items[ComboBox1.ItemIndex]+'/'+SAVPEInformatorMessages[0],
                                            isPlaySAVPEInfo, SAVPEInfoF, SAVPE_INFO_Channel, ResPotok, PlayRESFlag);
                           AutoInformDoorFlag:=True;
                        end else begin
                           BASS_ChannelStop(SAVPE_INFO_Channel); BASS_StreamFree(SAVPE_INFO_Channel);
                           SAVPEMessageIndex := 0;
-                          SAVPEInformatorMessages := ExtractWord(SAVPBaseInfoName2[InformIndx], ';');
+                          SAVPEInformatorMessages := ExtractWord(SAVPEBaseInfoName2[InformIndx], ';');
                           DecodeResAndPlay('TWS/SAVPE_INFORMATOR/Info/'+ComboBox1.Items[ComboBox1.ItemIndex]+'/'+SAVPEInformatorMessages[0],
                                            isPlaySAVPEInfo, SAVPEInfoF, SAVPE_INFO_Channel, ResPotok, PlayRESFlag);
                           AutoInformDoorFlag:=False;
@@ -1115,11 +1136,11 @@ begin
                              if AutoInformDoorFlag = False then begin
                                 SAVPEMessageIndex := 0;
                                 //AutoInformDoorFlag := True;
-                                SAVPEInformatorMessages := ExtractWord(SAVPBaseInfoName1[InformIndx], ';');
+                                SAVPEInformatorMessages := ExtractWord(SAVPEBaseInfoName1[InformIndx], ';');
                              end else begin
                                 SAVPEMessageIndex := 0;
                                 //AutoInformDoorFlag := False;
-                                SAVPEInformatorMessages := ExtractWord(SAVPBaseInfoName2[InformIndx], ';');
+                                SAVPEInformatorMessages := ExtractWord(SAVPEBaseInfoName2[InformIndx], ';');
                                 Inc(InformIndx);
                              end;
                              AutoInformDoorFlag := Not(AutoInformDoorFlag);
@@ -1128,7 +1149,7 @@ begin
                           end else begin
                              if AutoInformDoorFlag=True then begin
                                 SAVPEMessageIndex := 0;
-                                SAVPEInformatorMessages := ExtractWord(SAVPBaseInfoName2[InformIndx], ';');
+                                SAVPEInformatorMessages := ExtractWord(SAVPEBaseInfoName2[InformIndx], ';');
                                 DecodeResAndPlay('TWS/SAVPE_INFORMATOR/Info/'+ComboBox1.Items[ComboBox1.ItemIndex]+'/'+SAVPEInformatorMessages[0],
                                                  isPlaySAVPEInfo, SAVPEInfoF, SAVPE_INFO_Channel, ResPotok, PlayRESFlag);
                                 Inc(InformIndx);
@@ -1184,16 +1205,16 @@ begin
               // Читаем и если нужно воспроизводим объявление станции по треку
               if Track<>PrevTrack then begin
                  for I:=0 to TotalInfoFiles do begin
-                    if (BaseInfoTrack[I]<>0) and (BaseInfoTrack[I+1]<>0) then begin
-                       if (BaseInfoTrack[I]>=Track) and (BaseInfoTrack[I+1]<=Track) and (Naprav='Tuda') then
+                    if (SAVPEBaseInfoTrack[I]<>0) and (SAVPEBaseInfoTrack[I+1]<>0) then begin
+                       if (SAVPEBaseInfoTrack[I]>=Track) and (SAVPEBaseInfoTrack[I+1]<=Track) and (Naprav='Tuda') then
                           InformIndx:=I;
-                       if (BaseInfoTrack[I]<=Track) and (BaseInfoTrack[I+1]>=Track) and (Naprav='Obratno') then
+                       if (SAVPEBaseInfoTrack[I]<=Track) and (SAVPEBaseInfoTrack[I+1]>=Track) and (Naprav='Obratno') then
                           InformIndx:=I;
                     end;
-                    if BaseInfoTrack[I]=Track then begin
+                    if SAVPEBaseInfoTrack[I]=Track then begin
                        BASS_ChannelStop(SAVPE_INFO_Channel); BASS_StreamFree(SAVPE_INFO_Channel);
                        SAVPEMessageIndex := 0;
-                       SAVPEInformatorMessages := ExtractWord(SAVPBaseInfoName1[I], ';');
+                       SAVPEInformatorMessages := ExtractWord(SAVPEBaseInfoName1[I], ';');
                        DecodeResAndPlay('TWS/SAVPE_INFORMATOR/Info/'+ComboBox1.Items[ComboBox1.ItemIndex]+'/'+SAVPEInformatorMessages[0],
                                          isPlaySAVPEInfo, SAVPEInfoF, SAVPE_INFO_Channel, ResPotok, PlayRESFlag);
                        InformIndx:=I;
@@ -1291,7 +1312,7 @@ end;
 //------------------------------------------------------------------------------//
 procedure Load_TWS_SAVP_EK();
 begin
-     if (FormMain.cbSAVPESounds.Checked = False) and (FormMain.cbEPL2TBlock.Checked = False)
+     if (FormMain.cbEPL2TBlock.Checked = False)
         and (SAVPName <> '') then begin
         if naprav = 'Tuda' then begin
            try

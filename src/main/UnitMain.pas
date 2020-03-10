@@ -561,7 +561,7 @@ procedure TFormMain.cbUSAVPSoundsClick(Sender: TObject);
 begin
   if cbUSAVPSounds.Checked=True then begin
      cbSAUTSounds.Checked:=False;cbGSAUTSounds.Checked:=False;
-     cbSAVPESounds.Checked:=False;
+     //cbSAVPESounds.Checked:=False;
      cbEPL2TBlock.Checked:=False;
      DecodeResAndPlay('TWS/SAVP/USAVP/575.res', isPlaySAVPEInfo, SAVPEInfoF, SAVPE_INFO_Channel, ResPotok, PlayRESFlag);
      //SAUTOFFF:='TWS/SAVP/USAVP/575.mp3';SAUTOff:=True;
@@ -2565,7 +2565,7 @@ begin
           SAVPName := 'SAVPE';
           cbSAUTSounds.Checked:=False;
           cbGSAUTSounds.Checked:=False;
-          cbUSAVPSounds.Checked:=False;
+          //cbUSAVPSounds.Checked:=False;
           cbEPL2TBlock.Checked:=False;
           SAUTOFFF:='TWS/INFO/USAVP_podskazka.mp3';
           isSpeedLimitRouteLoad:=False;SAUTOff:=True;
@@ -2639,7 +2639,7 @@ begin
         PrevIndx := ComboBox2.ItemIndex;
         PrevParIndx := ComboBox1.ItemIndex;
         ComboBox2.Items.Clear;
-        ComboBox2.Items.Add('< Без ЭК >');
+        ComboBox2.Items.Add(Utf8ToAnsi('< Без ЭК >'));
         ComboBox2.Sorted := True;
         TempSc := TStringList.Create;
         if FindFirst('TWS/SAVPE_INFORMATOR/Info/'+ComboBox1.Items[ComboBox1.ItemIndex]+'/*.TWS',faAnyFile,sr)=0 then
