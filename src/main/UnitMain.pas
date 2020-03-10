@@ -561,7 +561,7 @@ procedure TFormMain.cbUSAVPSoundsClick(Sender: TObject);
 begin
   if cbUSAVPSounds.Checked=True then begin
      cbSAUTSounds.Checked:=False;cbGSAUTSounds.Checked:=False;
-     //cbSAVPESounds.Checked:=False;
+     cbSAVPESounds.Checked:=False;
      cbEPL2TBlock.Checked:=False;
      DecodeResAndPlay('TWS/SAVP/USAVP/575.res', isPlaySAVPEInfo, SAVPEInfoF, SAVPE_INFO_Channel, ResPotok, PlayRESFlag);
      //SAUTOFFF:='TWS/SAVP/USAVP/575.mp3';SAUTOff:=True;
@@ -2565,7 +2565,7 @@ begin
           SAVPName := 'SAVPE';
           cbSAUTSounds.Checked:=False;
           cbGSAUTSounds.Checked:=False;
-          //cbUSAVPSounds.Checked:=False;
+          cbUSAVPSounds.Checked:=False;
           cbEPL2TBlock.Checked:=False;
           SAUTOFFF:='TWS/INFO/USAVP_podskazka.mp3';
           isSpeedLimitRouteLoad:=False;SAUTOff:=True;
