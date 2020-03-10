@@ -857,7 +857,7 @@ begin
         if cbUSAVPSounds.Checked = True then begin
            if Speed > 0 then begin
               // --------- Начало движения --------- //
-              if ((Floor(TEDAmperage) = 0) and (PrevSpeed_Fakt = 0)) Or
+              if ((Floor(TEDAmperage) = 0) and (PrevSpeed_Fakt = 0)) and
                  ((Loco <> 'ED4M')) then
                  DecodeResAndPlay('TWS/SAVP/USAVP/581.res', isPlaySAUTObjects, SAUTF, SAUTChannelObjects, ResPotok, PlayRESFlag);
 
