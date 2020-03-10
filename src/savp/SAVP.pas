@@ -448,10 +448,10 @@ begin
       FileLinesList[I] := StringReplace(StringReplace(FileLinesList[I], #13, '', [rfReplaceAll]), #10, ' ', [rfReplaceAll]);
       ObjectsList := ExtractWord(FileLinesList[I], #9);
       if Pos('Zvon', ObjectsList[1]) > 0 then begin
-         if (Pos('o', ObjectsList[0]) > 0) then begin
-            ZvonOrdinats[ZvonObjectsCount] := StrToInt(StringReplace(ObjectsList[0], 'o', '', [rfReplaceAll]));
-         end else begin
+         if (Pos('o', ObjectsList[0]) = 0) then begin
             ZvonTracks[ZvonObjectsCount] := StrToInt(ObjectsList[0]);
+         end else begin
+            ZvonOrdinats[ZvonObjectsCount] := StrToInt(StringReplace(ObjectsList[0], 'o', '', [rfReplaceAll]));
          end;
          ZvonBaseName[ZvonObjectsCount] := StringReplace(ObjectsList[1], '.mp3', '.wav', [rfReplaceAll]);
          Inc(ZvonObjectsCount);
@@ -544,7 +544,7 @@ var
 begin
    PereezdZone := False;
               for I := 0 to ZvonObjectsCount do begin
-                 if (Abs(OrdinataEstimate-ZvonOrdinats[I]) <= 30) then begin
+                 if (Abs(OrdinataEstimate-ZvonOrdinats[I]) <= 30) And (ZvonOrdinats[I] <> 0) then begin
                     ZvonokVolume := (( exp(1 - Abs(OrdinataEstimate-ZvonOrdinats[I])/36) - 1 ) / 2) * FormMain.trcBarNatureVol.Position/100;
                     ZvonokVolumeDest := ZvonokVolume;
                     PereezdZone := True;
