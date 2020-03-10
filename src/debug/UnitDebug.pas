@@ -187,7 +187,7 @@ begin
    With FormDebug do begin
       ListItem := ListView1.Items.Add;
       ListItem.Caption := IntToStr(ListView1.Items.Count);
-      ListItem.SubItems.Add(Wname);
+      ListItem.SubItems.Add(Utf8ToAnsi(Wname));
 
       basicType := VarType(Wariant) and VarTypeMask;
 
