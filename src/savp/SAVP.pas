@@ -83,7 +83,7 @@ procedure SAVPE_DoorCloseTimerTick();
 begin
      With FormMain do begin
         SAVPEMessageIndex := 0;
-        SAVPEInformatorMessages := ExtractWord(SAVPBaseInfoName2[InformIndx], ';');
+        SAVPEInformatorMessages := ExtractWord(SAVPEBaseInfoName2[InformIndx], ';');
         DecodeResAndPlay('TWS/SAVPE_INFORMATOR/Info/'+ComboBox1.Items[ComboBox1.ItemIndex]+'/'+SAVPEInformatorMessages[0],
                          isPlaySAVPEInfo, SAVPEInfoF, SAVPE_INFO_Channel, ResPotok, PlayRESFlag);
         Inc(InformIndx);

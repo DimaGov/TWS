@@ -2728,7 +2728,7 @@ end;
 
 procedure TFormMain.Edit1Change(Sender: TObject);
 begin
-	try if StrToInt(Edit1.Text)>255 then Edit1.Text:=IntToStr(255); except end;
+	try if StrToInt(Edit1.Text)>350 then Edit1.Text:=IntToStr(350); except end;
 end;
 
 procedure TFormMain.timer3SL2m_3SecTimer(Sender: TObject);
