@@ -147,6 +147,8 @@ var
    ADDR_OUTSIDE_LOCO_STATUS:                Pointer;
    ADDR_2ES5K_BV:                           Pointer;
    ADDR_CHS8_UNIPULS_AVARIA:                Pointer;
+   ADDR_PNEVM_SIGNAL:                       Pointer;
+   ADDR_PNEVM:                              PByte;
 
    CHS8VentVolumePrev:                      Single;
    CHS8VentTempCounter:                     Byte;
@@ -231,6 +233,12 @@ begin
       Inc(readAddr); Inc(i);
    end;
    Result := retStr;
+end;
+
+procedure FindPnevm();
+begin
+   ADDR_PNEVM := ReadPointer(ADDR_PNEVM_SIGNAL);
+   Inc(ADDR_PNEVM, 48);
 end;
 
 //------------------------------------------------------------------------------//
@@ -395,23 +403,39 @@ end;
 //          Подпрограмма для чтения локальных переменных локомотива ЧС4т        //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryCHS4t();
+var
+    tpByte: PByte;
 begin
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4T_FTP, @FrontTP, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4T_BTP, @BackTP, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ptr($0536FA2F), @ReversorPos, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4T_VENT, @Vent, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4T_COMPRESSOR, @Compressor, 4, temp);  except end;
+
+    tpByte := ADDR_PNEVM;
+    //Inc(tpByte, 40);
+    try ReadProcessMemory(UnitMain.pHandle, tpByte, @GR, 8, temp); except end;
+    Inc(tpByte, 40);
+    try ReadProcessMemory(UnitMain.pHandle, tpByte, @TC, 8, temp); except end;
 end;
 
 //------------------------------------------------------------------------------//
 //         Подпрограмма для чтения локальных переменных локомотива ЧС4квр       //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryCHS4kvr();
+var
+    tpByte: PByte;
 begin
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4KVR_FTP, @FrontTP, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4KVR_BTP, @BackTP, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4KVR_REVERSOR, @ReversorPos, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_KVR_VENTS, @Vent, 4, temp); except end;
+
+    tpByte := ADDR_PNEVM;
+    //Inc(tpByte, 40);
+    try ReadProcessMemory(UnitMain.pHandle, tpByte, @GR, 8, temp); except end;
+    Inc(tpByte, 40);
+    try ReadProcessMemory(UnitMain.pHandle, tpByte, @TC, 8, temp); except end;
 end;
 
 //------------------------------------------------------------------------------//
@@ -562,6 +586,8 @@ begin
      addr_waglength := ADDR_VSTRECHA_WAGON_DLINA;
      Vstrecha_dlina:=0;
 
+     FindPnevm();
+
      // ----- Читаем основные(общие) переменные ZDSimulator ----- //
      try ReadProcessMemory(UnitMain.pHandle, ADDR_Track, @Track, 4, temp); except end;          // Получаем номер трэка
      try ReadProcessMemory(UnitMain.pHandle, ADDR_TRACK_TAIL, @TrackTail, 4, temp); except end;
@@ -699,6 +725,7 @@ begin
           ADDR_ED4M_KONTROLLER:=ptr($091D5B04); ADDR_VL11m_VENT:=    ptr($091D5C25); ADDR_ORDINATA   :=   ptr($00803F50);
           ADDR_OUTSIDE_LOCO_STATUS:=ptr($00749865);ADDR_CHS8_VENT_VOLUME:=ptr($091D48BC); ADDR_CHS8_VENT_VOLUME_INCREMENTER:=ptr($091D48CC);
           ADDR_2ES5K_BV :=ptr($091D48CC); ADDR_CHS8_UNIPULS_AVARIA:= ptr($091D5024); ADDR_CHS8_GV_1  :=   ptr($09007FB4);
+          ADDR_PNEVM_SIGNAL:=ptr($0538D8D4);
        end;
        if versionID = 1 then begin
           ADDR_Speed :=   ptr($0072CB38);       ADDR_Track    :=     ptr($0072CBFC); ADDR_KM_POS     :=   ptr($090F3F9C);
@@ -738,7 +765,7 @@ begin
           ADDR_VSTRECH_STATUS:=ptr($08FE7C70); ADDR_SETTINGS_INI_POINTER:=ptr($007E79A0); ADDR_ORDINATA:= ptr($007E79A8);
           ADDR_ED4M_KONTROLLER:=ptr($091B92AC);ADDR_OUTSIDE_LOCO_STATUS:=ptr($0072CA62);
           ADDR_ED9M_KONTROLLER:=ptr($091B92BD);ADDR_CHS8_VENT_VOLUME:=ptr($091B8114);ADDR_CHS8_VENT_VOLUME_INCREMENTER:=ptr($091B8124);
-          ADDR_2ES5K_BV :=ptr($091B8124); ADDR_CHS8_UNIPULS_AVARIA:= ptr($091B8818);
+          ADDR_2ES5K_BV :=ptr($091B8124); ADDR_CHS8_UNIPULS_AVARIA:= ptr($091B8818);ADDR_PNEVM_SIGNAL:=   ptr($0537114C);
        end;
 
         // -/- ВЛ80т (VL80t) -/- //
@@ -1018,7 +1045,7 @@ begin
            LocoWithSndKM_OP    := True;         // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
            LocoWithExtMVSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МВ
-           LocoWithExtMKSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithExtMKSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МК
            LocoWithMVPitch     := True;         // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
            LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
            VentStartF          := PChar('TWS/CHS4KVR/ventVU-start.wav');

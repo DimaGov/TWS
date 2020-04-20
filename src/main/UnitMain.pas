@@ -288,6 +288,9 @@ var
   KMPrevKey:                   String;
   // ********************************* //
 
+  GRIncrementer:               Byte;
+  TCIncrementer:               Byte;
+
   sDecodeString:	       String;
 
   CycleVentVolume:             Byte;	     // Громкость цикла работы вентиляторов (ВЛ80т)
@@ -354,6 +357,8 @@ var
   Ordinata,          PrevOrdinata:    Double;
   OrdinataEstimate,PrevOrdinataEstimate: Double;
   OutsideLocoStatus:                  WORD;
+  GR,                PrevGR:          Double;
+  TC,                PrevTC:          Double;
 
   DebugFile: TextFile;
 
@@ -561,7 +566,7 @@ procedure TFormMain.cbUSAVPSoundsClick(Sender: TObject);
 begin
   if cbUSAVPSounds.Checked=True then begin
      cbSAUTSounds.Checked:=False;cbGSAUTSounds.Checked:=False;
-     //cbSAVPESounds.Checked:=False;
+     cbSAVPESounds.Checked:=False;
      cbEPL2TBlock.Checked:=False;
      DecodeResAndPlay('TWS/SAVP/USAVP/575.res', isPlaySAVPEInfo, SAVPEInfoF, SAVPE_INFO_Channel, ResPotok, PlayRESFlag);
      //SAUTOFFF:='TWS/SAVP/USAVP/575.mp3';SAUTOff:=True;
@@ -772,6 +777,9 @@ var
   XVentTDTimeLeft: Single;
   CompTimeLeft: Single;
   XCompTimeLeft: Single;
+  Brake254TimeLeft: Single;
+  singleTemp1: Single;
+  singleTemp2: Single;
 label
   Next1;
 begin
@@ -1452,6 +1460,55 @@ try
   // ********************* //
   // БЛОК ВСПОМ-МАШИН //
   if cbVspomMash.Checked=True then begin
+      if StopBrake254 = False then begin
+         if BASS_ChannelIsActive(Brake254_Channel_FX[0]) <> 0 then begin
+            Brake254TimeLeft := BASS_ChannelBytes2Seconds(Brake254_Channel_FX[0], BASS_ChannelGetLength(Brake254_Channel_FX[0], BASS_POS_BYTE) - BASS_ChannelGetPosition(Brake254_Channel_FX[0], BASS_POS_BYTE));
+            if (Brake254TimeLeft <= 0.2) and (BASS_ChannelIsActive(Brake254_Channel_FX[1])=0) then isPlayCycleBrake254:=False;
+         end;
+      end;
+
+      //if StopBrake254 = False then begin
+         singleTemp1 := TC - PrevTC;
+         singleTemp2 := Abs(singleTemp1) * 400000;
+         if Abs(singleTemp2) > 30 then begin
+            TCIncrementer := 0;
+            if (singleTemp1) < 0 then begin
+               Brake254F := PChar('TWS\254_vypusk_start.wav');
+               CycleBrake254F := PChar('TWS\254_vypusk_loop.wav');
+            end else begin
+               Brake254F := PChar('TWS\254_vpusk_start.wav');
+               CycleBrake254F := PChar('TWS\254_vpusk_loop.wav');
+            end;
+
+            if (BASS_ChannelIsActive(Brake254_Channel_FX[1]) = 0) then begin
+               if (BASS_ChannelIsActive(Brake254_Channel_FX[0]) = 0) Or
+                  ((BASS_ChannelIsActive(Brake254_Channel_FX[0])<> 0)And(StopBrake254=True)) then
+               begin
+                  isPlayBrake254 := False;
+                  StopBrake254 := False;
+               end;
+            end;
+
+            BASS_ChannelSetAttribute(Brake254_Channel_FX[0], BASS_ATTRIB_VOL, singleTemp2/100);
+            BASS_ChannelSetAttribute(Brake254_Channel_FX[1], BASS_ATTRIB_VOL, singleTemp2/100);
+         end else begin
+            if singleTemp2 <= 30 then begin
+               Inc(TCIncrementer);
+               if TCIncrementer > Trunc(MainCycleFreq/5) then begin
+                  if (singleTemp1) < 0 then begin
+                     Brake254F := PChar('TWS\254_vypusk_stop.wav');
+                     CycleBrake254F := PChar('');
+                  end else begin
+                     Brake254F := PChar('TWS\254_vpusk_stop');
+                     CycleBrake254F := PChar('');
+                  end;
+                  StopBrake254 := True;
+               end;
+            end;
+
+         end;
+      //end;
+
       // Остаток времени для запуска вентиляторов ВУ
       if StopVent = False then begin
          if BASS_ChannelIsActive(Vent_Channel_FX) <> 0 then begin
@@ -1663,6 +1720,15 @@ try
       if Loco='ED4M' then begin
          if BV+FrontTP+Compressor>2 then Compressor:=1 else Compressor:=0;
       end;
+      if (LocoGlobal='CHS4 KVR') Or (LocoGlobal='CHS4t') then begin
+         if GR > PrevGR then begin
+            GRIncrementer := 0;
+            Compressor := 1;
+         end else begin
+            Inc(GRIncrementer);
+            if GRIncrementer > 2 then Compressor := 0;
+         end;
+      end;
       // Звуки запуска компрессора
       if Compressor<>Prev_Compressor then begin
          if Compressor<>0 then begin
@@ -1682,6 +1748,14 @@ try
             if LocoGlobal='VL11m' then begin
                CompressorF:=PChar('TWS/VL11m/MK-start.wav'); CompressorCycleF:=PChar('TWS/VL11m/MK-loop.wav');
                XCompressorF:=PChar('TWS/VL11m/x_MK-start.wav'); XCompressorCycleF:=PChar('TWS/VL11m/x_MK-loop.wav');
+            end;
+            if LocoGlobal='CHS4 KVR' then begin
+               CompressorF:=PChar('TWS/CHS4KVR/mk_start.wav'); CompressorCycleF:=PChar('TWS/CHS4KVR/mk_loop.wav');
+               XCompressorF:=PChar('TWS/CHS4KVR/x_mk_start.wav'); XCompressorCycleF:=PChar('TWS/CHS4KVR/x_mk_loop.wav');
+            end;
+            if LocoGlobal='CHS4t' then begin
+               CompressorF:=PChar('TWS/CHS4t/mk_start.wav'); CompressorCycleF:=PChar('TWS/CHS4t/mk_loop.wav');
+               XCompressorF:=PChar('TWS/CHS4t/x_mk_start.wav'); XCompressorCycleF:=PChar('TWS/CHS4t/x_mk_loop.wav');
             end;
             isPlayCompressor:=False; isPlayXCompressor:=False;
          end;
@@ -1704,6 +1778,14 @@ try
                XCompressorF:=PChar('TWS/VL11m/x_MK-stop.wav');
             end;
             if Loco='ED4M' then begin CompressorF:=PChar('TWS/ED4m/compr_stop.wav'); end;
+            if LocoGlobal='CHS4 KVR' then begin
+               CompressorF:=PChar('TWS/CHS4KVR/mk_stop.wav');
+               XCompressorF:=PChar('TWS/CHS4KVR/x_mk_stop.wav');
+            end;
+            if LocoGlobal='CHS4t' then begin
+               CompressorF:=PChar('TWS/CHS4KVR/mk_stop.wav');
+               XCompressorF:=PChar('TWS/CHS4KVR/x_mk_stop.wav');
+            end;
             CompressorCycleF:=PChar(''); XCompressorCycleF:=PChar('');
             isPlayCompressor:=False; isPlayXCompressor:=False;
          end;
@@ -2142,6 +2224,8 @@ try
     if PrevOrdinata < Ordinata then NapravOrdinata := 'Tuda';
     if PrevOrdinata > Ordinata then NapravOrdinata := 'Obratno';
     PrevOrdinata:=Ordinata;
+    PrevTC := TC;
+    PrevGR := GR;
 end;	// Конец блока если игра не на паузе!!!!!
 
 PrevConMem:=isConnectedMemory;
@@ -2565,7 +2649,7 @@ begin
           SAVPName := 'SAVPE';
           cbSAUTSounds.Checked:=False;
           cbGSAUTSounds.Checked:=False;
-          //cbUSAVPSounds.Checked:=False;
+          cbUSAVPSounds.Checked:=False;
           cbEPL2TBlock.Checked:=False;
           SAUTOFFF:='TWS/INFO/USAVP_podskazka.mp3';
           isSpeedLimitRouteLoad:=False;SAUTOff:=True;

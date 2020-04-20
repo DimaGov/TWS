@@ -306,6 +306,8 @@ begin
            AddNewLineToDebugger('CameraManipulator', UnitSoundRRS.cameraManipulatorView, 'RRS переменная');
            AddNewLineToDebugger('ReduktorVolume', ReduktorVolume, 'TWS переменная');
            AddNewLineToDebugger('ReduktorPitch', ReduktorPitch, 'TWS переменная');
+           AddNewLineToDebugger('GR', GR, 'ZDS переменная');
+           AddNewLineToDebugger('TC', TC, 'ZDS переменная');
         end;
 end;
 
@@ -402,6 +404,8 @@ begin
               74: ListItem.SubItems[3] := UnitSoundRRS.cameraManipulatorView;
               75: ListItem.SubItems[3] := FloatToStr(ReduktorVolume);
               76: ListItem.SubItems[3] := FloatToStr(ReduktorPitch);
+              77: ListItem.SubItems[3] := FloatToStr(GR);
+              78: ListItem.SubItems[3] := FloatToStr(TC);
            end;
         end;
         end;

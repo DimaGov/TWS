@@ -61,6 +61,8 @@ var
   XVentTD_Channel:           Cardinal;
   XVentCycleTD_Channel:      Cardinal;
   Brake_Channel:             array[0..1] of Cardinal;
+  Brake254_Channel:          array[0..1] of Cardinal;
+  Brake254_Channel_FX:       array[0..1] of Cardinal;
   BeltPool_Channel:          Cardinal;
   ClockChannel:              Cardinal;
   Stochist_Channel:          Cardinal;      // Канал ддя звука дворников
@@ -124,6 +126,8 @@ var
   WalkSoundF:                  PChar;
   NatureF:                     PChar;
   ReduktorF:                   PChar;
+  Brake254F:                   PChar;
+  CycleBrake254F:              PChar;
   isPlaySAUTObjects:           Boolean; // Флаг для воспроизведения режима автоведения САУТ
   isPlaySAUTZvonok:            Boolean;
   isPlayRain:                  Boolean;
@@ -164,6 +168,9 @@ var
   isPlayWalkSound:             Boolean;
   isPlayNature:                Boolean;
   isPlayReduktor:              Boolean = True;
+  isPlayBrake254:              Boolean = True;
+  isPlayCycleBrake254:         Boolean = True;
+  StopBrake254:                Boolean = True;
 
 implementation
 
@@ -1032,6 +1039,30 @@ begin
           BASS_ChannelPlay(XVentCycleTD_Channel_FX, FALSE);
           BASS_ChannelSetAttribute(XVentCycleTD_Channel_FX, BASS_ATTRIB_VOL, 0);
           isPlayCycleVentTDX:=True; Inc(CameraX);
+       except end;
+    end;
+    if isPlayBrake254=False then begin
+       try
+          BASS_ChannelStop(Brake254_Channel[0]); BASS_StreamFree(Brake254_Channel[0]);
+          BASS_ChannelStop(Brake254_Channel_FX[0]); BASS_StreamFree(Brake254_Channel_FX[0]);
+          Brake254_Channel[0] := BASS_StreamCreateFile(FALSE, Brake254F, 0, 0, BASS_STREAM_DECODE);
+          Brake254_Channel_FX[0] := BASS_FX_TempoCreate(Brake254_Channel[0], BASS_FX_FREESOURCE);
+          //BASS_ChannelFlags(VentCycleTD_Channel_FX, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
+	  BASS_ChannelPlay(Brake254_Channel_FX[0], FALSE);
+          BASS_ChannelSetAttribute(Brake254_Channel_FX[0], BASS_ATTRIB_VOL, 0);
+          isPlayBrake254:=True; Inc(CameraX);
+       except end;
+    end;
+    if isPlayCycleBrake254=False then begin
+       try
+          BASS_ChannelStop(Brake254_Channel[1]); BASS_StreamFree(Brake254_Channel[1]);
+          BASS_ChannelStop(Brake254_Channel_FX[1]); BASS_StreamFree(Brake254_Channel_FX[1]);
+          Brake254_Channel[1] := BASS_StreamCreateFile(FALSE, CycleBrake254F, 0, 0, BASS_STREAM_DECODE);
+          Brake254_Channel_FX[1] := BASS_FX_TempoCreate(Brake254_Channel[1], BASS_FX_FREESOURCE);
+          BASS_ChannelFlags(Brake254_Channel_FX[1], BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
+          BASS_ChannelPlay(Brake254_Channel_FX[1], FALSE);
+          BASS_ChannelSetAttribute(Brake254_Channel_FX[1], BASS_ATTRIB_VOL, 0);
+          isPlayCycleBrake254:=True; Inc(CameraX);
        except end;
     end;
     // === ТРЕНИЕ КОЛОДОК === //
