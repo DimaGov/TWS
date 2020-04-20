@@ -38,6 +38,6 @@ var
 
 implementation
 
-{$R src/main/UnitAuthors.dfm}
+{$R *.dfm}
 
 end.

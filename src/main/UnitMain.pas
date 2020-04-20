@@ -2723,7 +2723,7 @@ begin
         PrevIndx := ComboBox2.ItemIndex;
         PrevParIndx := ComboBox1.ItemIndex;
         ComboBox2.Items.Clear;
-        ComboBox2.Items.Add('< Без ЭК >');
+        ComboBox2.Items.Add(Utf8ToAnsi('< Без ЭК >'));
         ComboBox2.Sorted := True;
         TempSc := TStringList.Create;
         if FindFirst('TWS/SAVPE_INFORMATOR/Info/'+ComboBox1.Items[ComboBox1.ItemIndex]+'/*.TWS',faAnyFile,sr)=0 then

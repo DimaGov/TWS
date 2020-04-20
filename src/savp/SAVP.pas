@@ -523,7 +523,7 @@ var
 begin
    PereezdZone := False;
               for I := 0 to ZvonObjectsCount do begin
-                 if (Abs(OrdinataEstimate-ZvonOrdinats[I]) <= 30) then begin
+                 if (Abs(OrdinataEstimate-ZvonOrdinats[I]) <= 30) And (ZvonOrdinats[I] <> 0) then begin
                     ZvonokVolume := (( exp(1 - Abs(OrdinataEstimate-ZvonOrdinats[I])/36) - 1 ) / 2) * FormMain.trcBarNatureVol.Position/100;
                     ZvonokVolumeDest := ZvonokVolume;
                     PereezdZone := True;

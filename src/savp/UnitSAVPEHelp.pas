@@ -21,6 +21,6 @@ var
 
 implementation
 
-{$R src/savp/UnitSAVPEHelp.dfm}
+{$R *.dfm}
 
 end.
