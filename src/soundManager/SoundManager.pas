@@ -90,6 +90,8 @@ var
   NatureChannel_FX:          Cardinal;
   ReduktorChannel:           Cardinal;
   ReduktorChannel_FX:        Cardinal;
+  VR242Channel:              Cardinal;
+  VR242Channel_FX:           Cardinal;
   // ИТОГО ДОРОЖЕК В СКРИПТЕ: 54
 
 
@@ -129,6 +131,7 @@ var
   ReduktorF:                   PChar;
   Brake254F:                   PChar;
   CycleBrake254F:              PChar;
+  VR242F:                      PChar;
   isPlaySAUTObjects:           Boolean; // Флаг для воспроизведения режима автоведения САУТ
   isPlaySAUTZvonok:            Boolean;
   isPlayRain:                  Boolean;
@@ -171,7 +174,7 @@ var
   isPlayReduktor:              Boolean = True;
   isPlayBrake254:              Boolean = True;
   isPlayCycleBrake254:         Boolean = True;
-  StopBrake254:                Boolean = True;
+  isPlayVR242:                 Boolean = True;
 
 implementation
 
@@ -1137,6 +1140,17 @@ begin
        BASS_ChannelPlay(NatureChannel_FX, False);
        BASS_ChannelSetAttribute(NatureChannel_FX, BASS_ATTRIB_VOL, 0);
        isPlayNature := False;
+    end;
+    // === === //
+    if isPlayVR242 = False then begin
+       BASS_ChannelStop(VR242Channel); BASS_StreamFree(VR242Channel);
+       BASS_ChannelStop(VR242Channel_FX); BASS_StreamFree(VR242Channel_FX);
+       VR242Channel := BASS_StreamCreateFile(FALSE, VR242F, 0, 0, BASS_STREAM_DECODE);
+       VR242Channel_FX := BASS_FX_TempoCreate(VR242Channel, BASS_FX_FREESOURCE);
+       //BASS_ChannelFlags(NatureChannel_FX, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
+       BASS_ChannelPlay(VR242Channel_FX, False);
+       BASS_ChannelSetAttribute(VR242Channel_FX, BASS_ATTRIB_VOL, 0);
+       isPlayVR242 := True;
     end;
     // === 3СЛ2м ЧАСЫ === //
     if isPlayClock=False then begin

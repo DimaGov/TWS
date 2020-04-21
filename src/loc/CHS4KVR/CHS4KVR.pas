@@ -2,7 +2,7 @@ unit CHS4KVR;
 
 interface
 
-uses KR21;
+uses KR21, KVT254, VR242;
 
 type chs4kvr_ = class (TObject)
     private
@@ -11,6 +11,10 @@ type chs4kvr_ = class (TObject)
       GRIncrementer: Byte;
 
       kr21__: kr21_;
+      kvt254__: kvt254_;
+      vr242__: vr242_;
+
+      faktGR: Double;
 
       procedure vent_step();
       procedure mk_step();
@@ -39,6 +43,8 @@ implementation
       soundDir := 'TWS\CHS4KVR\';
 
       kr21__ := kr21_.Create();
+      kvt254__ := kvt254_.Create();
+      vr242__ := vr242_.Create();
    end;
 
    // ----------------------------------------------------
@@ -49,6 +55,8 @@ implementation
       if FormMain.cbVspomMash.Checked = True then begin
          vent_step();
          mk_step();
+         //kvt254__.step();
+         vr242__.step();
       end;
 
       if FormMain.cbCabinClicks.Checked = True then begin
@@ -75,12 +83,16 @@ implementation
    // ----------------------------------------------------
    procedure CHS4KVR_.mk_step();
    begin
-      if GR > PrevGR then begin
-         GRIncrementer := 0;
+      Inc(GRIncrementer2);
+      if GRIncrementer2 > 10 then begin
+        faktGR := GR;
+        GRIncrementer2 := 0;
+
+              if faktGR > PrevGR then begin
          Compressor := 1;
       end else begin
-         Inc(GRIncrementer);
-         if GRIncrementer > 2 then Compressor := 0;
+         Compressor := 0;
+      end;
       end;
 
       if AnsiCompareStr(CompressorCycleF, '') <> 0 then begin
@@ -108,6 +120,8 @@ implementation
             isPlayCompressor := False; isPlayXCompressor := False;
          end;
       end;
+
+      PrevGR := faktGR;
    end;
 
    // ----------------------------------------------------
@@ -117,49 +131,49 @@ implementation
    begin
       if (Vent<>Prev_Vent) and (Vent=Prev_VentLocal) then begin
          VentTDVol := FormMain.trcBarVspomMahVol.Position / 100;
-         if (Vent=4113039) and (Prev_Vent=0) then begin // Запуск ВУ
+         if (Vent=4113039) and (Prev_Vent=0) then begin // Р—Р°РїСѓСЃРє Р’РЈ
             StopVent:=False; VentPitchDest:=0; isPlayVent:=False; isPlayVentX:=False; end;
-         if (Vent=4126146) and (Prev_Vent=0) then begin // Запуск ВУ и ТД (2-ая позиция)
+         if (Vent=4126146) and (Prev_Vent=0) then begin // Р—Р°РїСѓСЃРє Р’РЈ Рё РўР” (2-Р°СЏ РїРѕР·РёС†РёСЏ)
             StopVent:=False; isPlayVent:=False; isPlayVentX:=False; VentPitchDest:=-1.5;
             VentTDF       := StrNew(PChar(soundDir + 'ventTD-start.wav'));
             VentCycleTDF  := StrNew(PChar(soundDir + 'ventTD.wav'));
             XVentTDF      := StrNew(PChar(soundDir + 'x_ventTD-start.wav'));
             XVentCycleTDF := StrNew(PChar(soundDir + 'x_ventTD.wav'));
-            isPlayVentTD:=False;	// Звук в кабине
+            isPlayVentTD:=False;	// Р—РІСѓРє РІ РєР°Р±РёРЅРµ
             isPlayVentTDX:=False;
          end;
-         if (Vent=4050124) and (Prev_Vent=0) then begin // Запуск ТД (1->2 позиция)
+         if (Vent=4050124) and (Prev_Vent=0) then begin // Р—Р°РїСѓСЃРє РўР” (1->2 РїРѕР·РёС†РёСЏ)
             VentTDF       := StrNew(PChar(soundDir + 'ventTD-start.wav'));
             VentCycleTDF  := StrNew(PChar(soundDir + 'ventTD.wav'));
             XVentTDF      := StrNew(PChar(soundDir + 'x_ventTD-start.wav'));
             XVentCycleTDF := StrNew(PChar(soundDir + 'x_ventTD.wav'));
-            isPlayVentTD:=False;	// Звук в кабине
+            isPlayVentTD:=False;	// Р—РІСѓРє РІ РєР°Р±РёРЅРµ
             isPlayVentTDX:=False;
             if KM_Pos_1 >= 2 then VentPitchDest:=-1.5 else VentPitchDest:=0;
          end;
-         if Vent=0 then begin // ВЫКЛ
+         if Vent=0 then begin // Р’Р«РљР›
             if (BASS_ChannelIsActive(Vent_Channel_FX)<>0) or (BASS_ChannelIsActive(VentCycle_Channel_FX)<>0) then begin
                StopVent:=True; isPlayVent:=False; isPlayVentX:=False; VentPitchDest:=0;
             end;
             if (BASS_ChannelIsActive(VentTD_Channel)<>0) or (BASS_ChannelIsActive(VentCycleTD_Channel)<>0) then begin
                VentTDF  := StrNew(PChar(soundDir + 'ventTD-stop.wav'));
-               VentCycleTDF:=PChar(''); isPlayVentTD:=False;	// Звук в кабине
+               VentCycleTDF:=PChar(''); isPlayVentTD:=False;	// Р—РІСѓРє РІ РєР°Р±РёРЅРµ
                XVentTDF := StrNew(PChar(soundDir + 'x_ventTD-stop.wav'));
                XVentCycleTDF:=PChar(''); isPlayVentTDX:=False; end;
             end;
-         if (Vent=4113039) and (Prev_Vent=4126146) then begin // Остановка ТД
+         if (Vent=4113039) and (Prev_Vent=4126146) then begin // РћСЃС‚Р°РЅРѕРІРєР° РўР”
             VentTDF  := StrNew(PChar(soundDir + 'ventTD-stop.wav'));
-            VentCycleTDF:=PChar(''); isPlayVentTD:=False;    // Звук в кабине
+            VentCycleTDF:=PChar(''); isPlayVentTD:=False;    // Р—РІСѓРє РІ РєР°Р±РёРЅРµ
             XVentTDF := StrNew(PChar(soundDir + 'x_ventTD-stop.wav'));
             XVentCycleTDF:=PChar(''); isPlayVentTDX:=False; end;
-         if (Vent=4113039) and (Prev_Vent=4050124) then begin // Запуск ВУ, остановка ТД
+         if (Vent=4113039) and (Prev_Vent=4050124) then begin // Р—Р°РїСѓСЃРє Р’РЈ, РѕСЃС‚Р°РЅРѕРІРєР° РўР”
             StopVent:=False; isPlayVent:=False; isPlayVentX:=False; VentPitchDest:=0;
             VentTDF  := StrNew(PChar(soundDir + 'ventTD-stop.wav'));
             VentCycleTDF:=PChar(''); isPlayVentTD:=False;
             XVentTDF := StrNew(PChar(soundDir + 'x_ventTD-stop.wav'));
             XVentCycleTDF:=PChar(''); isPlayVentTDX:=False;
          end;
-         if (Vent=4126146) and (Prev_Vent=4113039) then begin // Запуск ТД, после запуска ВУ
+         if (Vent=4126146) and (Prev_Vent=4113039) then begin // Р—Р°РїСѓСЃРє РўР”, РїРѕСЃР»Рµ Р·Р°РїСѓСЃРєР° Р’РЈ
             VentTDF       := StrNew(PChar(soundDir + 'ventTD-start.wav'));
             VentCycleTDF  := StrNew(PChar(soundDir + 'ventTD.wav'));
             XVentTDF      := StrNew(PChar(soundDir + 'x_ventTD-start.wav'));
@@ -168,10 +182,10 @@ implementation
             isPlayVentTDX:=False;
             VentPitchDest:=-1.5;
          end;
-         if (Vent=4126146) and (Prev_Vent=4050124) then begin // Запуск ВУ (2-ая позиция)
+         if (Vent=4126146) and (Prev_Vent=4050124) then begin // Р—Р°РїСѓСЃРє Р’РЈ (2-Р°СЏ РїРѕР·РёС†РёСЏ)
             StopVent:=False; VentPitchDest:=-1.5; isPlayVent:=False; isPlayVentX:=False;
          end;
-         if (Vent=4050124) and (Prev_Vent=4113039) then begin // Остановка ВУ, запуск ТД
+         if (Vent=4050124) and (Prev_Vent=4113039) then begin // РћСЃС‚Р°РЅРѕРІРєР° Р’РЈ, Р·Р°РїСѓСЃРє РўР”
             StopVent:=True; ventPitchDest:=0; isPlayVent:=False; isPlayVentX:=False;
             VentTDF       := StrNew(PChar(soundDir + 'ventTD-start.wav'));
             VentCycleTDF  := StrNew(PChar(soundDir + 'ventTD.wav'));
@@ -180,7 +194,7 @@ implementation
             isPlayVentTD:=False;
             isPlayVentTDX:=False;
          end;
-         if (Vent=4050124) and (Prev_Vent=4126146) then begin // Остановка ВУ
+         if (Vent=4050124) and (Prev_Vent=4126146) then begin // РћСЃС‚Р°РЅРѕРІРєР° Р’РЈ
             StopVent:=True; VentPitchDest:=0; isPlayVent:=False; isPlayVentX:=False;
          end;
       end;

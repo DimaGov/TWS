@@ -149,6 +149,7 @@ var
    ADDR_CHS8_UNIPULS_AVARIA:                Pointer;
    ADDR_PNEVM_SIGNAL:                       Pointer;
    ADDR_PNEVM:                              PByte;
+   ADDR_VR242:                              Pointer;
 
    CHS8VentVolumePrev:                      Single;
    CHS8VentTempCounter:                     Byte;
@@ -431,11 +432,12 @@ begin
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4KVR_BTP, @BackTP, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4KVR_REVERSOR, @ReversorPos, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_KVR_VENTS, @Vent, 4, temp); except end;
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_VR242, @VR242, 4, temp); except end;
 
     tpByte := ADDR_PNEVM;
     //Inc(tpByte, 40);
     try ReadProcessMemory(UnitMain.pHandle, tpByte, @GR, 8, temp); except end;
-    GR := RoundTo(GR, -3);
+    GR := RoundTo(GR, -2);
     Inc(tpByte, 40);
     try ReadProcessMemory(UnitMain.pHandle, tpByte, @TC, 8, temp); except end;
 end;
@@ -727,7 +729,7 @@ begin
           ADDR_ED4M_KONTROLLER:=ptr($091D5B04); ADDR_VL11m_VENT:=    ptr($091D5C25); ADDR_ORDINATA   :=   ptr($00803F50);
           ADDR_OUTSIDE_LOCO_STATUS:=ptr($00749865);ADDR_CHS8_VENT_VOLUME:=ptr($091D48BC); ADDR_CHS8_VENT_VOLUME_INCREMENTER:=ptr($091D48CC);
           ADDR_2ES5K_BV :=ptr($091D48CC); ADDR_CHS8_UNIPULS_AVARIA:= ptr($091D5024); ADDR_CHS8_GV_1  :=   ptr($09007FB4);
-          ADDR_PNEVM_SIGNAL:=ptr($0538D8D4);
+          ADDR_VR242    :=ptr($0911080C); ADDR_PNEVM_SIGNAL   :=     ptr($0538D8D4);
        end;
        if versionID = 1 then begin
           ADDR_Speed :=   ptr($0072CB38);       ADDR_Track    :=     ptr($0072CBFC); ADDR_KM_POS     :=   ptr($090F3F9C);

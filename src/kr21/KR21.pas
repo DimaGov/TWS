@@ -6,7 +6,7 @@ type kr21_ = class (TObject)
     private
       soundDir: String;
 
-      // Переменные для контроллера KR21
+      // РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РєРѕРЅС‚СЂРѕР»Р»РµСЂР° KR21
       prevKeyA: Byte;
       prevKeyD: Byte;
       prevKeyQ: Byte;
@@ -28,7 +28,7 @@ implementation
    uses UnitMain, soundManager, Windows, SysUtils;
 
    // ----------------------------------------------------
-   // Конструктор 21KR
+   // РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ 21KR
    // ----------------------------------------------------
    constructor KR21_.Create;
    begin
@@ -36,7 +36,7 @@ implementation
    end;
 
    // ----------------------------------------------------
-   // Цикл 21KR
+   // Р¦РёРєР» 21KR
    // ----------------------------------------------------
    procedure KR21_.step();
    begin
@@ -51,7 +51,7 @@ implementation
             PrevKeyA := 1;
          end;
 
-         // -/- A [РћРўРџ] -/- //
+         // -/- A [Р С›Р СћР Сџ] -/- //
          if (getasynckeystate(65) = 0) and (PrevKeyA <> 0) then begin
             if KMPrevKey <> 'E' then begin
                CabinClicksF := StrNew(PChar(soundDir + '21KR_+_0.wav'));
@@ -70,7 +70,7 @@ implementation
             PrevKeyD := 1;
          end;
 
-         // -/- D [РћРўРџ] -/- //
+         // -/- D [Р С›Р СћР Сџ] -/- //
          if (getasynckeystate(68) = 0) and (PrevKeyD <> 0) then begin
             if KMPrevKey <> 'E' then begin
                CabinClicksF := StrNew(PChar(soundDir + '21KR_-_0.wav'));
@@ -97,7 +97,7 @@ implementation
             PrevKeyQ := 1;
          end;
 
-         // -/- Q [РћРўРџ] -/- //
+         // -/- Q [Р С›Р СћР Сџ] -/- //
          if (getasynckeystate(81) = 0) and (PrevKeyQ <> 0) then begin
             if KMPrevKey <> 'E' then begin
                CabinClicksF := StrNew(PChar(soundDir + '21KR_+A_0.wav'));
