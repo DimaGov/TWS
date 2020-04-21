@@ -90,7 +90,7 @@ MaxStackSize=1048576
 ImageBase=4194304
 ExeDescription=
 [Directories]
-OutputDir=
+OutputDir=E:\Games\zdsimulator55.008
 UnitOutputDir=
 PackageDLLOutputDir=
 PackageDCPOutputDir=

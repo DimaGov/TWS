@@ -415,6 +415,7 @@ begin
     tpByte := ADDR_PNEVM;
     //Inc(tpByte, 40);
     try ReadProcessMemory(UnitMain.pHandle, tpByte, @GR, 8, temp); except end;
+    GR := RoundTo(GR, -3);
     Inc(tpByte, 40);
     try ReadProcessMemory(UnitMain.pHandle, tpByte, @TC, 8, temp); except end;
 end;
@@ -434,6 +435,7 @@ begin
     tpByte := ADDR_PNEVM;
     //Inc(tpByte, 40);
     try ReadProcessMemory(UnitMain.pHandle, tpByte, @GR, 8, temp); except end;
+    GR := RoundTo(GR, -3);
     Inc(tpByte, 40);
     try ReadProcessMemory(UnitMain.pHandle, tpByte, @TC, 8, temp); except end;
 end;

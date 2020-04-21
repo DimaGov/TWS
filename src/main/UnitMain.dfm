@@ -182,6 +182,13 @@ object FormMain: TFormMain
     Font.Style = [fsBold]
     ParentFont = False
   end
+  object Label1: TLabel
+    Left = 280
+    Top = 448
+    Width = 31
+    Height = 13
+    Caption = 'Label1'
+  end
   object groupBoxSAVPEbox: TGroupBox
     Left = 0
     Top = 1

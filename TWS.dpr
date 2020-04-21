@@ -18,7 +18,16 @@ uses
   UnitSoundRRS in 'src\rrs\UnitSoundRRS.pas',
   CHS8 in 'src\loc\CHS8\CHS8.pas',
   Bass in 'src\bass\BASS.pas',
-  bass_fx in 'src\bass\bass_fx.pas';
+  bass_fx in 'src\bass\bass_fx.pas',
+  CHS4KVR in 'src\loc\CHS4KVR\CHS4KVR.pas',
+  KR21 in 'src\kr21\KR21.pas',
+  CHS7 in 'src\loc\CHS7\CHS7.pas',
+  CHS4T in 'src\loc\CHS4T\CHS4T.pas',
+  VL80T in 'src\loc\VL80T\VL80T.pas',
+  EP1M in 'src\loc\EP1M\EP1M.pas',
+  ES5K in 'src\loc\2ES5K\ES5K.pas',
+  ED4M in 'src\loc\ED4M\ED4M.pas',
+  ED9M in 'src\loc\ED9M\ED9M.pas';
 
 {$R *.res}
 

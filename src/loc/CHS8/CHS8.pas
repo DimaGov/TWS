@@ -2,6 +2,8 @@ unit CHS8;
 
 interface
 
+   uses KR21;
+
    type chs8_ = class (TObject)
     private
       soundDir: String;
@@ -14,8 +16,19 @@ interface
       prevKeyE: Byte;
       KMPrevKey: String;
 
+      VentStarted: Boolean;
+
       // Переменные для корректной работы унипульса //
       isLaunchedUnipuls:           Boolean; // Запущен ли унипульс?
+
+      kr21__: kr21_;
+
+      procedure np22_step();
+      procedure unipuls_step();
+      procedure bv_step();
+      procedure vent_step();
+      procedure mk_step();
+      procedure em_latch_step();
     protected
 
     public
@@ -28,9 +41,7 @@ interface
       UnipulsTargetPos:            Byte;
       UnipulsVol1:                 Integer;
 
-      procedure kr21_step();
-      procedure np22_step();
-      procedure unipuls_step();
+      procedure step();
 
     published
 
@@ -40,7 +51,7 @@ interface
 
 implementation
 
-uses UnitMain, SoundManager, Windows, Bass, SysUtils;
+uses UnitMain, SoundManager, Windows, Bass, SysUtils, Math;
 
    // ----------------------------------------------------
    // Конструктор класса ЧС8
@@ -49,81 +60,29 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils;
    begin
       soundDir := 'TWS\CHS8\';
       unipulsDir := soundDir + 'Unipuls\';
+
+      kr21__ := kr21_.Create();
    end;
 
    // ----------------------------------------------------
-   // Контроллер 21KR
+   // 
    // ----------------------------------------------------
-   procedure chs8_.kr21_step();
+   procedure CHS8_.step();
    begin
-      if KM_OP + getasynckeystate(16) = 0 then begin
-         // -/- A -/- //
-         if (getasynckeystate(65) <> 0) and (PrevKeyA = 0) then begin
-            if KMPrevKey <> 'E' then
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_0_+.wav'))
-            else
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_-A_0.wav'));
-            isPlayCabinClicks := False;
-            PrevKeyA := 1;
-         end;
-
-         // -/- A [ОТП] -/- //
-         if (getasynckeystate(65) = 0) and (PrevKeyA <> 0) then begin
-            if KMPrevKey <> 'E' then begin
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_+_0.wav'));
-               isPlayCabinClicks := False;
-            end;
-            KMPrevKey := 'A';
-         end;
-
-         // -/- D -/- //
-         if (getasynckeystate(68) <> 0) and (PrevKeyD = 0) then begin
-            if KMPrevKey<>'E' then
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_0_-.wav'))
-            else
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_-A_0.wav'));
-            isPlayCabinClicks := False;
-            PrevKeyD := 1;
-         end;
-
-         // -/- D [ОТП] -/- //
-         if (getasynckeystate(68) = 0) and (PrevKeyD <> 0) then begin
-            if KMPrevKey <> 'E' then begin
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_-_0.wav'));
-               isPlayCabinClicks := False;
-            end;
-            KMPrevKey := 'D';
-         end;
-
-         // -/- E -/- //
-         if (getasynckeystate(69) <> 0) and (PrevKeyE = 0) then begin
-            if KMPrevKey <> 'E' then
-               SoundManager.CabinClicksF := StrNew(PChar(soundDir + '21KR_0_-A.wav'));
-            isPlayCabinClicks := False;
-            PrevKeyE := 1; KMPrevKey := 'E';
-         end;
-
-         // -/- Q -/- //
-         if (getasynckeystate(81) <> 0) and (PrevKeyQ = 0) then begin
-            if KMPrevKey<>'E' then
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_0_+A.wav'))
-            else
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_-A_0.wav'));
-            isPlayCabinClicks := False;
-            PrevKeyQ := 1;
-         end;
-
-         // -/- Q [ОТП] -/- //
-         if (getasynckeystate(81) = 0) and (PrevKeyQ <> 0) then begin
-            if KMPrevKey <> 'E' then begin
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_+A_0.wav'));
-               isPlayCabinClicks := False;
-            end;
-            KMPrevKey := 'Q';
-         end;
+      if FormMain.cbCabinClicks.Checked = True then begin
+         kr21__.step();
+         em_latch_step();
       end;
-      if getasynckeystate(65)=0 then PrevKeyA := 0; if getasynckeystate(68)=0 then PrevKeyD := 0;
-      if getasynckeystate(69)=0 then PrevKeyE := 0; if getasynckeystate(81)=0 then PrevKeyQ := 0;
+
+      if FormMain.cbVspomMash.Checked = True then begin
+         np22_step();
+         bv_step();
+         mk_step();
+         vent_step();
+
+         if Vent <> 5 then
+            unipuls_step();
+      end;
    end;
 
    // ----------------------------------------------------
@@ -181,6 +140,98 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils;
             CabinClicksF := StrNew(PChar(soundDir + '21KR_vivod_op.wav'));
          isPlayCabinClicks := False;
       end;
+   end;
+
+   // ----------------------------------------------------
+   //
+   // ----------------------------------------------------
+   procedure CHS8_.bv_step();
+   begin
+      // ГВ на ЧС8
+      if (BV<>0) and (PrevBV=0) then begin
+         if (LocoNum > 2) And (LocoNum < 33) then
+            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'E1/gv_on.wav'))
+         else
+            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'E2/gv_on.wav'));
+         isPlayLocoPowerEquipment := False;
+      end;
+      if (BV=0) and (PrevBV<>0) then begin
+         if (LocoNum > 2) And (LocoNum < 33) then
+            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'E1/gv_off.wav'))
+         else
+            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'E2/gv_off.wav'));
+         isPlayLocoPowerEquipment := False;
+      end;
+   end;
+
+   // ----------------------------------------------------
+   //
+   // ----------------------------------------------------
+   procedure CHS8_.mk_step();
+   begin
+      if AnsiCompareStr(CompressorCycleF, '') <> 0 then begin
+          if (GetChannelRemaindPlayTime2Sec(Compressor_Channel) <= 0.8) and
+             (BASS_ChannelIsActive(CompressorCycleChannel)=0)
+          then isPlayCompressorCycle:=False;
+      end;
+      if AnsiCompareStr(XCompressorCycleF, '')<> 0 then begin
+          if (GetChannelRemaindPlayTime2Sec(XCompressor_Channel) <= 0.8) and
+             (BASS_ChannelIsActive(XCompressorCycleChannel)=0)
+          then isPlayXCompressorCycle:=False;
+      end;
+
+      if Compressor<>Prev_Compressor then begin
+         if Compressor<>0 then begin
+            CompressorF       := StrNew(PChar(soundDir + 'mk-start.wav'));
+            CompressorCycleF  := StrNew(PChar(soundDir + 'mk-loop.wav'));
+            XCompressorF      := StrNew(PChar(soundDir + 'x_mk-start.wav'));
+            XCompressorCycleF := StrNew(PChar(soundDir + 'x_mk-loop.wav'));
+            isPlayCompressor := False; isPlayXCompressor := False;
+         end else begin
+            CompressorF  := StrNew(PChar(soundDir + 'mk-stop.wav'));
+            XCompressorF := StrNew(PChar(soundDir + 'x_mk-stop.wav'));
+            CompressorCycleF := PChar(''); XCompressorCycleF := PChar('');
+            isPlayCompressor := False; isPlayXCompressor := False;
+         end;
+      end;
+   end;
+
+   // ----------------------------------------------------
+   //
+   // ----------------------------------------------------
+   procedure CHS8_.em_latch_step();
+   begin
+      if ((Prev_KMAbs=0) and (KM_Pos_1>0)) or ((KM_Pos_1=0) and (Prev_KMAbs>0)) then begin
+         IMRZashelka:=PChar('TWS/EM_zashelka.wav'); isPlayIMRZachelka:=False;
+      end;
+      if PrevReostat + Reostat = 1 then begin
+         IMRZashelka:=PChar('TWS/EM_zashelka.wav'); isPlayIMRZachelka:=False;
+      end;
+   end;
+
+   // ----------------------------------------------------
+   //
+   // ----------------------------------------------------
+   procedure CHS8_.vent_step();
+   begin
+      if VentStarted = False then begin
+         VentTDF := StrNew(PChar(soundDir + 'vent.wav')); VentCycleTDF := StrNew(PChar(soundDir + 'vent.wav'));
+         XVentTDF := StrNew(PChar(soundDir + 'x_vent.wav'));XVentCycleTDF:=StrNew(PChar(soundDir + 'x_vent.wav'));
+         isPlayVentTD := False; isPlayVentTDX := False; StopVentTD:=False; VentStarted := True;
+      end;
+
+      if Vent = 5 then begin VentTDPitchDest := 0; end;
+      if Vent = 4 then begin VentTDPitchDest := 0; end;
+      if Vent = 3 then begin VentTDPitchDest := -7; end;
+      if Vent = 2 then begin VentTDPitchDest := -15; end;
+      if Vent = 1 then begin
+         if TEDAmperage>0 then VentTDPitchDest := power(TEDAmperage * 200 / UltimateTEDAmperage,0.6) - 20;
+         if EDTAmperage>0 then VentTDPitchDest := power(EDTAmperage * 200 / UltimateTEDAmperage,0.6) - 20;
+      end;
+      if Vent = 0 then begin VentTDPitchDest := -20; end;
+      VentTDVolDest := power((VentTDPitch+20)/20, 0.5) * (FormMain.trcBarVspomMahVol.Position/100);
+      if VentTDVol > VentTDVolDest then VentTDVol := VentTDVol - 0.001 * MainCycleFreq;
+      if VentTDVol < VentTDVolDest then VentTDVol := VentTDVol + 0.001 * MainCycleFreq;
    end;
 
    // ----------------------------------------------------

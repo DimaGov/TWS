@@ -23,6 +23,7 @@ uses Classes;
                            var ChannelName: Cardinal;
                            var ResPotok: TMemoryStream;
                            var PlayResFlag: Boolean); external 'dg2020.dll';
+   function GetChannelRemaindPlayTime2Sec(var chan: Cardinal) : double;
 
 var
   LocoChannel:               array[0..1] of Cardinal;	   // Каналы перестука тележек локомотива (Шум)
@@ -208,6 +209,14 @@ procedure PlayXCompressorIsEnd(vHandle, vStream, vData: Cardinal; vUser: Pointer
 begin
 	if BASS_ChannelIsActive(XCompressorCycleChannel) = 0 then
            isPlayXCompressorCycle := False;
+end;
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+function GetChannelRemaindPlayTime2Sec(var chan: Cardinal) : double;
+begin
+   Result := BASS_ChannelBytes2Seconds(chan, BASS_ChannelGetLength(chan, BASS_POS_BYTE) - BASS_ChannelGetPosition(chan, BASS_POS_BYTE));
 end;
 
 procedure TWS_MVPitchRegulation();
@@ -1045,11 +1054,13 @@ begin
        try
           BASS_ChannelStop(Brake254_Channel[0]); BASS_StreamFree(Brake254_Channel[0]);
           BASS_ChannelStop(Brake254_Channel_FX[0]); BASS_StreamFree(Brake254_Channel_FX[0]);
+          BASS_ChannelStop(Brake254_Channel[1]); BASS_StreamFree(Brake254_Channel[1]);
+          BASS_ChannelStop(Brake254_Channel_FX[1]); BASS_StreamFree(Brake254_Channel_FX[1]);
           Brake254_Channel[0] := BASS_StreamCreateFile(FALSE, Brake254F, 0, 0, BASS_STREAM_DECODE);
           Brake254_Channel_FX[0] := BASS_FX_TempoCreate(Brake254_Channel[0], BASS_FX_FREESOURCE);
           //BASS_ChannelFlags(VentCycleTD_Channel_FX, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
 	  BASS_ChannelPlay(Brake254_Channel_FX[0], FALSE);
-          BASS_ChannelSetAttribute(Brake254_Channel_FX[0], BASS_ATTRIB_VOL, 0);
+          BASS_ChannelSetAttribute(Brake254_Channel_FX[0], BASS_ATTRIB_VOL, 0.3);
           isPlayBrake254:=True; Inc(CameraX);
        except end;
     end;
@@ -1061,8 +1072,10 @@ begin
           Brake254_Channel_FX[1] := BASS_FX_TempoCreate(Brake254_Channel[1], BASS_FX_FREESOURCE);
           BASS_ChannelFlags(Brake254_Channel_FX[1], BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
           BASS_ChannelPlay(Brake254_Channel_FX[1], FALSE);
-          BASS_ChannelSetAttribute(Brake254_Channel_FX[1], BASS_ATTRIB_VOL, 0);
+          BASS_ChannelSetAttribute(Brake254_Channel_FX[1], BASS_ATTRIB_VOL, 0.3);
           isPlayCycleBrake254:=True; Inc(CameraX);
+          BASS_ChannelStop(Brake254_Channel[0]); BASS_StreamFree(Brake254_Channel[0]);
+          BASS_ChannelStop(Brake254_Channel_FX[0]); BASS_StreamFree(Brake254_Channel_FX[0]);
        except end;
     end;
     // === ТРЕНИЕ КОЛОДОК === //

@@ -32,6 +32,13 @@ object FormDebug: TFormDebug
     Height = 13
     Caption = #1057#1077#1082#1094#1080#1103' TWS-EK '#1074' '#1089#1094#1077#1085#1072#1088#1080#1080
   end
+  object Label94: TLabel
+    Left = 680
+    Top = 648
+    Width = 38
+    Height = 13
+    Caption = 'Label94'
+  end
   object Panel3: TPanel
     Tag = 1
     Left = 352

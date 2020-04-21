@@ -158,6 +158,7 @@ type
     Memo2: TMemo;
     Label93: TLabel;
     Memo3: TMemo;
+    Label94: TLabel;
     procedure Timer1Timer(Sender: TObject);
     procedure ListView1ColumnClick(Sender: TObject; Column: TListColumn);
     procedure FormCreate(Sender: TObject);
@@ -308,6 +309,7 @@ begin
            AddNewLineToDebugger('ReduktorPitch', ReduktorPitch, 'TWS переменная');
            AddNewLineToDebugger('GR', GR, 'ZDS переменная');
            AddNewLineToDebugger('TC', TC, 'ZDS переменная');
+           AddNewLineToDebugger('TC2', Abs(TC - PrevTC)*400000, 'ZDS переменная');
         end;
 end;
 
@@ -317,6 +319,7 @@ var
         ListItem: TListItem;
 begin
 	try
+        Label94.Caption := floatToStr(Abs(TC - PrevTC) * 4000);
         With FormMain do begin
         for I:=0 to ListView1.Items.Count do begin
            ListItem := ListView1.Items[I];
@@ -406,6 +409,7 @@ begin
               76: ListItem.SubItems[3] := FloatToStr(ReduktorPitch);
               77: ListItem.SubItems[3] := FloatToStr(GR);
               78: ListItem.SubItems[3] := FloatToStr(TC);
+              79: ListItem.SubItems[3] := FloatToStr(Abs(TC - PrevTC)*400000);
            end;
         end;
         end;
