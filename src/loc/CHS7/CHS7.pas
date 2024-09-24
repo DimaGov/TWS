@@ -17,6 +17,7 @@ type chs7_ = class (TObject)
       procedure mk_step();
       procedure vent_step();
       procedure em_latch_step();
+      procedure pbk_step();
     protected
 
     public
@@ -40,7 +41,7 @@ implementation
    begin
       soundDir := 'TWS\CHS7\';
 
-      kr21__ := kr21_.Create();
+      kr21__ := kr21_.Create('TWS\Devices\21KR\');
    end;
 
    // ----------------------------------------------------
@@ -53,6 +54,8 @@ implementation
          zhaluzi_step();
          vent_PTR_step();
          mk_step();
+         vent_step();
+         pbk_step();
       end;
 
       if FormMain.cbCabinClicks.Checked = True then begin
@@ -62,16 +65,34 @@ implementation
       end;
    end;
 
+   procedure CHS7_.pbk_step();
+   begin
+      if KM_Pos_1 > Prev_KMAbs then begin
+         if KM_Pos_1 mod 2 = 0 then
+            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'PBK_+_2.wav'))
+         else
+            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'PBK_+_1.wav'));
+         isPlayLocoPowerEquipment := False;
+      end;
+      if KM_Pos_1 < Prev_KMAbs then begin
+         if KM_Pos_1 mod 2 = 0 then
+            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'PBK_-_2.wav'))
+         else
+            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'PBK_-_1.wav'));
+         isPlayLocoPowerEquipment := False;
+      end;
+   end;
+
    // ----------------------------------------------------
    //
    // ----------------------------------------------------
    procedure CHS7_.em_latch_step();
    begin
-      if ((Prev_KMAbs=0) and (KM_Pos_1>0)) or ((KM_Pos_1=0) and (Prev_KMAbs>0)) then begin
-         IMRZashelka:=PChar('TWS/EM_zashelka.wav'); isPlayIMRZachelka:=False;
+      if ((Prev_KMAbs=0) and (KM_Pos_1>0)) or ((KM_Pos_1>0) and (Prev_KMAbs=0)) then begin
+         IMRZashelka:=PChar('TWS\Devices\21KR\EM_zashelka_ON.wav'); isPlayIMRZachelka:=False;
       end;
-      if PrevReostat + Reostat = 1 then begin
-         IMRZashelka:=PChar('TWS/EM_zashelka.wav'); isPlayIMRZachelka:=False;
+      if ((Prev_KMAbs>0) and (KM_Pos_1=0)) or ((KM_Pos_1=0) and (Prev_KMAbs>0)) then begin
+         IMRZashelka:=PChar('TWS\Devices\21KR\EM_zashelka_OFF.wav'); isPlayIMRZachelka:=False;
       end;
    end;
 
@@ -82,6 +103,8 @@ implementation
    var
       I: Integer;
    begin
+      VentTDRemaindTimeCheck();
+
       VentTDVol := power((TEDAmperage/UltimateTEDAmperage*1.2), 0.5) * (FormMain.trcBarVspomMahVol.Position/100);
       VentTDPitch := -7 + TEDAmperage * 10 / UltimateTEDAmperage;
 
@@ -134,25 +157,25 @@ implementation
    begin
       // Жалюзи на ЧС7 (открытие)
       if (Zhaluzi<>0) and (PrevZhaluzi=0) then begin
-         if isCameraInCabin=True then begin
-            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'zhalusi_on.wav'));
+         if isCameraInCabin then begin
+            ZhalusiF := StrNew(PChar(soundDir + 'zhalusi_on.wav'))
          end else begin
             if (Camera<>2) or (CoupleStat=0) then begin
-               LocoPowerEquipmentF := StrNew(PChar(soundDir + 'x_zhalusi_on.wav'));
+               ZhalusiF := StrNew(PChar(soundDir + 'x_zhalusi_on.wav'));
             end;
          end;
-         isPlayLocoPowerEquipment := False;
+         isPlayZhalusi := False;
       end;
       // Жалюзи на ЧС7 (закрытие)
       if (Zhaluzi=0) and (PrevZhaluzi<>0) then begin
          if isCameraInCabin=True then begin
-            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'zhalusi_off.wav'));
+            ZhalusiF := StrNew(PChar(soundDir + 'zhalusi_off.wav'));
          end else begin
             if (Camera<>2) or (CoupleStat=0) then begin
-               LocoPowerEquipmentF := StrNew(PChar(soundDir + 'x_zhalusi_off.wav'));
+               ZhalusiF := StrNew(PChar(soundDir + 'x_zhalusi_off.wav'));
             end;
          end;
-         isPlayLocoPowerEquipment := False;
+         isPlayZhalusi:= False;
       end;
    end;
 
@@ -173,16 +196,7 @@ implementation
    // ----------------------------------------------------
    procedure CHS7_.mk_step();
    begin
-      if AnsiCompareStr(CompressorCycleF, '') <> 0 then begin
-          if (GetChannelRemaindPlayTime2Sec(Compressor_Channel) <= 0.8) and
-             (BASS_ChannelIsActive(CompressorCycleChannel)=0)
-          then isPlayCompressorCycle:=False;
-      end;
-      if AnsiCompareStr(XCompressorCycleF, '')<> 0 then begin
-          if (GetChannelRemaindPlayTime2Sec(XCompressor_Channel) <= 0.8) and
-             (BASS_ChannelIsActive(XCompressorCycleChannel)=0)
-          then isPlayXCompressorCycle:=False;
-      end;
+      ComprRemaindTimeCheck();
 
       if Compressor<>Prev_Compressor then begin
          if Compressor<>0 then begin
@@ -205,7 +219,22 @@ implementation
    // ----------------------------------------------------
    procedure CHS7_.vent_step();
    begin
-      ;
+      VentRemaindTimeCheck();
+
+      if (Vent<>0) and (Prev_Vent=0) then begin
+         if (BASS_ChannelIsActive(Vent_Channel_FX)<>0) and (StopVent = True) then begin
+            BASS_ChannelStop(Vent_Channel_FX); BASS_StreamFree(Vent_Channel_FX);
+            BASS_ChannelStop(XVent_Channel_FX); BASS_StreamFree(XVent_Channel_FX);
+            isPlayCycleVent := False; isPlayCycleVentX := False;
+         end;
+         if Vent = 255 then VentPitchDest := 3 else VentPitchDest := 0;
+         StopVent:=False;
+         isPlayVent:=False; isPlayVentX:=False;
+      end;
+      if (Vent=0) and (Prev_Vent<>0) then begin
+         StopVent:=True;
+         isPlayVent:=False; isPlayVentX:=False; VentPitchDest := 0;
+      end;
    end;
 
 end.

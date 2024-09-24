@@ -19,7 +19,7 @@ type kr21_ = class (TObject)
 
     published
 
-    constructor Create;
+    constructor Create(soundDir_: String);
 
    end;
 
@@ -30,9 +30,9 @@ implementation
    // ----------------------------------------------------
    // Конструктор 21KR
    // ----------------------------------------------------
-   constructor KR21_.Create;
+   constructor KR21_.Create(soundDir_: String);
    begin
-      soundDir := 'TWS\Devices\21KR\';
+      soundDir := soundDir_;
    end;
 
    // ----------------------------------------------------
@@ -44,9 +44,9 @@ implementation
          // -/- A -/- //
          if (getasynckeystate(65) <> 0) and (PrevKeyA = 0) then begin
             if KMPrevKey <> 'E' then
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_0_+.wav'))
+               CabinClicksF := StrNew(PChar(soundDir + '0_+1.wav'))
             else
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_-A_0.wav'));
+               CabinClicksF := StrNew(PChar(soundDir + '-A_0.wav'));
             isPlayCabinClicks := False;
             PrevKeyA := 1;
          end;
@@ -54,7 +54,7 @@ implementation
          // -/- A [РћРўРџ] -/- //
          if (getasynckeystate(65) = 0) and (PrevKeyA <> 0) then begin
             if KMPrevKey <> 'E' then begin
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_+_0.wav'));
+               CabinClicksF := StrNew(PChar(soundDir + '+1_0.wav'));
                isPlayCabinClicks := False;
             end;
             KMPrevKey := 'A';
@@ -63,9 +63,9 @@ implementation
          // -/- D -/- //
          if (getasynckeystate(68) <> 0) and (PrevKeyD = 0) then begin
             if KMPrevKey<>'E' then
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_0_-.wav'))
+               CabinClicksF := StrNew(PChar(soundDir + '0_-1.wav'))
             else
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_-A_0.wav'));
+               CabinClicksF := StrNew(PChar(soundDir + '-A_0.wav'));
             isPlayCabinClicks := False;
             PrevKeyD := 1;
          end;
@@ -73,7 +73,7 @@ implementation
          // -/- D [РћРўРџ] -/- //
          if (getasynckeystate(68) = 0) and (PrevKeyD <> 0) then begin
             if KMPrevKey <> 'E' then begin
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_-_0.wav'));
+               CabinClicksF := StrNew(PChar(soundDir + '-1_0.wav'));
                isPlayCabinClicks := False;
             end;
             KMPrevKey := 'D';
@@ -82,7 +82,7 @@ implementation
          // -/- E -/- //
          if (getasynckeystate(69) <> 0) and (PrevKeyE = 0) then begin
             if KMPrevKey <> 'E' then
-               SoundManager.CabinClicksF := StrNew(PChar(soundDir + '21KR_0_-A.wav'));
+               SoundManager.CabinClicksF := StrNew(PChar(soundDir + '0_-A.wav'));
             isPlayCabinClicks := False;
             PrevKeyE := 1; KMPrevKey := 'E';
          end;
@@ -90,9 +90,9 @@ implementation
          // -/- Q -/- //
          if (getasynckeystate(81) <> 0) and (PrevKeyQ = 0) then begin
             if KMPrevKey<>'E' then
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_0_+A.wav'))
+               CabinClicksF := StrNew(PChar(soundDir + '0_+A.wav'))
             else
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_-A_0.wav'));
+               CabinClicksF := StrNew(PChar(soundDir + '-A_0.wav'));
             isPlayCabinClicks := False;
             PrevKeyQ := 1;
          end;
@@ -100,12 +100,60 @@ implementation
          // -/- Q [РћРўРџ] -/- //
          if (getasynckeystate(81) = 0) and (PrevKeyQ <> 0) then begin
             if KMPrevKey <> 'E' then begin
-               CabinClicksF := StrNew(PChar(soundDir + '21KR_+A_0.wav'));
+               CabinClicksF := StrNew(PChar(soundDir + '+A_0.wav'));
                isPlayCabinClicks := False;
             end;
             KMPrevKey := 'Q';
          end;
       end;
+
+      if KM_OP <> Prev_KM_OP then begin
+         CabinClicksF := StrNew(PChar(soundDir + 'op.wav'));
+         isPlayCabinClicks := False;
+      end;
+
+      (*if (KM_OP = 1) and (Prev_KM_OP = 0) then begin
+         CabinClicksF := StrNew(PChar(soundDir + 'op_0_1.wav'));
+         isPlayCabinClicks := False;
+      end;
+      if (KM_OP = 2) and (Prev_KM_OP = 1) then begin
+         CabinClicksF := StrNew(PChar(soundDir + 'op_1_2.wav'));
+         isPlayCabinClicks := False;
+      end;
+      if (KM_OP = 3) and (Prev_KM_OP = 2) then begin
+         CabinClicksF := StrNew(PChar(soundDir + 'op_2_3.wav'));
+         isPlayCabinClicks := False;
+      end;
+      if (KM_OP = 4) and (Prev_KM_OP = 3) then begin
+         CabinClicksF := StrNew(PChar(soundDir + 'op_3_4.wav'));
+         isPlayCabinClicks := False;
+      end;
+      if (KM_OP = 5) and (Prev_KM_OP = 4) then begin
+         CabinClicksF := StrNew(PChar(soundDir + 'op_4_5.wav'));
+         isPlayCabinClicks := False;
+      end;
+
+      if (KM_OP = 0) and (Prev_KM_OP = 1) then begin
+         CabinClicksF := StrNew(PChar(soundDir + 'op_1_0.wav'));
+         isPlayCabinClicks := False;
+      end;
+      if (KM_OP = 1) and (Prev_KM_OP = 2) then begin
+         CabinClicksF := StrNew(PChar(soundDir + 'op_2_1.wav'));
+         isPlayCabinClicks := False;
+      end;
+      if (KM_OP = 2) and (Prev_KM_OP = 3) then begin
+         CabinClicksF := StrNew(PChar(soundDir + 'op_3_2.wav'));
+         isPlayCabinClicks := False;
+      end;
+      if (KM_OP = 3) and (Prev_KM_OP = 4) then begin
+         CabinClicksF := StrNew(PChar(soundDir + 'op_4_3.wav'));
+         isPlayCabinClicks := False;
+      end;
+      if (KM_OP = 4) and (Prev_KM_OP = 5) then begin
+         CabinClicksF := StrNew(PChar(soundDir + 'op_5_4.wav'));
+         isPlayCabinClicks := False;
+      end;*)
+
       if getasynckeystate(65)=0 then PrevKeyA := 0; if getasynckeystate(68)=0 then PrevKeyD := 0;
       if getasynckeystate(69)=0 then PrevKeyE := 0; if getasynckeystate(81)=0 then PrevKeyQ := 0;
    end;

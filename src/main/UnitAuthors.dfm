@@ -124,9 +124,9 @@ object FormAuthors: TFormAuthors
   object Label18: TLabel
     Left = 0
     Top = 0
-    Width = 527
+    Width = 493
     Height = 37
-    Caption = 'T.W.S. 2.7.2 '#1040#1074#1090#1086#1088#1099' '#1080' '#1089#1086'-'#1072#1074#1090#1086#1088#1099
+    Caption = 'T.W.S. 2.8 '#1040#1074#1090#1086#1088#1099' '#1080' '#1089#1086'-'#1072#1074#1090#1086#1088#1099
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clRed
     Font.Height = -31
@@ -147,45 +147,6 @@ object FormAuthors: TFormAuthors
     Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label24: TLabel
-    Left = 8
-    Top = 272
-    Width = 229
-    Height = 13
-    Caption = #1057#1076#1077#1083#1072#1077#1084' '#1083#1102#1073#1080#1084#1099#1081' '#1089#1080#1084#1091#1083#1103#1090#1086#1088' '#1083#1091#1095#1096#1077' -  '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label25: TLabel
-    Left = 232
-    Top = 272
-    Width = 43
-    Height = 13
-    Caption = #1042#1052#1045#1057#1058#1045
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clRed
-    Font.Height = -11
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label26: TLabel
-    Left = 320
-    Top = 42
-    Width = 208
-    Height = 18
-    Caption = 'a.k.a dimka a.k.a DimaGVRH'
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -15
-    Font.Name = 'Consolas'
-    Font.Style = []
     ParentFont = False
   end
   object Label29: TLabel

@@ -9,14 +9,10 @@ interface
       soundDir: String;
       unipulsDir: String;
 
-      // ÐŸÐµÑ€ÐµÐ¼ÐµÐ½Ð½Ñ‹Ðµ Ð´Ð»Ñ ÐºÐ¾Ð½Ñ‚Ñ€Ð¾Ð»Ð»ÐµÑ€Ð° KR21
-      prevKeyA: Byte;
-      prevKeyD: Byte;
-      prevKeyQ: Byte;
-      prevKeyE: Byte;
-      KMPrevKey: String;
-
       VentStarted: Boolean;
+      Vent2SecIncrementer: Integer;
+
+      Unipuls2SecIncrementer: Integer;
 
       // ÐŸÐµÑ€ÐµÐ¼ÐµÐ½Ð½Ñ‹Ðµ Ð´Ð»Ñ ÐºÐ¾Ñ€Ñ€ÐµÐºÑ‚Ð½Ð¾Ð¹ Ñ€Ð°Ð±Ð¾Ñ‚Ñ‹ ÑƒÐ½Ð¸Ð¿ÑƒÐ»ÑŒÑÐ° //
       isLaunchedUnipuls:           Boolean; // Ð—Ð°Ð¿ÑƒÑ‰ÐµÐ½ Ð»Ð¸ ÑƒÐ½Ð¸Ð¿ÑƒÐ»ÑŒÑ?
@@ -38,8 +34,10 @@ interface
       isStartUnipuls:              Boolean; // Ð¤Ð»Ð°Ð³ Ð´Ð»Ñ Ð¿Ð»Ð°Ð²Ð½Ð¾Ð³Ð¾ Ð·Ð°Ð¿ÑƒÑÐºÐ° Ð£Ð½Ð¸Ð¿ÑƒÐ»ÑŒÑÐ°
       isStopUnipuls:               Boolean; // Ð¤Ð»Ð°Ð³ Ð´Ð»Ñ Ð¿Ð»Ð°Ð²Ð½Ð¾Ð¹ Ð¾ÑÑ‚Ð°Ð½Ð¾Ð²ÐºÐ¸ Ð£Ð½Ð¸Ð¿ÑƒÐ»ÑŒÑÐ°
       UnipulsFaktPos:              Integer;
-      UnipulsTargetPos:            Byte;
+      UnipulsTargetPos:            Integer;
       UnipulsVol1:                 Integer;
+      Unipuls2SecWait: Boolean; //True - æäåì 2ñåêóíäû äî çàïóñêà óíèïóë
+      Vent2SecWait: Boolean; //True - æäåì 2ñåêóíäû äî çàïóñêà âåíòèëÿòîðîâ
 
       procedure step();
 
@@ -59,9 +57,12 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils, Math;
    constructor CHS8_.Create;
    begin
       soundDir := 'TWS\CHS8\';
-      unipulsDir := soundDir + 'Unipuls\';
 
-      kr21__ := kr21_.Create();
+      Vent2SecWait := True;
+      Unipuls2SecWait := True;
+      UnipulsTargetPos := -1;
+
+      kr21__ := kr21_.Create('TWS\Devices\21KR\');
    end;
 
    // ----------------------------------------------------
@@ -69,6 +70,9 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils, Math;
    // ----------------------------------------------------
    procedure CHS8_.step();
    begin
+      if (LocoNum > 0) And (LocoNum < 33) then unipulsDir := soundDir + 'E1/Unipuls/';
+      if LocoNum >= 33 then unipulsDir := soundDir + 'E2/Unipuls/';
+
       if FormMain.cbCabinClicks.Checked = True then begin
          kr21__.step();
          em_latch_step();
@@ -169,16 +173,7 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils, Math;
    // ----------------------------------------------------
    procedure CHS8_.mk_step();
    begin
-      if AnsiCompareStr(CompressorCycleF, '') <> 0 then begin
-          if (GetChannelRemaindPlayTime2Sec(Compressor_Channel) <= 0.8) and
-             (BASS_ChannelIsActive(CompressorCycleChannel)=0)
-          then isPlayCompressorCycle:=False;
-      end;
-      if AnsiCompareStr(XCompressorCycleF, '')<> 0 then begin
-          if (GetChannelRemaindPlayTime2Sec(XCompressor_Channel) <= 0.8) and
-             (BASS_ChannelIsActive(XCompressorCycleChannel)=0)
-          then isPlayXCompressorCycle:=False;
-      end;
+      ComprRemaindTimeCheck();
 
       if Compressor<>Prev_Compressor then begin
          if Compressor<>0 then begin
@@ -201,11 +196,11 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils, Math;
    // ----------------------------------------------------
    procedure CHS8_.em_latch_step();
    begin
-      if ((Prev_KMAbs=0) and (KM_Pos_1>0)) or ((KM_Pos_1=0) and (Prev_KMAbs>0)) then begin
-         IMRZashelka:=PChar('TWS/EM_zashelka.wav'); isPlayIMRZachelka:=False;
+      if ((Prev_KMAbs=0) and (KM_Pos_1>0)) or ((KM_Pos_1>0) and (Prev_KMAbs=0)) Or ((KM_Pos_1 = 0) And ((Reostat>0) And (PrevReostat=0))) then begin
+         IMRZashelka:=PChar('TWS\Devices\21KR\EM_zashelka_ON.wav'); isPlayIMRZachelka:=False;
       end;
-      if PrevReostat + Reostat = 1 then begin
-         IMRZashelka:=PChar('TWS/EM_zashelka.wav'); isPlayIMRZachelka:=False;
+      if ((Prev_KMAbs>0) and (KM_Pos_1=0)) or ((KM_Pos_1=0) and (Prev_KMAbs>0)) Or ((KM_Pos_1 = 0) And ((Reostat=0) And (PrevReostat>0))) then begin
+         IMRZashelka:=PChar('TWS\Devices\21KR\EM_zashelka_OFF.wav'); isPlayIMRZachelka:=False;
       end;
    end;
 
@@ -214,24 +209,52 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils, Math;
    // ----------------------------------------------------
    procedure CHS8_.vent_step();
    begin
+      VentTDRemaindTimeCheck();
+      
       if VentStarted = False then begin
          VentTDF := StrNew(PChar(soundDir + 'vent.wav')); VentCycleTDF := StrNew(PChar(soundDir + 'vent.wav'));
          XVentTDF := StrNew(PChar(soundDir + 'x_vent.wav'));XVentCycleTDF:=StrNew(PChar(soundDir + 'x_vent.wav'));
          isPlayVentTD := False; isPlayVentTDX := False; StopVentTD:=False; VentStarted := True;
       end;
 
-      if Vent = 5 then begin VentTDPitchDest := 0; end;
-      if Vent = 4 then begin VentTDPitchDest := 0; end;
-      if Vent = 3 then begin VentTDPitchDest := -7; end;
-      if Vent = 2 then begin VentTDPitchDest := -15; end;
-      if Vent = 1 then begin
-         if TEDAmperage>0 then VentTDPitchDest := power(TEDAmperage * 200 / UltimateTEDAmperage,0.6) - 20;
-         if EDTAmperage>0 then VentTDPitchDest := power(EDTAmperage * 200 / UltimateTEDAmperage,0.6) - 20;
+      if (KM_Pos_1 = 0) and (Prev_KMAbs > 0) then begin
+         Vent2SecWait := True;
       end;
-      if Vent = 0 then begin VentTDPitchDest := -20; end;
+
+      //if KM_Pos_1 <> Prev_KMAbs then begin
+      //   Vent2SecWait := True;
+      //end;
+
+      if (KM_Pos_1 > 0) and (Prev_KMAbs = 0) then begin
+         Vent2SecWait := True;
+      end;
+
+      if Vent = 5 then begin VentTDPitchDest := -3; end;
+      if Vent = 4 then begin VentTDPitchDest := 0; end;
+      if Vent = 3 then begin VentTDPitchDest := -8; end;
+      if Vent = 2 then begin VentTDPitchDest := -8; end;
+      if Vent = 1 then begin
+         if Vent2SecWait = True then begin
+            Inc(Vent2SecIncrementer);
+            //LocoWithMVTDPitch := False;
+            if Vent2SecIncrementer > 4000/MainCycleFreq then begin
+               Vent2SecWait := False;
+               Vent2SecIncrementer := 0;
+               //LocoWithMVTDPitch := True;
+            end;
+         end;
+         if (Vent2SecWait = False) then begin
+            if TEDAmperage>0 then VentTDPitchDest := (Tanh(TEDAmperage/450)*20)-20;
+            if EDTAmperage>0 then VentTDPitchDest := (Tanh(EDTAmperage/450)*20)-20;
+         end;
+      end;
       VentTDVolDest := power((VentTDPitch+20)/20, 0.5) * (FormMain.trcBarVspomMahVol.Position/100);
-      if VentTDVol > VentTDVolDest then VentTDVol := VentTDVol - 0.001 * MainCycleFreq;
-      if VentTDVol < VentTDVolDest then VentTDVol := VentTDVol + 0.001 * MainCycleFreq;
+      if VentTDVol > VentTDVolDest then VentTDVol := VentTDVol - 0.01 * MainCycleFreq;
+      if VentTDVol < VentTDVolDest then VentTDVol := VentTDVol + 0.01 * MainCycleFreq;
+      if Vent = 0 then begin
+         VentTDPitchDest := -20;
+         if VentTDPitch < -19 then VentTDVol := 0.0; // Ïîëíàÿ îñòàíîâêà âåíòèëÿòîðîâ
+      end;
    end;
 
    // ----------------------------------------------------
@@ -239,10 +262,15 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils, Math;
    // ----------------------------------------------------
    procedure CHS8_.unipuls_step();
    begin
+      if (Vent <> 2) And (Vent <> 3) And (Vent <> 4) then begin
+      if ((PrevTEDAmperage<>0) and (TEDAmperage=0)) or
+         ((PrevEDTAmperage<>0) and (EDTAmperage=0)) then begin
+         UnipulsTargetPos:=-1; //UnipulsFaktPos:=-1;
+      end;
       if ((PrevTEDAmperage=0) and (TEDAmperage>0)) or
          ((PrevEDTAmperage=0) and (EDTAmperage>0)) then begin
-         TWS_PlayUnipuls(StrNew(PChar(unipulsDir + '50-300 A.wav')), True);
-         UnipulsFaktPos:=0;
+         //TWS_PlayUnipuls(StrNew(PChar(unipulsDir + '50-300 A.wav')), True);
+         UnipulsTargetPos:=0;
       end;
       if ((TEDAmperage>0)and(TEDAmperage<300)) or ((EDTAmperage>0)and(EDTAmperage<300)) then begin
          if (PrevTEDAmperage=0)or(PrevTEDAmperage>=300)or(PrevEDTAmperage=0)or(PrevEDTAmperage>=300) then begin
@@ -291,20 +319,48 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils, Math;
       end;
       if ((PrevTEDAmperage<1200) and (TEDAmperage>=1200)) or
          ((PrevEDTAmperage<1200) and (EDTAmperage>=1200)) then begin
-         UnipulsTargetPos:=10;
+         //UnipulsTargetPos:=10;
       end;
       if ((PrevTEDAmperage>0) and (TEDAmperage=0) and (EDTAmperage=0)) then begin
          UnipulsFaktVol := FormMain.trcBarVspomMahVol.Position; UnipulsTargetVol:=0; isStopUnipuls:=True;
       end;
-      if ((TEDAmperage=0) and (FormMain.TimerPerehodUnipulsSwitch.Enabled = False) and (isStopUnipuls=False) and (EDTAmperage=0)) then begin
+      if ((TEDAmperage=0) and (FormMain.TimerPerehodUnipulsSwitch.Enabled = False) and (isStopUnipuls=False) and (EDTAmperage=0) and (UnipulsFaktPos = -1)) then begin
+      //if ((TEDAmperage=0) and (FormMain.TimerPerehodUnipulsSwitch.Enabled = False) and (EDTAmperage=0)) then begin
          BASS_ChannelStop(Unipuls_Channel[0]); BASS_StreamFree(Unipuls_Channel[0]);
          BASS_ChannelStop(Unipuls_Channel[1]); BASS_StreamFree(Unipuls_Channel[1]);
          BASS_ChannelRemoveSync(Unipuls_Channel[0], BASS_SYNC_END);
          BASS_ChannelRemoveSync(Unipuls_Channel[1], BASS_SYNC_END);
-         UnipulsChanNum:=0; UnipulsFaktPos:=0; UnipulsTargetPos:=0;
+         UnipulsChanNum:=0; //UnipulsFaktPos:=-1;
+         UnipulsTargetPos:=-1;
       end;
 
-      if (FormMain.TimerPerehodUnipulsSwitch.Enabled = False) and (UnipulsFaktPos<>UnipulsTargetPos) then begin
+      if (KM_Pos_1 = 0) and (Prev_KMAbs > 0) then begin
+         Unipuls2SecWait := True;
+      end;
+      if (KM_Pos_1 > 0) and (Prev_KMAbs = 0) then begin
+         Unipuls2SecWait := True;
+      end;
+      end;
+
+      if Vent = 0 then begin
+         if UnipulsTargetPos <> -1 then UnipulsTargetPos := -1;
+         if UnipulsFaktPos = -1 then Unipuls2SecWait := True;
+      end;
+      if (Vent = 2) And (UnipulsFaktPos <> 3) then begin (*UnipulsFaktPos := 2;*) UnipulsTargetPos := 3; Unipuls2SecWait := False; end;
+      if (Vent = 3) And (UnipulsFaktPos <> 3) then begin (*UnipulsFaktPos := 2;*) UnipulsTargetPos := 3; Unipuls2SecWait := False; end;
+      if (Vent = 4) And (UnipulsFaktPos <> 8) then begin (*UnipulsFaktPos := 7;*) UnipulsTargetPos := 8; Unipuls2SecWait := False; end;
+
+      if Unipuls2SecWait = True then begin
+         if (TEDAmperage+EDTAmperage>0) Or (Vent = 2) Or (Vent = 3) Or (Vent = 4) then begin
+            Inc(Unipuls2SecIncrementer);
+            if Unipuls2SecIncrementer > 2000/MainCycleFreq then begin
+               Unipuls2SecWait := False;
+               Unipuls2SecIncrementer := 0;
+            end;
+         end;
+      end;
+
+      if (FormMain.TimerPerehodUnipulsSwitch.Enabled = False) and (UnipulsFaktPos<>UnipulsTargetPos) And (Unipuls2SecWait = False) then begin
          if UnipulsFaktPos < UnipulsTargetPos then begin Inc(UnipulsFaktPos); end;
          if UnipulsFaktPos > UnipulsTargetPos then begin Dec(UnipulsFaktPos); end;
 

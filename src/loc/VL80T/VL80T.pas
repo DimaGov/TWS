@@ -50,21 +50,20 @@ implementation
    // ----------------------------------------------------
    procedure VL80T_.mk_step();
    begin
-      if AnsiCompareStr(CompressorCycleF, '') <> 0 then begin
-          if (GetChannelRemaindPlayTime2Sec(Compressor_Channel) <= 0.8) and
-             (BASS_ChannelIsActive(CompressorCycleChannel)=0)
-          then isPlayCompressorCycle:=False;
-      end;
+      ComprRemaindTimeCheck();
 
       if Compressor<>Prev_Compressor then begin
          if Compressor<>0 then begin
-            CompressorF      := StrNew(PChar(soundDir + 'MK-start.wav'));
-            CompressorCycleF := StrNew(PChar(soundDir + 'MK-loop.wav'));
-            isPlayCompressor:=False;
+            CompressorF       := StrNew(PChar(soundDir + 'MK-start.wav'));
+            CompressorCycleF  := StrNew(PChar(soundDir + 'MK-loop.wav'));
+            XCompressorF      := StrNew(PChar(soundDir + 'x_MK-start.wav'));
+            XCompressorCycleF := StrNew(PChar(soundDir + 'x_MK-loop.wav'));
+            isPlayCompressor:=False; isPlayXCompressor := False;
          end else begin
             CompressorF      := StrNew(PChar(soundDir + 'MK-stop.wav'));
-            CompressorCycleF := PChar('');
-            isPlayCompressor:=False;
+            XCompressorF     := StrNew(PChar(soundDir + 'x_MK-stop.wav'));
+            CompressorCycleF := PChar(''); XCompressorCycleF := PChar('');
+            isPlayCompressor:=False; isPlayXCompressor:=False;
          end;
       end;
    end;
@@ -88,6 +87,8 @@ implementation
    // ----------------------------------------------------
    procedure VL80T_.vent_step();
    begin
+      VentRemaindTimeCheck();
+
       // ЗАПУСК
       if Vent+Vent2+Vent3+Vent4 > Prev_Vent+Prev_Vent2+Prev_Vent3+Prev_Vent4 then begin
          if Vent<>Prev_Vent then VentVolume:=100;

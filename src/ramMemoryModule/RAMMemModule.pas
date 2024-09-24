@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------//
 //                                                                              //
-//      РњРѕРґСѓР»СЊ РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РћР—РЈ                                                 //
+//      Модуль для работы с ОЗУ                                                 //
 //      (c) DimaGVRH, Dnepr city, 2019                                          //
 //                                                                              //
 //------------------------------------------------------------------------------//
@@ -10,6 +10,7 @@ interface
 
    procedure GetStartSettingParamsFromRAM();
    procedure InitializeStartParams(VersionID: Integer);
+   procedure ConnectSimulatorRAM();
    function ReadKeyFromMemoryString(readAddr: PByte; Key: String; SearchRadius: Integer) : String;
    function ReadStringFromMemory(readAddr: PByte; Len: Byte) : String;
    procedure ReadVarsFromRAM();
@@ -37,7 +38,7 @@ var
 
 implementation
 
-uses UnitMain, Windows, SysUtils, SoundManager, Math, UnitSettings;
+uses UnitMain, Windows, SysUtils, SoundManager, Math, TlHelp32, ExtraUtils;
 
 var
    ProcReadDataMemoryAddr: ProcReadDataMemoryType;
@@ -55,27 +56,27 @@ var
    ADDR_TP_ED4M, ADDR_TP_ED9M:              Pointer;
    ADDR_BV_ED4M, ADDR_BV_ED9M:              Pointer;
    ADDR_KME_ED4M, ADDR_KME_ED9M:            Pointer;
-   ADDR_VIGILANCE_CHECK:                    Pointer; // РђРґСЂРµСЃ СЃРѕСЃС‚РѕСЏРЅРёСЏ РїСЂРѕРІРµСЂРєРё Р±РґРёС‚РµР»СЊРЅРѕСЃС‚Рё (РЅСѓР¶РЅРѕ РґР»СЏ РљР›РЈР‘-Р°)
-   ADDR_SPEED_VSTRECHA:                     Pointer; // РђРґСЂРµСЃ СЃРєРѕСЂРѕСЃС‚Рё РІСЃС‚СЂРµС‡РєРё РІ РњРџ
+   ADDR_VIGILANCE_CHECK:                    Pointer; // Адрес состояния проверки бдительности (нужно для КЛУБ-а)
+   ADDR_SPEED_VSTRECHA:                     Pointer; // Адрес скорости встречки в МП
    ADDR_VSTRECH_STATUS:                     Pointer;
    ADDR_OGRANICH:                           Pointer;
    ADDR_NEXT_OGRANICH:                      Pointer;
    ADDR_CAMERA:                             Pointer;
-   ADDR_CAMERA_X:                           Pointer; // РђРґСЂРµСЃ Р·РЅР°С‡РµРЅРёСЏ РїРѕР»РѕР¶РµРЅРёСЏ РіРѕР»РѕРІС‹ РїРѕ РѕСЃРё РҐ РІ РєР°Р±РёРЅРµ РјР°С€РёРЅРёСЃС‚Р°
-   ADDR_AMPERAGE1:                          Pointer; // РђРґСЂРµСЃ Р·РЅР°С‡РµРЅРёСЏ РўР­Р” С‚РѕРє 1
-   ADDR_AMPERAGE2:                          Pointer; // РђРґСЂРµСЃ Р·РЅР°С‡РµРЅРёСЏ РўР­Р” С‚РѕРє 2
-   ADDR_AMPERAGE3:                          Pointer; // РђРґСЂРµСЃ Р·РЅР°С‡РµРЅРёСЏ РўР­Р” С‚РѕРє 3
-   ADDR_AMPERAGE4:                          Pointer; // РђРґСЂРµСЃ Р·РЅР°С‡РµРЅРёСЏ РўР­Р” С‚РѕРє 4
+   ADDR_CAMERA_X:                           Pointer; // Адрес значения положения головы по оси Х в кабине машиниста
+   ADDR_AMPERAGE1:                          Pointer; // Адрес значения ТЭД ток 1
+   ADDR_AMPERAGE2:                          Pointer; // Адрес значения ТЭД ток 2
+   ADDR_AMPERAGE3:                          Pointer; // Адрес значения ТЭД ток 3
+   ADDR_AMPERAGE4:                          Pointer; // Адрес значения ТЭД ток 4
    ADDR_BOKSOVANIE:                         Pointer;
    ADDR_AB_ZB_1:                            Pointer;
    ADDR_AB_ZB_2:                            Pointer;
    ADDR_RAIN:                               Pointer;
-   ADDR_STOCHIST:                           Pointer; // РђРґСЂРµСЃ СЃРѕСЃС‚РѕСЏРЅРёСЏ РґРІРѕСЂРЅРёРєРѕРІ
-   ADDR_STCHSTDGR:                          Pointer; // РђРґСЂРµСЃ РґР»СЏ СѓРіР»Р° РїРѕРІРѕСЂРѕС‚Р° РґРІРѕСЂРЅРёРєРѕРІ
-   ADDR_CHS7_COMPRESSOR:                    Pointer; // РђРґСЂРµСЃ СЃРѕСЃС‚РѕСЏРЅРёСЏ РєРѕРјРїСЂРµСЃСЃРѕСЂРѕРІ РЅР° Р§РЎ7
-   ADDR_CHS7_VENT:                          Pointer; // РђРґСЂРµСЃ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІРµРЅС‚РёР»СЏС‚РѕСЂРѕРІ РЅР° Р§РЎ7 (РўСѓРјР±Р»РµСЂ, РїРѕР»РѕР¶РµРЅРёРµ)
-   ADDR_CHS7_VOLTAGE:                       Pointer; // РђРґСЂРµСЃ РЅР°РїСЂСЏР¶РµРЅРёСЏ РЅР° Р§РЎ7
-   ADDR_CHS7_BV:                            Pointer; // РђРґСЂРµСЃ СЃРѕСЃС‚РѕСЏРЅРёСЏ Р‘Р’ РЅР° Р§РЎ7
+   ADDR_STOCHIST:                           Pointer; // Адрес состояния дворников
+   ADDR_STCHSTDGR:                          Pointer; // Адрес для угла поворота дворников
+   ADDR_CHS7_COMPRESSOR:                    Pointer; // Адрес состояния компрессоров на ЧС7
+   ADDR_CHS7_VENT:                          Pointer; // Адрес состояния вентиляторов на ЧС7 (Тумблер, положение)
+   ADDR_CHS7_VOLTAGE:                       Pointer; // Адрес напряжения на ЧС7
+   ADDR_CHS7_BV:                            Pointer; // Адрес состояния БВ на ЧС7
    ADDR_CHS7_REVERSOR:                      Pointer;
    ADDR_CHS7_FTP:                           Pointer;
    ADDR_CHS7_BTP:                           Pointer;
@@ -85,10 +86,10 @@ var
    ADDR_CHS8_REOSTAT:                       Pointer;
    ADDR_CHS8_VENT_VOLUME:                   Pointer;
    ADDR_CHS8_VENT_VOLUME_INCREMENTER:       Pointer;
-   ADDR_CHS8_COMPRESSOR:                    Pointer; // РђРґСЂРµСЃ СЃРѕСЃС‚РѕСЏРЅРёСЏ РєРѕРјРїСЂРµСЃСЃРѕСЂРѕРІ РЅР° Р§РЎ8
+   ADDR_CHS8_COMPRESSOR:                    Pointer; // Адрес состояния компрессоров на ЧС8
    ADDR_CHS8_GV_1:                          Pointer;
    ADDR_CHS8_GV_2:                          Pointer;
-   ADDR_CHS4T_VENT:                         Pointer; // РђРґСЂРµСЃ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІРµРЅС‚РёР»СЏС‚РѕСЂРѕРІ РЅР° Р§РЎ4С‚
+   ADDR_CHS4T_VENT:                         Pointer; // Адрес состояния вентиляторов на ЧС4т
    ADDR_CHS4T_COMPRESSOR:                   Pointer;
    ADDR_CHS4T_FTP:                          Pointer;
    ADDR_CHS4T_BTP:                          Pointer;
@@ -109,16 +110,17 @@ var
    ADDR_HIGHLIGHTS:                         Pointer;
    ADDR_ED9M_COMPRESSOR:                    Pointer;
    ADDR_ED9M_REVERS:                        Pointer;
-   ADDR_EDT_AMPERAGE:                       Pointer; // РђРґСЂРµСЃ Р·РЅР°С‡РµРЅРёСЏ С‚РѕРєР° Р­Р”Рў (Р§РЎ8)
-   ADDR_NM:                                 Pointer; // РђРґСЂРµСЃ Р·РЅР°С‡РµРЅРёСЏ РїРѕРєР°Р·Р°РЅРёСЏ РќР°РїРѕСЂРЅРѕР№ РњР°РіРёСЃС‚СЂР°Р»Рё
-   ADDR_BRAKE_CYLINDERS:                    Pointer; // РђРґСЂРµСЃ Р·РЅР°С‡РµРЅРёСЏ РґР°РІР»РµРЅРёСЏ РІ РўРѕСЂРјРѕР·РЅС‹С… Р¦РёР»РёРЅРґСЂР°С…
-   ADDR_2TE10U_DIESEL1:                     Pointer; // РђРґСЂРµСЃ СЃРѕСЃС‚РѕСЏРЅРёСЏ РґРёР·РµР»СЏ РЅР° 2РўР­10РЈ
-   ADDR_2TE10U_DIESEL2:                     Pointer; // РђРґСЂРµСЃ СЃРѕСЃС‚РѕСЏРЅРёСЏ РґРёР·РµР»СЏ РЅР° 2РўР­10РЈ
-   ADDR_TEP70_RPM:                          Pointer; // РђРґСЂРµСЃ С‡РёСЃР»Р° РѕР±РѕСЂРѕС‚РѕРІ РІ РјРёРЅСѓС‚Сѓ РґРёР·РµР»СЏ РЅР° РўР­Рџ70
+   ADDR_EDT_AMPERAGE:                       Pointer; // Адрес значения тока ЭДТ (ЧС8)
+   ADDR_NM:                                 Pointer; // Адрес значения показания Напорной Магистрали
+   ADDR_BRAKE_CYLINDERS:                    Pointer; // Адрес значения давления в Тормозных Цилиндрах
+   ADDR_2TE10U_DIESEL1:                     Pointer; // Адрес состояния дизеля на 2ТЭ10У
+   ADDR_2TE10U_DIESEL2:                     Pointer; // Адрес состояния дизеля на 2ТЭ10У
+   ADDR_TEP70_RPM:                          Pointer; // Адрес числа оборотов в минуту дизеля на ТЭП70
+   ADDR_TEP70_TED:                          Pointer; // Адрес тока ТЭД для ТЭП70
    ADDR_TEP70BS_RPM:                        Pointer;
    ADDR_TEP70BS_KMPOS:                      Pointer;
-   ADDR_M62_RPM_1:                          Pointer; // РђРґСЂРµСЃ С‡РёСЃР»Р° РѕР±РѕСЂРѕС‚РѕРІ РІ РјРёРЅСѓС‚Сѓ РґР»СЏ РґРёР·РµР»СЏ РЅР° Рњ62
-   ADDR_M62_RPM_2:                          Pointer; // РђРґСЂРµСЃ С‡РёСЃР»Р° РѕР±РѕСЂРѕС‚РѕРІ РІ РјРёРЅСѓС‚Сѓ РґР»СЏ РґРёР·РµР»СЏ РЅР° Рњ62
+   ADDR_M62_RPM_1:                          Pointer; // Адрес числа оборотов в минуту для дизеля на М62
+   ADDR_M62_RPM_2:                          Pointer; // Адрес числа оборотов в минуту для дизеля на М62
    ADDR_M62_KMPOS_1:                        Pointer;
    ADDR_M62_KMPOS_2:                        Pointer;
    ADDR_EPT:                                Pointer;
@@ -131,6 +133,7 @@ var
    ADDR_VL80TComp:                          Pointer;
    ADDR_VL80TFazan:                         Pointer;
    ADDR_VL82_COMPRESSOR:                    Pointer;
+   ADDR_VL82_VENT:                          Pointer;
    ADDR_VL85_FTP, ADDR_VL85_BTP:            Pointer;
    ADDR_2ES5K_FTP, ADDR_2ES5K_BTP:          Pointer;
    ADDR_LDOORED4M:                          Pointer;
@@ -155,7 +158,7 @@ var
    CHS8VentTempCounter:                     Byte;
 
 //------------------------------------------------------------------------------//
-//            РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ СѓРєР°Р·Р°С‚РµР»СЏ РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ Р°РґСЂРµСЃСѓ            //
+//            Подпрограмма для чтения указателя по указанному адресу            //
 //------------------------------------------------------------------------------//
 function ReadPointer(Addr: Pointer): PByte;
 var
@@ -175,7 +178,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//          РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ РёР· РћР—РЈ СЃС‚СЂРѕРєРё С„РёРєСЃРёСЂРѕРІР°РЅРЅРѕР№ РґР»РёРЅРЅС‹          //
+//          Подпрограмма для чтения из ОЗУ строки фиксированной длинны          //
 //------------------------------------------------------------------------------//
 function ReadStringFromMemory(readAddr: PByte; Len: Byte) : String;
 var
@@ -194,7 +197,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//          РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ РёР· РћР—РЈ СЃС‚СЂРѕРєРё РґРѕ СѓРєР°Р·Р°РЅРЅРѕРіРѕ СЃРёРјРІРѕР»Р°         //
+//          Подпрограмма для чтения из ОЗУ строки до указанного символа         //
 //------------------------------------------------------------------------------//
 function ReadKeyFromMemoryString(readAddr: PByte; Key: String; SearchRadius: Integer) : String;
 var
@@ -243,14 +246,78 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//  РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ СЃС‚Р°СЂС‚РѕРІС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ РёР· РІРёСЂС‚СѓР°Р»СЊРЅРѕРіРѕ 'settings.ini' //
+//  Подпрограмма для чтения стартовых параметров из виртуального 'settings.ini' //
+//------------------------------------------------------------------------------//
+procedure ConnectSimulatorRAM();
+var
+   I: Integer;
+begin
+   // Проверяем запуска процесса Launcher.exe
+   isConnectedMemory := FindTask('Launcher.exe');
+   if isConnectedMemory = False then begin
+      isConnectedMemory := FindTask('L-54-006.exe');
+      if isConnectedMemory = False then begin
+         isConnectedMemory := FindTask('L-55-008.exe');
+         if isConnectedMemory = False then begin
+            isConnectedMemory := FindTask('L-55-009.exe');
+            if isConnectedMemory = False then
+               isConnectedMemory := FindTask('ZLauncher.exe');
+         end;
+      end;
+   end;
+
+   // Если Launcher.exe запущен
+   if isConnectedMemory = True then begin
+      for I := 0 to 3 do begin
+         if I = 0 then GameWindowName := 'ZDSimulator55.008' else
+            if I = 1 then GameWindowName := 'ZDSimulator54.006' else
+               if I = 2 then GameWindowName := 'ZDSimulator55.009';
+
+         wHandle := FindWindow(nil, PChar(GameWindowName+' [Paused]'));
+
+         if wHandle<>0 then begin
+            isGameOnPause        := True;
+            isConnectedMemory    := True;
+            FormMain.Label5.Caption       := GameWindowName;
+            Break;
+         end else begin
+            wHandle := FindWindow(nil, PChar(GameWindowName));
+                 if wHandle=0 then begin
+                    isGameOnPause     := True;
+                    isConnectedMemory := False;
+                    FormMain.Label5.Caption    := 'Симулятор не запущен';
+                 end else begin
+                    UnitMain.tHandle := GetWindowThreadProcessId(wHandle, @ProcessID);
+                    UnitMain.pHandle := OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessID);
+                    //if I = 0 then ADDR_ZDS_EXE_LABEL:=ptr($00172C28);
+                    //if ReadStringFromMemory(ADDR_ZDS_EXE_LABEL,17)='DGLEngine Launcher' then
+                    isGameOnPause     := False;
+                    CloseHandle(UnitMain.pHandle);
+                    isConnectedMemory := True;
+                    FormMain.Label5.Caption    := GameWindowName;
+                    Break;
+                 end;
+              end;
+              CloseHandle(wHandle);
+  	   end;
+        end else isGameOnPause := True;
+        if I <> VersionID then begin
+           InitializeStartParams(I);
+        end;
+
+	RefreshSnd:=True;
+        VersionID := I;
+end;
+
+//------------------------------------------------------------------------------//
+//  Подпрограмма для чтения стартовых параметров из виртуального 'settings.ini' //
 //------------------------------------------------------------------------------//
 procedure GetStartSettingParamsFromRAM();
 var
     addr_settings_ini: PByte;
 begin
      With FormMain do begin
-        // РџРѕР»СѓС‡Р°РµРј Р°РґСЂРµСЃ РїСЂРѕС†РµСЃСЃР° ZDSimulator
+        // Получаем адрес процесса ZDSimulator
         UnitMain.tHandle := GetWindowThreadProcessId(wHandle, @ProcessID);
         UnitMain.pHandle := OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessID);
 
@@ -267,12 +334,24 @@ begin
         Freight := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'Freight', 6666));
         try SceneryName:=ReadKeyFromMemoryString(addr_settings_ini, 'SceneryName', 6666); except SceneryName:='error'; end;
 
+        UnitMain.Log_.DebugWriteErrorToErrorList('settings.ini data: ');
+        UnitMain.Log_.DebugWriteErrorToErrorList('Route: ' + Route);
+        UnitMain.Log_.DebugWriteErrorToErrorList('RoutePath: ' + Naprav);
+        UnitMain.Log_.DebugWriteErrorToErrorList('Loco: ' + LocoGlobal);
+        UnitMain.Log_.DebugWriteErrorToErrorList('WagonsAmount: ' + IntToStr(WagsNum));
+        UnitMain.Log_.DebugWriteErrorToErrorList('LocoNum: ' + IntToStr(LocoNum));
+        UnitMain.Log_.DebugWriteErrorToErrorList('Freight: ' + IntToStr(Freight));
+        UnitMain.Log_.DebugWriteErrorToErrorList('WagsName: ' + ConName);
+        UnitMain.Log_.DebugWriteErrorToErrorList('Winter: ' + IntToStr(Winter));
+        UnitMain.Log_.DebugWriteErrorToErrorList('SceneryName: ' + SceneryName);
+        UnitMain.Log_.DebugWriteErrorToErrorList('MultiPlayer: ' + IntToStr(MP));
+
         try CloseHandle(UnitMain.pHandle); except end;
      end;
 end;
 
 //------------------------------------------------------------------------------//
-//        РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… Р»РѕРєРѕРјРѕС‚РёРІР° 2РўР­10Сѓ        //
+//        Подпрограмма для чтения локальных переменных локомотива 2ТЭ10у        //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemory2TE10U();
 var
@@ -283,7 +362,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//         РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… Р»РѕРєРѕРјРѕС‚РёРІР° Рњ62          //
+//         Подпрограмма для чтения локальных переменных локомотива М62          //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryM62();
 var
@@ -298,17 +377,18 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//        РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… Р»РѕРєРѕРјРѕС‚РёРІР° РўР­Рџ70         //
+//        Подпрограмма для чтения локальных переменных локомотива ТЭП70         //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryTEP70();
 var
     wDisel:    Single;
 begin
     try ReadProcessMemory(UnitMain.pHandle, ADDR_TEP70_RPM, @wDisel, 4, temp); if wDisel<350 then BV:=0 else BV:=1;  except end;
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_TEP70_TED, @wDisel, 4, temp); TEDAmperage := wDisel * 100;  except end;
 end;
 
 //------------------------------------------------------------------------------//
-//       РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… Р»РѕРєРѕРјРѕС‚РёРІР° РўР­Рџ70Р±СЃ        //
+//       Подпрограмма для чтения локальных переменных локомотива ТЭП70бс        //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryTEP70BS();
 var
@@ -319,7 +399,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//       РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… Р»РѕРєРѕРјРѕС‚РёРІР° РўР­Рњ18РґРј        //
+//       Подпрограмма для чтения локальных переменных локомотива ТЭМ18дм        //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryTEM18dm();
 begin
@@ -327,7 +407,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//        РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… Р»РѕРєРѕРјРѕС‚РёРІР° Р’Р›11Рј         //
+//        Подпрограмма для чтения локальных переменных локомотива ВЛ11м         //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryVL11m();
 begin
@@ -338,7 +418,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//        РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… Р»РѕРєРѕРјРѕС‚РёРІР° Р’Р›80С‚         //
+//        Подпрограмма для чтения локальных переменных локомотива ВЛ80т         //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryVL80t();
 var
@@ -356,17 +436,19 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//        РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… Р»РѕРєРѕРјРѕС‚РёРІР° Р’Р›82Рј         //
+//        Подпрограмма для чтения локальных переменных локомотива ВЛ82м         //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryVL82m();
 begin
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS8_FTP, @FrontTP, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS8_BTP, @BackTP, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS8_REOSTAT, @Reostat, 1, temp);  except end;
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_VL82_COMPRESSOR, @Compressor, 4, temp);  except end;
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_VL82_VENT, @Vent, 4, temp);  except end;
 end;
 
 //------------------------------------------------------------------------------//
-//         РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… Р»РѕРєРѕРјРѕС‚РёРІР° Р’Р›85         //
+//         Подпрограмма для чтения локальных переменных локомотива ВЛ85         //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryVL85();
 begin
@@ -375,7 +457,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//         РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… Р»РѕРєРѕРјРѕС‚РёРІР° Р§РЎ2Рє         //
+//         Подпрограмма для чтения локальных переменных локомотива ЧС2к         //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryCHS2k();
 begin
@@ -389,7 +471,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//          РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… Р»РѕРєРѕРјРѕС‚РёРІР° Р§РЎ4         //
+//          Подпрограмма для чтения локальных переменных локомотива ЧС4         //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryCHS4();
 begin
@@ -401,7 +483,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//          РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… Р»РѕРєРѕРјРѕС‚РёРІР° Р§РЎ4С‚        //
+//          Подпрограмма для чтения локальных переменных локомотива ЧС4т        //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryCHS4t();
 var
@@ -411,7 +493,8 @@ begin
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4T_BTP, @BackTP, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ptr($0536FA2F), @ReversorPos, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4T_VENT, @Vent, 1, temp);  except end;
-    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4T_COMPRESSOR, @Compressor, 4, temp);  except end;
+    //try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4T_COMPRESSOR, @Compressor, 4, temp);  except end;
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_VOLTAGE, @Voltage, 4, temp);  except end;
 
     tpByte := ADDR_PNEVM;
     //Inc(tpByte, 40);
@@ -422,7 +505,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//         РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… Р»РѕРєРѕРјРѕС‚РёРІР° Р§РЎ4РєРІСЂ       //
+//         Подпрограмма для чтения локальных переменных локомотива ЧС4квр       //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryCHS4kvr();
 var
@@ -432,7 +515,7 @@ begin
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4KVR_BTP, @BackTP, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4KVR_REVERSOR, @ReversorPos, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_KVR_VENTS, @Vent, 4, temp); except end;
-    try ReadProcessMemory(UnitMain.pHandle, ADDR_VR242, @VR242, 4, temp); except end;
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_VOLTAGE, @Voltage, 4, temp);  except end;
 
     tpByte := ADDR_PNEVM;
     //Inc(tpByte, 40);
@@ -443,23 +526,23 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//          РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… Р»РѕРєРѕРјРѕС‚РёРІР° Р§РЎ7         //
+//          Подпрограмма для чтения локальных переменных локомотива ЧС7         //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryCHS7();
 begin
-    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_FTP, @FrontTP, 1, temp);  except end; 	    // РџРµСЂРµРґРЅРёР№ РўРџ
-    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_BTP, @BackTP, 1, temp);  except end;              // Р—Р°РґРЅРёР№ РўРџ
-    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_REVERSOR, @ReversorPos, 1, temp);  except end;         // Р РµРІРµСЂСЃРѕСЂ
-    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_COMPRESSOR, @Compressor, 4, temp);  except end;    // РљРѕРјРїСЂРµСЃСЃРѕСЂ
-    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_VOLTAGE, @Voltage, 4, temp);  except end;          // РќР°РїСЂСЏР¶РµРЅРёРµ РЅР° СЌР»-РІРѕР·Рµ
-    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_BV, @BV, 1, temp);  except end;		    // Р‘Р’
-    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_VENT, @Vent, 1, temp);  except end;                // Р’РµРЅС‚РёР»СЏС‚РѕСЂ (РїРѕР»РѕР¶РµРЅРёРµ С‚СѓРјР±Р»РµСЂР°)
-    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_ZHALUZI, @Zhaluzi, 1, temp); except end;       // Р–Р°Р»СЋР·Рё
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_FTP, @FrontTP, 1, temp);  except end; 	    // Передний ТП
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_BTP, @BackTP, 1, temp);  except end;              // Задний ТП
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_REVERSOR, @ReversorPos, 1, temp);  except end;         // Реверсор
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_COMPRESSOR, @Compressor, 4, temp);  except end;    // Компрессор
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_VOLTAGE, @Voltage, 4, temp);  except end;          // Напряжение на эл-возе
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_BV, @BV, 1, temp);  except end;		    // БВ
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_VENT, @Vent, 1, temp);  except end;                // Вентилятор (положение тумблера)
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_ZHALUZI, @Zhaluzi, 1, temp); except end;       // Жалюзи
     if ((BV=0) Or (Voltage<1.5)) and (Vent<>0) then Vent := 0 else Vent := Vent;
 end;
 
 //------------------------------------------------------------------------------//
-//          РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… Р»РѕРєРѕРјРѕС‚РёРІР° Р§РЎ8         //
+//          Подпрограмма для чтения локальных переменных локомотива ЧС8         //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryCHS8();
 var
@@ -498,6 +581,8 @@ begin
        and ((CHS8VentVolumePrev > VentSingleVolume) Or (CHS8VentTempCounter > 30)) then Vent := 3;
 
     if ((VentSingleVolumeIncrementer < 33) and (VentSingleVolumeIncrementer > 0)) Or (EDTAmperage > 0) then Vent := 1;
+    //if ((VentSingleVolumeIncrementer < 33) and (VentSingleVolumeIncrementer > 0)) then Vent := 1;
+    //if (Vent = 0) And (TEDAmperage+EDTAmperage > 0) then Vent := 1;
     //if (VentSingleVolumeIncrementer = 0) and (VentSingleVolume = 1) and (KM_Pos_1 = 0) then Vent := 5;
     if (VentUnipulsAvaria = 0) then Vent := 5;
     if ((VentSingleVolumeIncrementer = 33) and (VentSingleVolume < 0.1)) Or (Voltage < 15)
@@ -508,7 +593,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//         РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… Р»РѕРєРѕРјРѕС‚РёРІР° Р­Рџ1Рј         //
+//         Подпрограмма для чтения локальных переменных локомотива ЭП1м         //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryEP1m();
 begin
@@ -519,7 +604,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//         РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… Р»РѕРєРѕРјРѕС‚РёРІР° 2Р­РЎ5Рє        //
+//         Подпрограмма для чтения локальных переменных локомотива 2ЭС5к        //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemory2ES5k();
 var
@@ -534,7 +619,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//       РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… СЌР»РµРєС‚СЂРѕРїРѕРµР·РґР° Р­Р”4Рј        //
+//       Подпрограмма для чтения локальных переменных электропоезда ЭД4м        //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryED4M();
 var
@@ -552,7 +637,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//       РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… СЌР»РµРєС‚СЂРѕРїРѕРµР·РґР° Р­Р”9Рј        //
+//       Подпрограмма для чтения локальных переменных электропоезда ЭД9м        //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryED9M();
 var
@@ -570,50 +655,50 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//             РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ С‡С‚РµРЅРёСЏ РїРµСЂРµРјРµРЅРЅС‹С… ZDSimulator РІ РћР—РЈ             //
+//             Подпрограмма для чтения переменных ZDSimulator в ОЗУ             //
 //------------------------------------------------------------------------------//
 procedure ReadVarsFromRAM;
 var
      wSpeed:         Double;
      wVstrDl:        Double;
      wPos_1:         Single;
-     wVstrSpeed:     Single; // [Рј/c]
+     wVstrSpeed:     Single; // [м/c]
      addr_waglength: PDouble;
      I:              Integer;
 begin
    With FormMain do begin
-     // РџРѕР»СѓС‡Р°РµРј Р°РґСЂРµСЃ РїСЂРѕС†РµСЃСЃР° ZDSimulator
+     // Получаем адрес процесса ZDSimulator
      UnitMain.tHandle := GetWindowThreadProcessId(wHandle, @ProcessID);
      UnitMain.pHandle := OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessID);
 
-     // --- Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґР»РёРЅСѓ РїРµСЂРІРѕРіРѕ РІР°РіРѕРЅР° РІСЃС‚СЂРµС‡РєРё --- //
+     // --- Задаем указатель на длину первого вагона встречки --- //
      addr_waglength := ADDR_VSTRECHA_WAGON_DLINA;
      Vstrecha_dlina:=0;
 
      FindPnevm();
 
-     // ----- Р§РёС‚Р°РµРј РѕСЃРЅРѕРІРЅС‹Рµ(РѕР±С‰РёРµ) РїРµСЂРµРјРµРЅРЅС‹Рµ ZDSimulator ----- //
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_Track, @Track, 4, temp); except end;          // РџРѕР»СѓС‡Р°РµРј РЅРѕРјРµСЂ С‚СЂСЌРєР°
+     // ----- Читаем основные(общие) переменные ZDSimulator ----- //
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_Track, @Track, 4, temp); except end;          // Получаем номер трэка
      try ReadProcessMemory(UnitMain.pHandle, ADDR_TRACK_TAIL, @TrackTail, 4, temp); except end;
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_Speed, @wSpeed, 8, temp); except end;         // РџРѕР»СѓС‡Р°РµРј СЃРєРѕСЂРѕСЃС‚СЊ 32CB38
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_Svetofor, @Svetofor, 1, temp); except end;   // РџРѕР»СѓС‡Р°РµРј РїРѕРєР°Р·Р°РЅРёСЏ СЃРІРµС‚РѕС„РѕСЂР°
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_KM_POS, @wPos_1, 4, temp); except end;	    // РџРѕР»СѓС‡Р°РµРј РїРѕР·РёС†РёРё 1-РѕР№ СЃРµРєС†РёРё
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_KM_POS_2, @KM_Pos_2, 1, temp); except end;	    // РџРѕР»СѓС‡Р°РµРј РїРѕР·РёС†РёРё 2-РѕР№ СЃРµРєС†РёРё
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_OP_POS, @KM_OP, 4, temp); except end;           // РџРѕР»СѓС‡Р°РµРј РїРѕР·РёС†РёСЋ С€СѓРЅС‚РѕРІ
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_395, @KM_395, 1, temp); except end;         // РџРѕР»СѓС‡Р°РµРј РїРѕР·РёС†РёСЋ 394(395) РєСЂР°РЅР°
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_254, @KM_294, 4, temp); except end;         // РџРѕР»СѓС‡Р°РµРј РїРѕР·РёС†РёСЋ Р»РѕРє. РєСЂР°РЅР°
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_VSTR_NW, @WagNum_Vstr, 1, temp);  except end;     // РџРѕР»СѓС‡Р°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РІР°РіРѕРЅРѕРІ РІСЃС‚СЂРµС‡РєРё
-     //try ReadProcessMemory(UnitMain.pHandle, ADDR_VSTR_TRACK, @wTrVstr, 2, temp);  except end;  // РџРѕР»СѓС‡Р°РµРј С‚СЂСЌРє РІСЃС‚СЂРµС‡РєРё
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_KLUB_OPEN, @KLUBOpen, 1, temp);  except end; // РџРѕР»СѓС‡Р°РµРј Р±Р°Р№С‚ РѕС‚РєСЂС‹С‚РёСЏ РєР»Р°РІРёР°С‚СѓСЂС‹ РљР›РЈР‘-Р°
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_ACCLRT, @Acceleretion, 8, temp);  except end;// РџРѕР»СѓС‡Р°РµРј СѓСЃРєРѕСЂРµРЅРёРµ
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_VSTRECHA_WAG_ORDINATA, @VstrTrack, 2, temp);  except end;// РџРѕР»СѓС‡Р°РµРј СѓСЃРєРѕСЂРµРЅРёРµ
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_OGRANICH, @OgrSpeed, 2, temp);  except end; // РџРѕР»СѓС‡Р°РµРј РѕРіСЂР°РЅРёС‡РµРЅРёРµ СЃРєРѕСЂРѕСЃС‚Рё СЃ РљР›РЈР‘-Р°
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_Speed, @wSpeed, 8, temp); except end;         // Получаем скорость 32CB38
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_Svetofor, @Svetofor, 1, temp); except end;   // Получаем показания светофора
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_KM_POS, @wPos_1, 4, temp); except end;	    // Получаем позиции 1-ой секции
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_KM_POS_2, @KM_Pos_2, 1, temp); except end;	    // Получаем позиции 2-ой секции
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_OP_POS, @KM_OP, 4, temp); except end;           // Получаем позицию шунтов
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_395, @KM_395, 1, temp); except end;         // Получаем позицию 394(395) крана
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_254, @KM_294, 4, temp); except end;         // Получаем позицию лок. крана
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_VSTR_NW, @WagNum_Vstr, 1, temp);  except end;     // Получаем количество вагонов встречки
+     //try ReadProcessMemory(UnitMain.pHandle, ADDR_VSTR_TRACK, @wTrVstr, 2, temp);  except end;  // Получаем трэк встречки
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_KLUB_OPEN, @KLUBOpen, 1, temp);  except end; // Получаем байт открытия клавиатуры КЛУБ-а
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_ACCLRT, @Acceleretion, 8, temp);  except end;// Получаем ускорение
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_VSTRECHA_WAG_ORDINATA, @VstrTrack, 2, temp);  except end;// Получаем ускорение
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_OGRANICH, @OgrSpeed, 2, temp);  except end; // Получаем ограничение скорости с КЛУБ-а
      try ReadProcessMemory(UnitMain.pHandle, ADDR_NEXT_OGRANICH, @NextOgrSpeed, 1, temp);  except end;
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_SVETOFOR_DISTANCE, @SvetoforDist, 2, temp);  except end; // РџРѕР»СѓС‡Р°РµРј СЂР°СЃСЃС‚РѕСЏРЅРёРµ РґРѕ СЃРІРѕС‚РѕС„РѕСЂР°
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_RAIN, @Rain, 1, temp);  except end;     // РџРѕР»СѓС‡Р°РµРј РёРЅС‚РµРЅСЃРёРІРЅРѕСЃС‚СЊ РґРѕР¶РґСЏ
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_CAMERA, @Camera, 1, temp);  except end;   // РџРѕР»СѓС‡Р°РµРј РїРѕР»РѕР¶РµРЅРёРµ РєР°РјРµСЂС‹
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_VIGILANCE_CHECK, @VCheck, 1, temp);  except end;   // РџРѕР»СѓС‡Р°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РїСЂРѕРІРµСЂРєРё Р±РґРёС‚РµР»СЊРЅРѕСЃС‚Рё
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_SPEED_VSTRECHA, @wVstrSpeed, 4, temp);  except end;   // РџРѕР»СѓС‡Р°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РїСЂРѕРІРµСЂРєРё Р±РґРёС‚РµР»СЊРЅРѕСЃС‚Рё
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_SVETOFOR_DISTANCE, @SvetoforDist, 2, temp);  except end; // Получаем расстояние до свотофора
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_RAIN, @Rain, 1, temp);  except end;     // Получаем интенсивность дождя
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_CAMERA, @Camera, 1, temp);  except end;   // Получаем положение камеры
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_VIGILANCE_CHECK, @VCheck, 1, temp);  except end;   // Получаем состояние проверки бдительности
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_SPEED_VSTRECHA, @wVstrSpeed, 4, temp);  except end;   // Получаем состояние проверки бдительности
      try ReadProcessMemory(UnitMain.pHandle, ADDR_CAMERA_X, @CameraX, 2, temp);  except end;
      try ReadProcessMemory(UnitMain.pHandle, ADDR_AMPERAGE1, @TEDAmperage, 4, temp);  except end;
      try ReadProcessMemory(UnitMain.pHandle, ADDR_EDT_AMPERAGE, @EDTAmperage, 4, temp);  except end;
@@ -633,8 +718,9 @@ begin
      try ReadProcessMemory(UnitMain.pHandle, ADDR_EPT, @EPT, 1, temp);  except end;
      try ReadProcessMemory(UnitMain.pHandle, ADDR_ORDINATA, @Ordinata, 8, temp); except end;
      try ReadProcessMemory(UnitMain.pHandle, ADDR_OUTSIDE_LOCO_STATUS, @OutsideLocoStatus, 2, temp); except end;
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_VR242, @VR242, 4, temp); except end;
 
-     if FormSettings.cbHornClick.Checked = True then begin
+     if SimpleHorn = True then begin
         if GetAsyncKeyState(32) <> 0 then Svistok := 1 else Svistok := 0;
         if GetAsyncKeyState(66) <> 0 then Tifon := 1 else Tifon := 0;
      end;
@@ -653,32 +739,32 @@ begin
         end;
       except end;
 
-     // --- Р’С‹С‡РёСЃР»СЏРµРј РґР»РёРЅСѓ РІСЃС‚СЂРµС‡РЅРѕРіРѕ РїРѕРµРґР° РІ РјРµС‚СЂР°С… ---- //
+     // --- Вычисляем длину встречного поеда в метрах ---- //
      try
-        ReadProcessMemory(UnitMain.pHandle, addr_waglength, @wVstrDl, 8, temp); // РџРѕР»СѓС‡Р°РµРј РґР»РёРЅСѓ РїРµСЂРІРѕРіРѕ РІР°РіРѕРЅР°
+        ReadProcessMemory(UnitMain.pHandle, addr_waglength, @wVstrDl, 8, temp); // Получаем длину первого вагона
         Vstrecha_dlina := Vstrecha_dlina + Trunc(wVstrDl);
         Inc(addr_waglength, 18);
         for I:=1 to WagNum_Vstr do begin
            try
-              ReadProcessMemory(UnitMain.pHandle, addr_waglength, @wVstrDl, 8, temp); // РџРѕР»СѓС‡Р°РµРј РґР»РёРЅСѓ РІСЃС‚СЂРµС‡РєРё РІ С†РёРєР»Рµ
+              ReadProcessMemory(UnitMain.pHandle, addr_waglength, @wVstrDl, 8, temp); // Получаем длину встречки в цикле
               Vstrecha_dlina := Vstrecha_dlina + Trunc(wVstrDl);
               Inc(addr_waglength, 18);
            except end;
         end;
      except end;
 
-     // --- Р’С‹С‡РёСЃР»СЏРµРј РїСЂРёР±Р»РёР·РёС‚РµР»СЊРЅСѓСЋ РґР»РёРЅСѓ С‚СЂРµРєР° РІ Рј. --- //
+     // --- Вычисляем приблизительную длину трека в м. --- //
      if CoupleStat = 1 then begin
         try TrackLength := ConsistLength/(abs(Track-TrackTail)); except TrackLength := 100; end;
      end else begin
         TrackLength := 100;
      end;
 
-     // ------ Р§РёС‚Р°РµРј РїРµСЂРµРјРµРЅРЅС‹Рµ Р»РѕРєРѕРјРѕС‚РёРІР° РёР· РћР—РЈ ------- //
+     // ------ Читаем переменные локомотива из ОЗУ ------- //
      if LocoGlobal <> '' then
          try ProcReadDataMemoryAddr(); except end;
 
-     // --- РџРµСЂРµРІРѕРґ Р»РѕРєР°Р»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С… РІ РіР»РѕР±Р°Р»СЊРЅС‹Рµ ---- //
+     // --- Перевод локальных переменных в глобальные ---- //
      try Speed      := Trunc(wSpeed);         except end;
      try Vstr_Speed := Trunc(wVstrSpeed * 4); except end;
 
@@ -687,7 +773,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//   РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ Р·Р°РґР°РЅРёСЏ РЅР°С‡Р°Р»СЊРЅС‹С… Р°РґСЂРµСЃРѕРІ РІ РћР—РЈ Рё РїР°СЂР°РјРµС‚СЂРѕРІ Р»РѕРєРѕРјРѕС‚РёРІР°   //
+//   Подпрограмма для задания начальных адресов в ОЗУ и параметров локомотива   //
 //------------------------------------------------------------------------------//
 procedure InitializeStartParams(VersionID: Integer);
 begin
@@ -729,7 +815,8 @@ begin
           ADDR_ED4M_KONTROLLER:=ptr($091D5B04); ADDR_VL11m_VENT:=    ptr($091D5C25); ADDR_ORDINATA   :=   ptr($00803F50);
           ADDR_OUTSIDE_LOCO_STATUS:=ptr($00749865);ADDR_CHS8_VENT_VOLUME:=ptr($091D48BC); ADDR_CHS8_VENT_VOLUME_INCREMENTER:=ptr($091D48CC);
           ADDR_2ES5K_BV :=ptr($091D48CC); ADDR_CHS8_UNIPULS_AVARIA:= ptr($091D5024); ADDR_CHS8_GV_1  :=   ptr($09007FB4);
-          ADDR_VR242    :=ptr($0911080C); ADDR_PNEVM_SIGNAL   :=     ptr($0538D8D4);
+          ADDR_VR242    :=ptr($0911080C); ADDR_PNEVM_SIGNAL   :=     ptr($0538D8D4); ADDR_TEP70_TED  :=   ptr($091D5BD8);
+          ADDR_VL82_VENT:=ptr($091D48BC);      ADDR_VL82_COMPRESSOR:=ptr($091D48B8);
        end;
        if versionID = 1 then begin
           ADDR_Speed :=   ptr($0072CB38);       ADDR_Track    :=     ptr($0072CBFC); ADDR_KM_POS     :=   ptr($090F3F9C);
@@ -770,631 +857,663 @@ begin
           ADDR_ED4M_KONTROLLER:=ptr($091B92AC);ADDR_OUTSIDE_LOCO_STATUS:=ptr($0072CA62);
           ADDR_ED9M_KONTROLLER:=ptr($091B92BD);ADDR_CHS8_VENT_VOLUME:=ptr($091B8114);ADDR_CHS8_VENT_VOLUME_INCREMENTER:=ptr($091B8124);
           ADDR_2ES5K_BV :=ptr($091B8124); ADDR_CHS8_UNIPULS_AVARIA:= ptr($091B8818);ADDR_PNEVM_SIGNAL:=   ptr($0537114C);
+          ADDR_TEP70_TED:=ptr($091B9384);      ADDR_VL82_COMPRESSOR:=ptr($091B8110);    ADDR_VL82_VENT := ptr($091B8114);
        end;
 
-        // -/- Р’Р›80С‚ (VL80t) -/- //
+        // -/- ВЛ80т (VL80t) -/- //
         if LocoGlobal='VL80t' then begin
            LocoWorkDir         := 'TWS/VL80t/';
-           UltimateTEDAmperage := 1000;		// Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
-           LocoSectionsNum     := 2;		// Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 25;           // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
+           UltimateTEDAmperage := 1000;		// Задаем предельный ток нагрузки ТЭД
+           LocoSectionsNum     := 2;		// Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 25;           // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
            VentStartF          := PChar('TWS/VL80t/MV-start.wav');
            VentCycleF          := PChar('TWS/VL80t/MV-loop.wav');
            VentStopF           := PChar('TWS/VL80t/MV-stop.wav');
            XVentStartF         := PChar('TWS/VL80t/x_MV-start.wav');
            XVentCycleF         := PChar('TWS/VL80t/x_MV-loop.wav');
            XVentStopF          := PChar('TWS/VL80t/x_MV-stop.wav');
-           VentTDPitchIncrementer:=0;           // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0;            // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoTEDNamePrefiks  := 'VL_TED';     // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := '';           // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
-           RevPosF             := PChar('');    // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+           VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
+           LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
+           LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
+           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemoryVL80t;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemoryVL80t;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- Р’Р›85 (VL85) -/- //
+        // -/- ВЛ85 (VL85) -/- //
         if LocoGlobal='VL85' then begin
            LocoWorkDir         := 'TWS/VL85/';
-           UltimateTEDAmperage := 1000;		// Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
-           LocoSectionsNum     := 2;		// Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 25;           // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
-           VentTDPitchIncrementer:=0;           // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0;            // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoTEDNamePrefiks  := 'VL_TED';     // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := '';           // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
-           RevPosF             := PChar('');    // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+           UltimateTEDAmperage := 1000;		// Задаем предельный ток нагрузки ТЭД
+           LocoSectionsNum     := 2;		// Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 25;           // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
+           VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
+           LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
+           LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
+           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemoryVL85;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemoryVL85;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- Р’Р›82Рј (VL82m) -/- //
+        // -/- ВЛ82м (VL82m) -/- //
         if LocoGlobal='VL82m' then begin
            LocoWorkDir         := 'TWS/VL82m/';
-           UltimateTEDAmperage := 650;          // Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
-           LocoSectionsNum     := 2;		// Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 3;            // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
-           VentTDPitchIncrementer:=0;           // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0;            // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoTEDNamePrefiks  := 'VL_TED';     // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := '';           // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
-           RevPosF             := PChar('');    // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+           UltimateTEDAmperage := 650;          // Задаем предельный ток нагрузки ТЭД
+           LocoSectionsNum     := 2;		// Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 3;            // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
+           VentStartF          := PChar('TWS/VL82m/MV-start.wav');
+           VentCycleF          := PChar('TWS/VL82m/MV-loop.wav');
+           VentStopF           := PChar('TWS/VL82m/MV-stop.wav');
+           VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
+           LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
+           LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
+           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemoryVL82m;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemoryVL82m;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- Р’Р›11Рј (VL11m) -/- //
+        // -/- ВЛ11м (VL11m) -/- //
         if LocoGlobal='VL11m' then begin
            LocoWorkDir         := 'TWS/VL11m/';
-           UltimateTEDAmperage := 650;          // Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
-           LocoSectionsNum     := 2;		// Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 3;            // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
-           VentTDPitchIncrementer:=0;           // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0;            // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
+           UltimateTEDAmperage := 650;          // Задаем предельный ток нагрузки ТЭД
+           LocoSectionsNum     := 2;		// Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 3;            // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
+           VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
            VentStartF          := PChar('TWS/VL11m/MV-start.wav');
            VentCycleF          := PChar('TWS/VL11m/MV-loop.wav');
            VentStopF           := PChar('TWS/VL11m/MV-stop.wav');
            XVentStartF         := PChar('TWS/VL11m/x_MV-start.wav');
            XVentCycleF         := PChar('TWS/VL11m/x_MV-loop.wav');
            XVentStopF          := PChar('TWS/VL11m/x_MV-stop.wav');
-           LocoTEDNamePrefiks  := 'VL_TED';     // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := '';           // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
-           RevPosF             := PChar('');    // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+           LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
+           LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
+           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemoryVL11m;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemoryVL11m;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- 2Р­РЎ5Рљ (2ES5K) -/- //
+        // -/- 2ЭС5К (2ES5K) -/- //
         if LocoGlobal='2ES5K' then begin
            LocoWorkDir         := 'TWS/2ES5K/';
-           UltimateTEDAmperage := 1000;         // Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
-           LocoSectionsNum     := 2;		// Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 25;           // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
+           UltimateTEDAmperage := 1000;         // Задаем предельный ток нагрузки ТЭД
+           LocoSectionsNum     := 2;		// Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 25;           // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
            VentStartF          := PChar('TWS/EP1m/MV-start.wav');
            VentCycleF          := PChar('TWS/EP1m/MV-loop.wav');
            VentStopF           := PChar('TWS/EP1m/MV-stop.wav');
            XVentStartF         := PChar('TWS/EP1m/MV-start.wav');
            XVentCycleF         := PChar('TWS/EP1m/MV-loop.wav');
            XVentStopF          := PChar('TWS/EP1m/MV-stop.wav');
-           VentTDPitchIncrementer:=0;           // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0;            // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoTEDNamePrefiks  := 'VL_TED';     // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := '';           // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
-           RevPosF             := PChar('');    // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+           VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
+           LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
+           LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
+           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemory2ES5k;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemory2ES5k;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- Р­Рџ1Рј (EP1m) -/- //
+        // -/- ЭП1м (EP1m) -/- //
         if LocoGlobal='EP1m' then begin
            LocoWorkDir         := 'TWS/EP1m/';
            UltimateTEDAmperage := 1500;
-           LocoSectionsNum     := 1;		// Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 25;           // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
+           LocoSectionsNum     := 1;		// Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 25;           // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := True;         // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
            VentStartF          := PChar('TWS/EP1m/MV-start.wav');
            VentCycleF          := PChar('TWS/EP1m/MV-loop.wav');
            VentStopF           := PChar('TWS/EP1m/MV-stop.wav');
            XVentStartF         := PChar('TWS/EP1m/MV-start.wav');
            XVentCycleF         := PChar('TWS/EP1m/MV-loop.wav');
            XVentStopF          := PChar('TWS/EP1m/MV-stop.wav');
-           VentTDPitchIncrementer:=0;           // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0;            // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoTEDNamePrefiks  := 'EP_TED';     // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := 'EP_TED'; // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := '';           // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
-           RevPosF             := PChar('');    // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+           VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
+           LocoTEDNamePrefiks  := 'EP_TED';     // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := 'EP_TED'; // Задаем префикс названия папки со звуками редуктора
+           LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
+           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemoryEP1m;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemoryEP1m;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- Р§РЎ2Рє (CHS2K) -/- //
+        // -/- ЧС2к (CHS2K) -/- //
         if LocoGlobal='CHS2K' then begin
            LocoWorkDir         := 'TWS/CHS2K/';
-           UltimateTEDAmperage := 600;          // Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
-           LocoSectionsNum     := 1;		// Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 3;            // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
+           UltimateTEDAmperage := 600;          // Задаем предельный ток нагрузки ТЭД
+           LocoSectionsNum     := 1;		// Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 3;            // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := True;         // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
            VentStartF          := PChar('TWS/CHS2K/vent-start.wav');
            VentCycleF          := PChar('TWS/CHS2K/vent.wav');
            VentStopF           := PChar('TWS/CHS2K/vent-stop.wav');
            XVentStartF         := PChar('TWS/CHS2K/vent-start.wav');
            XVentCycleF         := PChar('TWS/CHS2K/vent.wav');
            XVentStopF          := PChar('TWS/CHS2K/vent-stop.wav');
-           VentTDPitchIncrementer:=0;           // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0.001;        // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoTEDNamePrefiks  := 'CHS_TED';    // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := '';           // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
-           RevPosF             := PChar('');    // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+           VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0.001;        // Задаем значение для инкрементера тональности МВ
+           LocoTEDNamePrefiks  := 'CHS_TED';    // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
+           LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
+           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemoryCHS2k;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemoryCHS2k;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- Р§РЎ4 (CHS4) -/- //
+        // -/- ЧС4 (CHS4) -/- //
         if LocoGlobal='CHS4' then begin
            LocoWorkDir         := 'TWS/CHS4t/';
-           UltimateTEDAmperage := 1500;         // Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
-           LocoSectionsNum     := 1;		// Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 25;           // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
-           VentTDPitchIncrementer:=0;           // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0;            // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoTEDNamePrefiks  := 'CHS_TED';    // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := '';           // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
+           UltimateTEDAmperage := 1500;         // Задаем предельный ток нагрузки ТЭД
+           LocoSectionsNum     := 1;		// Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 25;           // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := True;         // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := True;         // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := True;         // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
+           VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
+           LocoTEDNamePrefiks  := 'CHS_TED';    // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
+           LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
            RevPosF             := PChar(
-                      'TWS/revers-CHS.wav');    // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+                      'TWS/revers-CHS.wav');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 0;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 0;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemoryCHS4;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemoryCHS4;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- Р§РЎ4РєРІСЂ (CHS4 KVR) -/- //
+        // -/- ЧС4квр (CHS4 KVR) -/- //
         if LocoGlobal='CHS4 KVR' then begin
            LocoWorkDir         := 'TWS/CHS4KVR/';
-           UltimateTEDAmperage := 1500;         // Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
-           LocoSectionsNum     := 1;		// Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 25;           // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
+           UltimateTEDAmperage := 1500;         // Задаем предельный ток нагрузки ТЭД
+           LocoSectionsNum     := 1;		// Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 25;           // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := True;         // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := True;         // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := True;         // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := True;         // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
            VentStartF          := PChar('TWS/CHS4KVR/ventVU-start.wav');
            VentCycleF          := PChar('TWS/CHS4KVR/ventVU.wav');
            VentStopF           := PChar('TWS/CHS4KVR/ventVU-stop.wav');
            XVentStartF         := PChar('TWS/CHS4KVR/x_ventVU-start.wav');
            XVentCycleF         := PChar('TWS/CHS4KVR/x_ventVU.wav');
            XVentStopF          := PChar('TWS/CHS4KVR/x_ventVU-stop.wav');
-           VentTDPitchIncrementer:=0;           // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0.004;        // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoTEDNamePrefiks  := 'CHS_TED';    // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := '';           // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
+           VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0.004;        // Задаем значение для инкрементера тональности МВ
+           LocoTEDNamePrefiks  := 'CHS_TED';    // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
+           LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
            RevPosF             := PChar(
-                      'TWS/revers-CHS.wav');    // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+                      'TWS/Devices/21KR/revers.wav');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 0;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 0;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemoryCHS4kvr;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemoryCHS4kvr;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- Р§РЎ4С‚ (CHS4t) -/- //
+        // -/- ЧС4т (CHS4t) -/- //
         if LocoGlobal='CHS4t' then begin
            LocoWorkDir         := 'TWS/CHS4t/';
-           UltimateTEDAmperage := 1500;         // Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
-           LocoSectionsNum     := 1;		// Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 25;           // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
-           VentTDPitchIncrementer:=0.0025;      // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0;            // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoTEDNamePrefiks  := 'CHS_TED';    // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := '';           // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
+           UltimateTEDAmperage := 1500;         // Задаем предельный ток нагрузки ТЭД
+           LocoSectionsNum     := 1;		// Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 25;           // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := True;         // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := True;         // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := True;         // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := True;         // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
+           VentTDPitchIncrementer:=0.0025;      // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0.0025;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
+           LocoTEDNamePrefiks  := 'CHS_TED';    // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
+           LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
            RevPosF             := PChar(
-                      'TWS/revers-CHS.wav');    // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+                      'TWS/Devices/21KR/revers.wav');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemoryCHS4t;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemoryCHS4t;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- Р§РЎ8 (CHS8) -/- //
+        // -/- ЧС8 (CHS8) -/- //
         if LocoGlobal='CHS8' then begin
            LocoWorkDir         := 'TWS/CHS8/';
-           UltimateTEDAmperage := 1500;         // Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
-           LocoSectionsNum     := 2;		// Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 25;           // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
-           VentTDPitchIncrementer:=0.002;       // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0;            // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoTEDNamePrefiks  := 'CHS_TED';    // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := '';           // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
+           UltimateTEDAmperage := 1500;         // Задаем предельный ток нагрузки ТЭД
+           LocoSectionsNum     := 2;		// Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 25;           // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := True;         // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := True;         // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := True;         // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := True;         // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
+           VentTDPitchIncrementer:=0.0027;        // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0.0025;       // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
+           LocoTEDNamePrefiks  := 'CHS_TED';    // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
+           LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
            if (LocoNum > 2) and (LocoNum < 33) then
               RevPosF             := PChar(
-                         'TWS/CHS8/E1/revers.wav') // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+                         'TWS/CHS8/E1/revers.wav') // Задаем имя файла реверсора
            else
               RevPosF             := PChar(
-                         'TWS/CHS8/E2/revers.wav');// Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+                         'TWS/CHS8/E2/revers.wav');// Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemoryCHS8;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemoryCHS8;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- Р§РЎ7 (CHS7) -/- //
+        // -/- ЧС7 (CHS7) -/- //
         if LocoGlobal='CHS7' then begin
            LocoWorkDir         := 'TWS/CHS7/';
-           UltimateTEDAmperage := 800;          // Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
-           LocoSectionsNum     := 2;		// Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 3;            // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
+           UltimateTEDAmperage := 800;          // Задаем предельный ток нагрузки ТЭД
+           LocoSectionsNum     := 2;		// Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 3;            // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := True;         // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := True;         // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := True;         // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := True;         // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := True;         // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
            VentStartF          := PChar('TWS/CHS7/mv-start.wav');
            VentCycleF          := PChar('TWS/CHS7/mv-loop.wav');
            VentStopF           := PChar('TWS/CHS7/mv-stop.wav');
            XVentStartF         := PChar('TWS/CHS7/x_mv-start.wav');
            XVentCycleF         := PChar('TWS/CHS7/x_mv-loop.wav');
            XVentStopF          := Pchar('TWS/CHS7/x_mv-stop.wav');
-           VentTDPitchIncrementer:=0;           // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0.001;        // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoTEDNamePrefiks  := 'CHS_TED';    // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := '';           // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
-           RevPosF             := PChar(
-                      'TWS/revers-CHS.wav');    // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+           VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0.001;        // Задаем значение для инкрементера тональности МВ
+           LocoTEDNamePrefiks  := 'CHS_TED';    // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
+           LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
+           RevPos_N_F          := PChar(
+                      'TWS/CHS7/revers_-+_N.wav');    // Задаем имя файла реверсора
+           RevPos_N_1_F          := PChar(
+                      'TWS/CHS7/revers_N_+1.wav');
+           RevPos_N_255_F          := PChar(
+                      'TWS/CHS7/revers_N_-1.wav');
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 0;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 2;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemoryCHS7;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemoryCHS7;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- РўР­Рџ70 (TEP70) -/- //
+        // -/- ТЭП70 (TEP70) -/- //
         if LocoGlobal='TEP70' then begin
            LocoWorkDir         := 'TWS/TEP70/';
-           UltimateTEDAmperage := 800;          // Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
-           LocoSectionsNum     := 1;		// Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 0;            // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
-           VentTDPitchIncrementer:=0;           // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0;            // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoTEDNamePrefiks  := 'VL_TED';     // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := 'TEP70';      // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
-           RevPosF             := PChar('');    // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+           UltimateTEDAmperage := 800;          // Задаем предельный ток нагрузки ТЭД
+           LocoSectionsNum     := 1;		// Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 0;            // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := True;         // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := False;        // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
+           VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
+           LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
+           LocoDIZNamePrefiks  := 'TEP70';      // Задаем префикс названия папки с звуками работы дизеля
+           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemoryTEP70;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemoryTEP70;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- РўР­Рџ70Р±СЃ (TEP70bs) -/- //
+        // -/- ТЭП70бс (TEP70bs) -/- //
         if LocoGlobal='TEP70bs' then begin
            LocoWorkDir         := 'TWS/TEP70bs/';
-           UltimateTEDAmperage := 800;          // Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
-           LocoSectionsNum     := 1;		// Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 0;            // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
-           VentTDPitchIncrementer:=0;           // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0;            // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoTEDNamePrefiks  := 'VL_TED';     // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := 'TEP70bs';    // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
-           RevPosF             := PChar('');    // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+           UltimateTEDAmperage := 800;          // Задаем предельный ток нагрузки ТЭД
+           LocoSectionsNum     := 1;		// Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 0;            // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := True;         // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := False;        // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
+           VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
+           LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
+           LocoDIZNamePrefiks  := 'TEP70bs';    // Задаем префикс названия папки с звуками работы дизеля
+           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemoryTEP70BS;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemoryTEP70BS;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- Рњ62 (M62) -/- //
+        // -/- М62 (M62) -/- //
         if LocoGlobal='M62' then begin
            LocoWorkDir         := 'TWS/M62/';
-           UltimateTEDAmperage := 800;          // Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
+           UltimateTEDAmperage := 800;          // Задаем предельный ток нагрузки ТЭД
            if VersionID = 1 then
-              LocoSectionsNum     := 1		// Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
+              LocoSectionsNum     := 1		// Задаем количество секций для текущего локомотива
            else
               LocoSectionsNum     := 2;
-           LocoPowerVoltage    := 0;            // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
-           VentTDPitchIncrementer:=0;           // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0;            // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoTEDNamePrefiks  := 'VL_TED';     // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := 'M62';        // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
+           LocoPowerVoltage    := 0;            // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := True;         // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := True;         // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := True;         // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := False;        // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
+           VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
+           LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
+           LocoDIZNamePrefiks  := 'M62';        // Задаем префикс названия папки с звуками работы дизеля
            RevPosF             := PChar(
-                      'TWS/M62/reverser.wav');  // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+                      'TWS/M62/reverser.wav');  // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemoryM62;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemoryM62;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- РўР­Рњ18РґРј (TEM18dm) -/- //
+        // -/- ТЭМ18дм (TEM18dm) -/- //
         if LocoGlobal='TEM18dm' then begin
            LocoWorkDir         := 'TWS/TEM18dm/';
-           //UltimateTEDAmperage := 800;        // Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
-           LocoSectionsNum     := 1;		// Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 0;            // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
-           VentTDPitchIncrementer:=0;           // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0;            // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoDIZNamePrefiks  := '';           // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           RevPosF             := PChar('');    // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+           //UltimateTEDAmperage := 800;        // Задаем предельный ток нагрузки ТЭД
+           LocoSectionsNum     := 1;		// Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 0;            // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := False;        // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := False;        // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
+           VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
+           LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
+           LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
+           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemoryTEM18dm;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemoryTEM18dm;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- 2РўР­10Сѓ (2TE10U) -/- //
+        // -/- 2ТЭ10у (2TE10U) -/- //
         if LocoGlobal='2TE10U' then begin
            LocoWorkDir         := 'TWS/2TE10U/';
-           UltimateTEDAmperage := 800;          // Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
-           LocoSectionsNum     := 2;		// Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 0;            // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
-           VentTDPitchIncrementer:=0;           // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0;            // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoTEDNamePrefiks  := 'VL_TED';     // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := '2TE10U';     // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
-           RevPosF             := PChar('');    // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+           UltimateTEDAmperage := 800;          // Задаем предельный ток нагрузки ТЭД
+           LocoSectionsNum     := 2;		// Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 0;            // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := True;         // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := False;        // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
+           VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
+           LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
+           LocoDIZNamePrefiks  := '2TE10U';     // Задаем префикс названия папки с звуками работы дизеля
+           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemory2TE10U;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemory2TE10U;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- Р­Р”4Рј (ED4M) -/- //
+        // -/- ЭД4м (ED4M) -/- //
         if LocoGlobal='ED4M' then begin
            LocoWorkDir         := 'TWS/ED4m/';
-           //UltimateTEDAmperage := 800;        // Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
-           LocoSectionsNum     := 1;	        // Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 0;            // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
+           //UltimateTEDAmperage := 800;        // Задаем предельный ток нагрузки ТЭД
+           LocoSectionsNum     := 1;	        // Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 0;            // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := True;         // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := True;         // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := True;         // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
            VentStartF          := PChar('TWS/ED4m/sinxrom_start.wav');
            VentCycleF          := PChar('TWS/ED4m/sinxrom_loop.wav');
            VentStopF           := PChar('TWS/ED4m/sinxrom_stop.wav');
            XVentStartF         := PChar('TWS/ED4m/sinxrom_start.wav');
            XVentCycleF         := PChar('TWS/ED4m/sinxrom_loop.wav');
            XVentStopF          := PChar('TWS/ED4m/sinxrom_stop.wav');
-           VentTDPitchIncrementer:=0;           // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0;            // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoTEDNamePrefiks  := 'ED4m';           // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := '';           // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
+           VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
+           LocoTEDNamePrefiks  := 'ED4m';       // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := 'ED4m';   // Задаем префикс названия папки со звуками редуктора
+           ReduktorF := PChar('TWS/'+LocoReductorNamePrefiks+'/ted_vibeg.wav');
+           LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
            if LocoNum < 160 then
               RevPosF             := PChar(
-                         'TWS/ED4m/revers.wav')    // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+                         'TWS/ED4m/revers.wav')    // Задаем имя файла реверсора
            else
               RevPosF             := PChar(
                          'TWS/ED4m/CPPK_revers.wav');
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 0;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 0;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemoryED4M;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemoryED4M;		// Задаем указатель на функцию чтения памяти
         end;
-        // -/- Р­Р”9Рј (ED9M) -/- //
+        // -/- ЭД9м (ED9M) -/- //
         if LocoGlobal='ED9M' then begin
            LocoWorkDir         := 'TWS/ED4m/';
-           //UltimateTEDAmperage := 800;        // Р—Р°РґР°РµРј РїСЂРµРґРµР»СЊРЅС‹Р№ С‚РѕРє РЅР°РіСЂСѓР·РєРё РўР­Р”
-           LocoSectionsNum     := 1;	        // Р—Р°РґР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р»РѕРєРѕРјРѕС‚РёРІР°
-           LocoPowerVoltage    := 0;            // РўРёРї СЌР»РµРєС‚СЂРѕС„РёРєР°С†РёРё Р»РѕРєРѕРјРѕС‚РёРІР° [0, -, ~]
-           LocoWithTED         := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўР­Р”-РѕРІ
-           LocoWithReductor    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° СЂРµРґСѓРєС‚РѕСЂР°
-           LocoWithDIZ         := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РґРёР·РµР»СЏ
-           LocoWithSndReversor := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°РґРёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ СЂРµРІРµСЂСЃРѕСЂР°
-           LocoWithSndKM       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєРѕРІ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
-           LocoWithSndKM_OP    := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РїРѕСЃС‚Р°РЅРѕРІРєРё РћРџ
-           LocoWithSndTP       := True;         // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ Р·РІСѓРєР° РўРџ
-           LocoWithExtMVSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњР’
-           LocoWithExtMKSound  := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ РІРЅРµС€РЅРёС… Р·РІСѓРєРѕРІ РњРљ
-           LocoWithMVPitch     := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’
-           LocoWithMVTDPitch   := False;        // Р—Р°РґР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°Р»РёС‡РёСЏ РЅР° РґР°РЅРЅРѕРј Р»РѕРєРѕРјРѕС‚РёРІРµ С‚РѕРЅР°Р»СЊРЅРѕРіРѕ СЂРµРіСѓР»РёСЂРѕРІР°РЅРёСЏ РњР’ РўР”
+           //UltimateTEDAmperage := 800;        // Задаем предельный ток нагрузки ТЭД
+           LocoSectionsNum     := 1;	        // Задаем количество секций для текущего локомотива
+           LocoPowerVoltage    := 0;            // Тип электрофикации локомотива [0, -, ~]
+           LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
+           LocoWithReductor    := True;         // Задаем состояние наличия на данном локомотиве звука редуктора
+           LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithSndReversor := True;         // Задаем состояние надичия на данном локомотиве звуков реверсора
+           LocoWithSndKM       := True;         // Задаем состояние наличия на данном локомотиве звуков контроллера
+           LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
+           LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
+           LocoWithExtMVSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
            VentStartF          := PChar('TWS/ED4m/trans_start.wav');
            VentCycleF          := PChar('TWS/ED4m/trans_loop.wav');
            VentStopF           := PChar('TWS/ED4m/trans_stop.wav');
            XVentStartF         := PChar('TWS/ED4m/trans_start.wav');
            XVentCycleF         := PChar('TWS/ED4m/trans_loop.wav');
            XVentStopF          := PChar('TWS/ED4m/trans_stop.wav');
-           VentTDPitchIncrementer:=0;           // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’ РўР”
-           VentPitchIncrementer:= 0;            // Р—Р°РґР°РµРј Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РёРЅРєСЂРµРјРµРЅС‚РµСЂР° С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё РњР’
-           LocoTEDNamePrefiks  := 'ED4m';           // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё РўР­Р”
-           LocoReductorNamePrefiks := '';       // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃРѕ Р·РІСѓРєР°РјРё СЂРµРґСѓРєС‚РѕСЂР°
-           LocoDIZNamePrefiks  := '';           // Р—Р°РґР°РµРј РїСЂРµС„РёРєСЃ РЅР°Р·РІР°РЅРёСЏ РїР°РїРєРё СЃ Р·РІСѓРєР°РјРё СЂР°Р±РѕС‚С‹ РґРёР·РµР»СЏ
+           VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
+           VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
+           LocoTEDNamePrefiks  := 'ED4m';       // Задаем префикс названия папки с звуками ТЭД
+           LocoReductorNamePrefiks := 'ED4m';   // Задаем префикс названия папки со звуками редуктора
+           ReduktorF := PChar('TWS/'+LocoReductorNamePrefiks+'/ted_vibeg.wav');
+           LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
            RevPosF             := PChar(
-                      'TWS/ED4m/CPPK_revers.wav');    // Р—Р°РґР°РµРј РёРјСЏ С„Р°Р№Р»Р° СЂРµРІРµСЂСЃРѕСЂР°
+                      'TWS/ED4m/CPPK_revers.wav');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 0;            // Р—Р°РґР°РµРј С‚РёРї РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СЂРµРІРµСЂСЃРѕСЂР° (0-РґР°РЅРЅС‹Рµ СЃ РїР°РјСЏС‚Рё, 1-РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё)
+           LocoSndReversorType := 0;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
-              @ReadDataMemoryED9M;		// Р—Р°РґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ С‡С‚РµРЅРёСЏ РїР°РјСЏС‚Рё
+              @ReadDataMemoryED9M;		// Задаем указатель на функцию чтения памяти
         end;
+
+        if FileExists(LocoWorkDir+'DNoise.wav') = True then
+           LocoWithDNoisePitch := True else LocoWithDNoisePitch := False;
      end;
 end;
 

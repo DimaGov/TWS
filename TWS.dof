@@ -90,7 +90,7 @@ MaxStackSize=1048576
 ImageBase=4194304
 ExeDescription=
 [Directories]
-OutputDir=E:\Games\zdsimulator55.008
+OutputDir=D:\Games\zdsimulator55.008(3)
 UnitOutputDir=
 PackageDLLOutputDir=
 PackageDCPOutputDir=
@@ -140,5 +140,8 @@ Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 Count=1
 Item0=G:\Projects\TWS - копия\src
 [HistoryLists\hlOutputDirectorry]
-Count=1
-Item0=E:\Games\zdsimulator55.008
+Count=4
+Item0=D:\Games\zdsimulator55.008(3)
+Item1=D:\Games\zdsimulator55.008(2)
+Item2=D:\Projects\TWS - копия - копия
+Item3=E:\Games\zdsimulator55.008

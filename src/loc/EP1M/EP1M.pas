@@ -48,11 +48,7 @@ implementation
    // ----------------------------------------------------
    procedure EP1M_.mk_step();
    begin
-      if AnsiCompareStr(CompressorCycleF, '') <> 0 then begin
-          if (GetChannelRemaindPlayTime2Sec(Compressor_Channel) <= 0.8) and
-             (BASS_ChannelIsActive(CompressorCycleChannel)=0)
-          then isPlayCompressorCycle:=False;
-      end;
+      ComprRemaindTimeCheck();
 
       if Compressor<>Prev_Compressor then begin
          if Compressor<>0 then begin
@@ -72,6 +68,8 @@ implementation
    // ----------------------------------------------------
    procedure EP1M_.vent_step();
    begin
+      VentRemaindTimeCheck();
+
       if (GetAsyncKeyState(16) <> 0) then begin
          if GetAsyncKeyState(70)<>0 then begin Vent := 1; VentVolume:=60; end;
          if GetAsyncKeyState(82)<>0 then begin Vent2:= 1; VentVolume:=75; end;

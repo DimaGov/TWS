@@ -2,7 +2,14 @@ unit CHS4T;
 
 interface
 
-uses KR21;
+uses KR21, VR242, ExtCtrls;
+
+type TTimerEvents = class
+    public
+
+      procedure OnTimer(Sender: TObject);
+      
+    end;
 
 type chs4t_ = class (TObject)
     private
@@ -10,8 +17,15 @@ type chs4t_ = class (TObject)
 
       GRIncrementer: Byte;
 
-      kr21__: kr21_;
+      CompressorDifferenceTimer: TTimer;
+      CompressorDifferenceTimerEvents: TTimerEvents;
 
+      PrevGR_chs4t: Double;
+
+      kr21__: kr21_;
+      vr242__: vr242_;
+
+      procedure np22_step();
       procedure vent_step();
       procedure mk_step();
       procedure em_latch_step();
@@ -19,6 +33,8 @@ type chs4t_ = class (TObject)
 
     public
 
+      CompressorGRDifference: Double;
+      
       procedure step();
 
     published
@@ -29,16 +45,23 @@ type chs4t_ = class (TObject)
 
 implementation
 
-   uses UnitMain, soundManager, Bass, SysUtils;
+   uses UnitMain, soundManager, Bass, SysUtils, Math;
 
    // ----------------------------------------------------
-   //
+   //  Процедура создания класса CHS4T
    // ----------------------------------------------------
    constructor CHS4T_.Create;
    begin
       soundDir := 'TWS\CHS4t\';
 
-      kr21__ := kr21_.Create();
+      // Создаем таймер для проверки разницы показаний давления ГР в промежутке времени
+      CompressorDifferenceTimer := TTimer.Create(UnitMain.FormMain);
+      CompressorDifferenceTimer.Interval := 600;
+      CompressorDifferenceTimer.OnTimer := CompressorDifferenceTimerEvents.OnTimer;
+      CompressorDifferenceTimer.Enabled := True;
+
+      kr21__ := kr21_.Create('TWS\Devices\21KR\');
+      vr242__ := vr242_.Create();
    end;
 
    // ----------------------------------------------------
@@ -49,11 +72,13 @@ implementation
       if FormMain.cbVspomMash.Checked = True then begin
          vent_step();
          mk_step();
+         np22_step();
       end;
 
       if FormMain.cbCabinClicks.Checked = True then begin
          kr21__.step();
          em_latch_step();
+         vr242__.step();
       end;
    end;
 
@@ -62,46 +87,105 @@ implementation
    // ----------------------------------------------------
    procedure CHS4T_.em_latch_step();
    begin
-      if ((Prev_KMAbs=0) and (KM_Pos_1>0)) or ((KM_Pos_1=0) and (Prev_KMAbs>0)) then begin
-         IMRZashelka:=PChar('TWS/EM_zashelka.wav'); isPlayIMRZachelka:=False;
+      if ((Prev_KMAbs=0) and (KM_Pos_1>0)) or ((KM_Pos_1>0) and (Prev_KMAbs=0)) Or ((KM_Pos_1 = 0) And ((Reostat>0) And (PrevReostat=0))) then begin
+         IMRZashelka:=PChar('TWS\Devices\21KR\EM_zashelka_ON.wav'); isPlayIMRZachelka:=False;
       end;
-      if PrevReostat + Reostat = 1 then begin
-         IMRZashelka:=PChar('TWS/EM_zashelka.wav'); isPlayIMRZachelka:=False;
+      if ((Prev_KMAbs>0) and (KM_Pos_1=0)) or ((KM_Pos_1=0) and (Prev_KMAbs>0)) Or ((KM_Pos_1 = 0) And ((Reostat=0) And (PrevReostat>0))) then begin
+         IMRZashelka:=PChar('TWS\Devices\21KR\EM_zashelka_OFF.wav'); isPlayIMRZachelka:=False;
+      end;
+   end;
+
+   procedure CHS4T_.np22_step();
+   begin
+      if KM_Pos_1 > Prev_KMAbs then begin
+         if KM_pos_1 mod 2 = 0 then
+            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'np22/22NP_nabor_2.wav'))
+         else
+            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'np22/22NP_nabor_1.wav'));
+         isPlayLocoPowerEquipment := False;
+      end;
+      if KM_Pos_1 < Prev_KMAbs then begin
+         if KM_Pos_1 mod 2 = 0 then
+            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'np22/22NP_sbros_2.wav'))
+         else
+            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'np22/22NP_sbros_1.wav'));
+         isPlayLocoPowerEquipment := False;
+      end;
+      if KM_OP > Prev_KM_OP then begin
+         LocoPowerEquipmentF := StrNew(PChar(soundDir + 'np22/22NP_op_plus.wav'));
+         isPlayLocoPowerEquipment := False;
+      end;
+      if KM_OP < Prev_KM_OP then begin
+         LocoPowerEquipmentF := StrNew(PChar(soundDir + 'np22/22NP_op_minus.wav'));
+         isPlayLocoPowerEquipment := False;
       end;
    end;
 
    // ----------------------------------------------------
    //
    // ----------------------------------------------------
-   procedure CHS4T_.mk_step();
+   procedure TTimerEvents.OnTimer(Sender: TObject);
    begin
-      if GR > PrevGR then begin
-         GRIncrementer := 0;
+      CHS4T__.CompressorGRDifference := GR-CHS4T__.PrevGR_chs4t;
+      if CHS4T__.CompressorGRDifference >= 0.015 then begin
          Compressor := 1;
-      end else begin
+      end;
+
+      if CHS4T__.CompressorGRDifference <= 0 then begin
+         if GRIncrementer > 2 then begin
+            Compressor := 0;
+            GRIncrementer := 0;
+         end;
+
          Inc(GRIncrementer);
-         if GRIncrementer > 2 then Compressor := 0;
       end;
 
-      if AnsiCompareStr(CompressorCycleF, '') <> 0 then begin
-          if (GetChannelRemaindPlayTime2Sec(Compressor_Channel) <= 0.8) and
-             (BASS_ChannelIsActive(CompressorCycleChannel)=0)
-          then isPlayCompressorCycle:=False;
-      end;
-      if AnsiCompareStr(XCompressorCycleF, '')<> 0 then begin
-          if (GetChannelRemaindPlayTime2Sec(XCompressor_Channel) <= 0.8) and
-             (BASS_ChannelIsActive(XCompressorCycleChannel)=0)
-          then isPlayXCompressorCycle:=False;
-      end;
+      CHS4T__.PrevGR_chs4t := GR;
+   end;
 
-      if Compressor<>Prev_Compressor then begin
-         if Compressor<>0 then begin
+   // ----------------------------------------------------
+   //
+   // ----------------------------------------------------
+   procedure CHS4T_.mk_step();
+   var
+     temp: Double;
+   begin
+      (*GR := RoundTo(GR, -2);
+
+      if GR > PrevGR then begin
+         If GRIncrementer = 0 then begin
+            temp := GR; GRIncrementer := 1;
+         end;
+         if (GRIncrementer = 1) and ((GR-temp) >= 0.2) then begin
+            if ((BASS_ChannelIsActive(Compressor_Channel) = 0) Or
+                (BASS_ChannelIsActive(CompressorCycleChannel) = 0)) then begin
+            //GRIncrementer := 0;
+            Compressor := 1;
+            end;
+         end;
+      end;
+      if ((BASS_ChannelIsActive(Compressor_Channel)     <> 0) or
+         (BASS_ChannelIsActive(CompressorCycleChannel) <> 0)) and (GR < PrevGR) then begin
+         //Inc(GRIncrementer);
+         //if GRIncrementer > 2 then begin
+         GRIncrementer := 0;
+         Compressor := 0;
+         //end;
+      end;*)
+
+      if Voltage < 1.0 then Compressor := 0;
+
+      ComprRemaindTimeCheck();
+
+      if Compressor <> Prev_Compressor then begin
+         if Compressor <> 0 then begin
             CompressorF       := StrNew(PChar(soundDir + 'mk_start.wav'));
             CompressorCycleF  := StrNew(PChar(soundDir + 'mk_loop.wav'));
             XCompressorF      := StrNew(PChar(soundDir + 'x_mk_start.wav'));
             XCompressorCycleF := StrNew(PChar(soundDir + 'x_mk_loop.wav'));
             isPlayCompressor := False; isPlayXCompressor := False;
-         end else begin
+         end;
+         if Compressor = 0 then begin
             CompressorF  := StrNew(PChar(soundDir + 'mk_stop.wav'));
             XCompressorF := StrNew(PChar(soundDir + 'x_mk_stop.wav'));
             CompressorCycleF := PChar(''); XCompressorCycleF := PChar('');
@@ -116,6 +200,8 @@ implementation
    procedure CHS4T_.vent_step();
    begin
       VentTDVol := FormMain.trcBarVspomMahVol.Position/100;
+
+      VentTDRemaindTimeCheck();
 
       if (Vent<>0) and (Prev_Vent=0) then begin
          VentTDF       := StrNew(PChar(soundDir + 'ventTD-start.wav'));

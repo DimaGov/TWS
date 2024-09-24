@@ -54,7 +54,7 @@ implementation
       if (TCIncrementer2 > Trunc(300/MainCycleFreq)) then begin
          singleTemp1 := TC - PrevTC;
          singleTemp2 := Abs(singleTemp1) * 4000;
-         FormMain.Label1.Caption := FloatToStr(singleTemp2);
+         //FormMain.Label1.Caption := FloatToStr(singleTemp2);
          TCIncrementer2 := 0;
       end;
       if Abs(singleTemp2) > 10 then begin

@@ -13,7 +13,7 @@ interface
 
 implementation
 
-uses UnitMain, inifiles, SysUtils, UnitSettings;
+uses UnitMain, inifiles, SysUtils;
 
 //------------------------------------------------------------------------------//
 //                Подпрограмма для загрузки настроек TWS из файла               //
@@ -72,13 +72,17 @@ begin
      Temp:=StrToInt(Ini.ReadString('settings', 'CB18', '1'));
      if Temp=1 then cbSAVPESounds.Checked:=True;
      Temp:=StrToInt(Ini.ReadString('settings', 'CB19', '0'));
-     if Temp=1 then FormSettings.cbSlowComputer.Checked:=True;
+     if Temp=1 then SlowComputer := True;
      Temp:=StrToInt(Ini.ReadString('settings', 'CB20', '0'));
      if Temp=1 then cbSAVPE_Marketing.Checked:=True;
      Temp:=StrToInt(Ini.ReadString('settings', 'CB21', '0'));
      if Temp=1 then cbExtIntSounds.Checked:=True;
      Temp:=StrToInt(Ini.ReadString('settings', 'CB22', '0'));
      if Temp=1 then cbEPL2TBlock.Checked:=True;
+     Temp:=StrToInt(Ini.ReadString('settings', 'CB23', '1'));
+     if Temp=1 then MVPS5secZvonok := True;
+     Temp:=StrToInt(Ini.ReadString('settings', 'CB24', '1'));
+     if Temp=1 then VR242Allow := True;
      Temp:=StrToInt(Ini.ReadString('settings', 'RB1', '1'));
      if Temp=1 then begin RadioButton1.Checked:=True; end else RadioButton1.Checked:=False;
      Temp:=StrToInt(Ini.ReadString('settings', 'RB2', '1'));
@@ -91,6 +95,14 @@ begin
      ClockMain.Interval:=StrToInt(Ini.ReadString('settings', 'Timer1FREQ', '20'));
      timerSearchSimulatorWindow.Interval:=StrToInt(Ini.ReadString('settings', 'TimerRefresherFREQ', '500'));
      Ini.Free();
+
+     if SlowComputer = True then
+        FormMain.ClockMain.Interval := 100
+     else
+        FormMain.ClockMain.Interval := 20;
+
+        UnitMain.MainCycleFreq := FormMain.ClockMain.Interval;
+
      end;
 end;
 
@@ -150,7 +162,7 @@ begin
      Ini.WriteString('settings', 'CB17', IntToStr(Temp));
      if cbSAVPESounds.Checked=True then Temp:=1 else Temp:=0;
      Ini.WriteString('settings', 'CB18', IntToStr(Temp));
-     if FormSettings.cbSlowComputer.Checked=True then Temp:=1 else Temp:=0;
+     if SlowComputer = True then Temp:=1 else Temp:=0;
      Ini.WriteString('settings', 'CB19', IntToStr(Temp));
      if cbSAVPE_Marketing.Checked=True then Temp:=1 else Temp:=0;
      Ini.WriteString('settings', 'CB20', IntToStr(Temp));
@@ -158,6 +170,10 @@ begin
      Ini.WriteString('settings', 'CB21', IntToStr(Temp));
      if cbEPL2TBlock.Checked=True then Temp:=1 else Temp:=0;
      Ini.WriteString('settings', 'CB22', IntToStr(Temp));
+     if MVPS5secZvonok = True then Temp:=1 else Temp:=0;
+     Ini.WriteString('settings', 'CB23', IntToStr(Temp));
+     if VR242Allow = True then Temp:=1 else Temp:=0;
+     Ini.WriteString('settings', 'CB24', IntToStr(Temp));
      if RadioButton1.Checked=True then Temp:=1 else Temp:=0;
      Ini.WriteString('settings', 'RB1', IntToStr(Temp));
      if RadioButton2.Checked=True then Temp:=1 else Temp:=0;

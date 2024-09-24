@@ -29,7 +29,11 @@ uses
   ED4M in 'src\loc\ED4M\ED4M.pas',
   ED9M in 'src\loc\ED9M\ED9M.pas',
   KVT254 in 'src\kvt254\KVT254.pas',
-  VR242 in 'src\vr242\VR242.pas';
+  VR242 in 'src\vr242\VR242.pas',
+  CHS2K in 'src\loc\CHS2K\CHS2K.pas',
+  VL11M in 'src\loc\VL11M\VL11M.pas',
+  sl2m in 'src\SL2m\sl2m.pas',
+  VL82M in 'src\loc\VL82m\VL82M.pas';
 
 {$R *.res}
 

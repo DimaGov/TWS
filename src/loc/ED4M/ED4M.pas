@@ -6,11 +6,24 @@ type ed4m_ = class (TObject)
     private
       soundDir: String;
 
+      PrevKeyKKR:      Byte;
+
+      // Тумблера
       procedure bv_step();
       procedure ept_step();
+      procedure hLights_step();
+      procedure trolleyClick_step();
+      // Комбинированый кран
+      procedure combCrane_step();
+      // Вспом. машины
       procedure mk_step();
+      procedure trolley_step();
       procedure sinxrom_step();
       procedure door_step();
+      // Звуки прибытия-отправления
+      procedure prib_step();
+      procedure stop_razgon_step();
+      procedure trog_step();
     protected
 
     public
@@ -25,7 +38,7 @@ type ed4m_ = class (TObject)
 
 implementation
 
-   uses UnitMain, SysUtils, soundManager, Bass;
+   uses UnitMain, SysUtils, soundManager, Bass, Windows, SAVP;
 
    // ----------------------------------------------------
    //
@@ -43,12 +56,24 @@ implementation
       if FormMain.cbVspomMash.Checked = True then begin
          mk_step();
          sinxrom_step();
+         trolley_step();
          door_step();
       end;
 
       if FormMain.cbCabinClicks.Checked = True then begin
          bv_step();
          ept_step();
+         hLights_step();
+         trolleyClick_step();
+         combCrane_step();
+      end;
+
+      if FormMain.cbLocPerestuk.Checked = True then begin
+         if isUPU = False then begin
+            prib_step();
+            trog_step();
+            stop_razgon_step();
+         end;
       end;
    end;
 
@@ -73,9 +98,85 @@ implementation
    // ----------------------------------------------------
    //
    // ----------------------------------------------------
+   procedure ed4m_.combCrane_step();
+   begin
+      if PrevKeyKKR = 0 then begin
+         if GetAsyncKeyState(76) <> 0 then begin
+            IMRZashelka:=PChar('TWS/TM_Kran.wav'); isPlayIMRZachelka:=False; PrevKeyKKR:=1;
+         end;
+      end else begin
+         if (GetAsyncKeyState(16)=0) and (GetAsyncKeyState(76)=0) then PrevKeyKKR:=0;
+      end;
+   end;
+
+   // ----------------------------------------------------
+   //
+   // ----------------------------------------------------
    procedure ed4m_.bv_step();
    begin
-      ;
+      if BV <> PrevBV then begin
+         LocoPowerEquipmentF := StrNew(PChar(soundDir + 'tumbler.wav'));
+         isPlayLocoPowerEquipment:=False;
+      end;
+   end;
+
+   // ----------------------------------------------------
+   //
+   // ----------------------------------------------------
+   procedure ed4m_.trolley_step();
+   begin
+      if FrontTP<>PrevFrontTP then begin
+         if FrontTP=1 then FTPF := StrNew(PChar(soundDir + 'TPUp.wav'));
+         if FrontTP=0 then FTPF := StrNew(PChar(soundDir + 'TPDown.wav'));
+         isPlayFTP:=False;
+      end;
+   end;
+
+   // ----------------------------------------------------
+   //
+   // ----------------------------------------------------
+   procedure ed4m_.trolleyClick_step();
+   begin
+      if FrontTP <> PrevFrontTP then begin
+         LocoPowerEquipmentF := StrNew(PChar(soundDir + 'tumbler.wav'));
+         isPlayLocoPowerEquipment:=False;
+      end;
+   end;
+
+   // ----------------------------------------------------
+   //
+   // ----------------------------------------------------
+   procedure ed4m_.trog_step();
+   var
+      J: Integer;
+   begin
+      if (Acceleretion>0) and (PrevAcceleretion=0) and (Speed<1) then begin
+         J:=Random(9);
+         TrogF := StrNew(PChar(soundDir + 'Stuk-Trog/Stuk-Trog-I-'+IntToStr(J)+'.wav'));
+         isPlayTrog:=False;
+      end;
+   end;
+
+   // ----------------------------------------------------
+   //
+   // ----------------------------------------------------
+   procedure ed4m_.prib_step();
+   begin
+      if (Speed=0) and (PrevSpeed_Fakt<>0) and (Acceleretion<=-0.6) then begin
+         TrogF := StrNew(PChar(soundDir + 'prib.wav'));
+         isPlayTrog:=False;
+      end;
+   end;
+
+   // ----------------------------------------------------
+   //
+   // ----------------------------------------------------
+   procedure ed4m_.stop_razgon_step();
+   begin
+      if (Acceleretion<=0.1) and (PrevAcceleretion>=0.25) then begin
+         TrogF := StrNew(PChar(soundDir + 'stop-razgon.wav'));
+         isPlayTrog := False;
+      end;
    end;
 
    // ----------------------------------------------------
@@ -83,7 +184,21 @@ implementation
    // ----------------------------------------------------
    procedure ed4m_.ept_step();
    begin
-      ;
+      if EPT <> PrevEPT then begin
+         LocoPowerEquipmentF := StrNew(PChar(soundDir + 'tumbler.wav'));
+         isPlayLocoPowerEquipment:=False;
+      end;
+   end;
+
+   // ----------------------------------------------------
+   //
+   // ----------------------------------------------------
+   procedure ed4m_.hLights_step();
+   begin
+      if Highlights<>PrevHighLights then begin
+         LocoPowerEquipmentF := StrNew(PChar(soundDir + 'vkl.wav'));
+         isPlayLocoPowerEquipment := False;
+      end;
    end;
 
    // ----------------------------------------------------
@@ -91,11 +206,9 @@ implementation
    // ----------------------------------------------------
    procedure ed4m_.mk_step();
    begin
-      if AnsiCompareStr(CompressorCycleF, '') <> 0 then begin
-          if (GetChannelRemaindPlayTime2Sec(Compressor_Channel) <= 0.8) and
-             (BASS_ChannelIsActive(CompressorCycleChannel)=0)
-          then isPlayCompressorCycle:=False;
-      end;
+      if BV+FrontTP+Compressor>2 then Compressor:=1 else Compressor:=0;
+
+      ComprRemaindTimeCheck();
 
       if Compressor<>Prev_Compressor then begin
          if Compressor<>0 then begin
@@ -115,7 +228,23 @@ implementation
    // ----------------------------------------------------
    procedure ed4m_.sinxrom_step();
    begin
-      ;
+      if BV+FrontTP>1 then Vent:=1 else Vent:=0;
+
+      VentRemaindTimeCheck();
+
+      if (Vent<>0) and (Prev_Vent=0) then begin
+         if (BASS_ChannelIsActive(Vent_Channel_FX)<>0) and (StopVent = True) then begin
+            BASS_ChannelStop(Vent_Channel_FX); BASS_StreamFree(Vent_Channel_FX);
+            BASS_ChannelStop(XVent_Channel_FX); BASS_StreamFree(XVent_Channel_FX);
+            isPlayCycleVent := False; isPlayCycleVentX := False;
+         end;
+         StopVent:=False;
+         isPlayVent:=False; isPlayVentX:=False;
+      end;
+      if (Vent=0) and (Prev_Vent<>0) then begin
+         StopVent:=True;
+         isPlayVent:=False; isPlayVentX:=False; VentPitchDest := 0;
+      end;
    end;
 
 end.

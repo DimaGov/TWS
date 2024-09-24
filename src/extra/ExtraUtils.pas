@@ -21,10 +21,25 @@ interface
    function DecodeBase64(Value: String): String;
    function GetStringFromFileStream(FileStream: TFileStream) : String;
    function BoolToStr(const value : boolean) : string;
+   function FindTask(ExeFileName: string): Boolean;
+   function OneInstance: boolean;
 
 implementation
 
-uses IdCoder3to4, IdCoderMIME, SysUtils;
+uses IdCoder3to4, IdCoderMIME, SysUtils, Windows, TlHelp32, Forms;
+
+function OneInstance: boolean;
+var g_hAppCritSecMutex: THandle;
+    dw: Longint;
+    g_hAppMutex: THandle;
+begin
+     g_hAppCritSecMutex := CreateMutex( nil, true, PChar(Application.Title + '.OneInstance32.CriticalSection') );
+     g_hAppMutex := CreateMutex( nil, false, PChar(Application.Title + 'OneInstance32.Default') );
+     dw := WaitForSingleObject( g_hAppMutex, 0 );
+     Result :=  (dw <> WAIT_TIMEOUT);
+     ReleaseMutex( g_hAppCritSecMutex );
+     CloseHandle( g_hAppCritSecMutex );
+end;
 
 //------------------------------------------------------------------------------//
 //                Подпрограмма для преобразования String в PChar                //
@@ -205,6 +220,25 @@ begin
     i:=i+1;
   end;
   Result:=St2;
+end;
+
+function FindTask(ExeFileName: string): Boolean;
+var
+  FSnapshotHandle: HWND;
+  ContinueLoop: BOOL;
+  FProcessEntry32: TProcessEntry32;
+begin
+  Result := False;
+  FSnapshotHandle := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  FProcessEntry32.dwSize := Sizeof(FProcessEntry32);
+  ContinueLoop := Process32First(FSnapshotHandle, FProcessEntry32);
+  while integer(ContinueLoop) <> 0 do begin
+    if ((UpperCase(ExtractFileName(FProcessEntry32.szExeFile)) = UpperCase(ExeFileName))
+     or (UpperCase(FProcessEntry32.szExeFile) = UpperCase(ExeFileName)))
+      then Result := True;
+    ContinueLoop := Process32Next(FSnapshotHandle, FProcessEntry32);
+  end;
+  CloseHandle(FSnapshotHandle);
 end;
 
 end.

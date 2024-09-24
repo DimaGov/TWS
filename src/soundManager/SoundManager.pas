@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------//
 //                                                                              //
-//      РњРѕРґСѓР»СЊ Р·РІСѓРєРѕРІРѕРіРѕ СѓРїСЂР°РІР»РµРЅРёСЏ                                             //
+//      Модуль звукового управления                                             //
 //      (c) DimaGVRH, Dnepr city, 2019                                          //
 //                                                                              //
 //------------------------------------------------------------------------------//
@@ -12,6 +12,7 @@ uses Classes;
 
    procedure SoundManagerTick();
    procedure TWS_MVPitchRegulation();
+   procedure TWS_DNoisePitchRegulation();
    procedure TWS_PlayDrivingNoise(FileName: PChar);
    procedure TWS_PlayLDOOR(FileName: PChar);
    procedure TWS_PlayRDOOR(FileName: PChar);
@@ -24,30 +25,35 @@ uses Classes;
                            var ResPotok: TMemoryStream;
                            var PlayResFlag: Boolean); external 'dg2020.dll';
    function GetChannelRemaindPlayTime2Sec(var chan: Cardinal) : double;
+   procedure ComprRemaindTimeCheck();
+   procedure VentRemaindTimeCheck();
+   procedure ClockRemaindTimeCheck();
+   procedure VentTDRemaindTimeCheck();
 
 var
-  LocoChannel:               array[0..1] of Cardinal;	   // РљР°РЅР°Р»С‹ РїРµСЂРµСЃС‚СѓРєР° С‚РµР»РµР¶РµРє Р»РѕРєРѕРјРѕС‚РёРІР° (РЁСѓРј)
-  LocoChannelPerestuk:       Cardinal;     // РљР°РЅР°Р» РґР»СЏ РїРµСЂРµСЃС‚СѓРєР°
-  WagChannel:                Cardinal;     // РљР°РЅР°Р» РїРµСЂРµСЃС‚СѓРєР° С‚РµР»РµР¶РµРє СЃРѕСЃС‚Р°РІР°
-  SAUTChannelObjects:        Cardinal;     // РљР°РЅР°Р» РґР»СЏ Р·РІСѓРєРѕРІ РЎРђРЈРў РѕР±СЉРµРєС‚С‹ (1)
-  SAUTChannelObjects2:       Cardinal;     // РљР°РЅР°Р» РґР»СЏ Р·РІСѓРєРѕРІ РЎРђРЈРў РѕР±СЉРµРєС‚С‹ (2)
-  SAUTChannelZvonok:         Cardinal;     // РљР°РЅР°Р» РґР»СЏ Р·РІСѓРєРѕРІ РЎРђРЈРў Р·РІРѕРЅРѕРє РЅР° РїРµСЂРµРµР·РґРµ
-  PRSChannel:                Cardinal;     // РљР°РЅР°Р» РґР»СЏ Р·РІСѓРєРѕРІ РџР РЎ
-  TEDChannel, TEDChannel2:   Cardinal;     // РљР°РЅР°Р» РґР»СЏ Р·РІСѓРєРѕРІ РўР­Р”-РѕРІ
-  TEDChannel_FX:             Cardinal;     // РљР°РЅР°Р» РґР»СЏ Р·РІСѓРєР° РўР­Р” (СЌС„С„РµРєС‚ С‚РѕРЅР°Р»СЊРЅРѕСЃС‚Рё)
-  DizChannel, DizChannel2:   Cardinal;	   // РљР°РЅР°Р» РґР»СЏ Р·РІСѓРєРѕРІ Р”РёР·РµР»РµР№ РЅР° С‚РµРїР»РѕРІРѕР·Р°С…
-  CabinClicks:	     	     Cardinal;	   // РљР°РЅР°Р» РґР»СЏ С‰РµР»С‡РєРѕРІ РІ РєР°Р±РёРЅРµ (395;254;РєРѕРЅС‚СЂРѕР»Р»РµСЂ;СЂРµРІРµСЂСЃРѕСЂ)
-  Vstrech:		     Cardinal;	   // РљР°РЅР°Р» РґР»СЏ Р·РІСѓРєР° РІСЃС‚СЂРµС‡РЅРѕРіРѕ РїРѕРµР·РґР°
-  StukTrog:		     Cardinal;	   // РљР°РЅР°Р» РґР»СЏ СѓРґР°СЂР° СЃС†РµРїРєРё РїСЂРё С‚СЂРѕРіСЂР°РЅСЊРё РЅР° Р­Р»РµРєС‚СЂРёС‡РєРµ
-  IMRZachelka:		     Cardinal;     // РљР°РЅР°Р» РґР»СЏ Р·РІСѓРєР° С‰РµР»С‡РєР° Р­Рњ-Р·Р°С‰РµР»РєРё в„–304 РЅР° Р§РµС…Р°С… (РєСЂРѕРјРµ Р§РЎ2Рє)
-  RB_Channel:	             Cardinal;     // РљР°РЅР°Р» РґР»СЏ РєРЅРѕРїРєРё Р Р‘
-  PickKLUBChannel:           Cardinal;     // РљР°РЅР°Р» РґР»СЏ Р·РІСѓРєР° РЅР°Р¶Р°С‚РёСЏ РЅР° РєРЅРѕРїРєРё РљР›РЈР‘-Р°
-  KLUB_BEEP:                 Cardinal;     // РљР°РЅР°Р» РґР»СЏ РїРёРєР°РЅСЊСЏ РљР›РЈР‘-Р° РїСЂРё СЃРјРµРЅРµ РїРѕРєР°Р·Р°РЅРёР№ СЃРІРµС‚РѕС„РѕСЂР°
-  Ogr_Speed_KLUB:            Cardinal;     // РљР°РЅР°Р» РґР»СЏ РїРёРєР°РЅСЊСЏ РљР›РЈР‘-Р° РїСЂРё РїСЂРёР±Р»РёР¶РµРЅРёРё Рє РѕРіСЂР°РЅРёС‡РµРЅРёРµСЋ
-  LocoPowerEquipment:        Cardinal;     // РљР°РЅР°Р» РґР»СЏ Р·РІСѓРєР° СЃРёР»РѕРІРѕРіРѕ РѕР±РѕСЂСѓРґРѕРІР°РЅРёСЏ Р»РѕРєРѕРјРѕС‚РёРІР°(Р‘Р’, Р¤Р , Р–Р°Р»СЋР·Рё)
-  FrontTP_Channel,BackTP_Channel:Cardinal; // РљР°РЅР°Р»С‹ РґР»СЏ Р·РІСѓРєРѕРІ РїРѕРґРЅСЏС‚РёСЏ (РѕРїСѓСЃРєР°РЅРёСЏ) С‚РѕРєРѕРїСЂРёС‘РјРЅРёРєР°
-  Rain_Channel:              Cardinal;     // РљР°РЅР°Р» РґР»СЏ РїСЂРѕРёРіСЂС‹РІР°РЅРёСЏ РґРѕСЂРѕР¶РєРё Р·РІСѓРєР° РґРѕР¶РґСЏ
-  Vigilance_Check_Channel:   Cardinal;     // РљР°РЅР°Р» РґР»СЏ РїРёСЃРєР° РїСЂРѕРІРµСЂРєРё Р±РґРёС‚РµР»СЊРЅРѕСЃС‚Рё
+  LocoChannel:               array[0..1] of Cardinal;	   // Каналы перестука тележек локомотива (Шум)
+  LocoChannel_FX:            array[0..1] of Cardinal;
+  LocoChannelPerestuk:       array[0..1] of Cardinal;      // Канал для перестука
+  WagChannel:                Cardinal;     // Канал перестука тележек состава
+  SAUTChannelObjects:        Cardinal;     // Канал для звуков САУТ объекты (1)
+  SAUTChannelObjects2:       Cardinal;     // Канал для звуков САУТ объекты (2)
+  SAUTChannelZvonok:         Cardinal;     // Канал для звуков САУТ звонок на переезде
+  PRSChannel:                Cardinal;     // Канал для звуков ПРС
+  TEDChannel, TEDChannel2:   Cardinal;     // Канал для звуков ТЭД-ов
+  TEDChannel_FX:             Cardinal;     // Канал для звука ТЭД (эффект тональности)
+  DizChannel, DizChannel2:   Cardinal;	   // Канал для звуков Дизелей на тепловозах
+  CabinClicks:	     	     Cardinal;	   // Канал для щелчков в кабине (395;254;контроллер;реверсор)
+  Vstrech:		     Cardinal;	   // Канал для звука встречного поезда
+  StukTrog:		     Cardinal;	   // Канал для удара сцепки при трограньи на Электричке
+  IMRZachelka:		     Cardinal;     // Канал для звука щелчка ЭМ-защелки №304 на Чехах (кроме ЧС2к)
+  RB_Channel:	             Cardinal;     // Канал для кнопки РБ
+  PickKLUBChannel:           Cardinal;     // Канал для звука нажатия на кнопки КЛУБ-а
+  KLUB_BEEP:                 Cardinal;     // Канал для пиканья КЛУБ-а при смене показаний светофора
+  Ogr_Speed_KLUB:            Cardinal;     // Канал для пиканья КЛУБ-а при приближении к ограничениею
+  LocoPowerEquipment:        Cardinal;     // Канал для звука силового оборудования локомотива(БВ, ФР, Жалюзи)
+  FrontTP_Channel,BackTP_Channel:Cardinal; // Каналы для звуков поднятия (опускания) токоприёмника
+  Rain_Channel:              Cardinal;     // Канал для проигрывания дорожки звука дождя
+  Vigilance_Check_Channel:   Cardinal;     // Канал для писка проверки бдительности
   Unipuls_Channel:           array[0..1] of Cardinal;
   Compressor_Channel:        Cardinal;
   CompressorCycleChannel:    Cardinal;
@@ -61,13 +67,15 @@ var
   XVentCycle_Channel:        Cardinal;
   XVentTD_Channel:           Cardinal;
   XVentCycleTD_Channel:      Cardinal;
-  Brake_Channel:             array[0..1] of Cardinal;
+  Brake_Channel:             array[0..1] of Cardinal;    // Трение колодок, 0 - внутри локомотива, 1 - снаружи
+  BrakeScr_Channel:          Cardinal;      // Скрип колодок при остановке, 0 - внутри локомотива, 1 - снаружи
   Brake254_Channel:          array[0..1] of Cardinal;
   Brake254_Channel_FX:       array[0..1] of Cardinal;
   BeltPool_Channel:          Cardinal;
   ClockChannel:              Cardinal;
-  Stochist_Channel:          Cardinal;      // РљР°РЅР°Р» РґРґСЏ Р·РІСѓРєР° РґРІРѕСЂРЅРёРєРѕРІ
-  StochistUdar_Channel:      Cardinal;	    // РљР°РЅР°Р» РґР»СЏ Р·РІСѓРєР° Рѕ РєСЂР°Р№ СЃС‚РµРєР»Р° РґРІРѕСЂРЅРёРєРѕРІ
+  ClockCycleChannel:         Cardinal;
+  Stochist_Channel:          Cardinal;      // Канал ддя звука дворников
+  StochistUdar_Channel:      Cardinal;	    // Канал для звука о край стекла дворников
   SAVPE_Peek_Channel:        Cardinal;
   SAVPE_INFO_Channel:        Cardinal;
   SAVPE_ZVONOK:              Cardinal;
@@ -92,17 +100,22 @@ var
   ReduktorChannel_FX:        Cardinal;
   VR242Channel:              Cardinal;
   VR242Channel_FX:           Cardinal;
-  // РРўРћР“Рћ Р”РћР РћР–Р•Рљ Р’ РЎРљР РРџРўР•: 54
+  ZhalusiChannel:            Cardinal;
+  // ИТОГО ДОРОЖЕК В СКРИПТЕ: 54
 
+  LChannelPerestuk:          Byte;
 
-  LocoPerestukF:               PChar; 	  // Р¤Р°Р№Р» Р·РІСѓРєР° РїРµСЂРµСЃС‚СѓРєР° С‚РµР»РµР¶РµРє Р»РѕРєРѕРјРѕС‚РёРІР°
-  CabinClicksF:                PChar;     // РљР°Р±РёРЅРЅС‹Рµ С‰РµР»С‡РєРё (395;254;РєРѕРЅС‚СЂРѕР»Р»РµСЂ;СЂРµРІРµСЂСЃРѕСЂ)
+  LocoPerestukF:               PChar; 	  // Файл звука перестука тележек локомотива
+  CabinClicksF:                PChar;     // Кабинные щелчки (395;254;контроллер;реверсор)
   RevPosF:                     PChar;
+  RevPos_N_F:		       PChar;
+  RevPos_N_1_F:		       PChar;
+  RevPos_N_255_F:              PChar;
   LocoFTemp:		       PChar;
   WagF :                       PChar;
-  dizF:                        PChar;	  // Р¤Р°Р№Р»С‹ РґРёР·РµР»РµР№
-  VIPF:                        PChar;     // Р¤Р°Р№Р»С‹ Р’РРџ (Р­Рџ1Рј Рё 2Р­РЎ5Рє)
-  StukKMF:                     PChar;     // Р¤Р°Р№Р» Р·РІСѓРєР° С‰РµР»С‡РєР° РєРѕС‚СЂРѕР»Р»РµСЂР° РїСЂРё РїРµСЂРµРєР»СЋС‡РµРЅРёРё РїРѕР·РёС†РёС†РёР№
+  dizF:                        PChar;	  // Файлы дизелей
+  VIPF:                        PChar;     // Файлы ВИП (ЭП1м и 2ЭС5к)
+  StukKMF:                     PChar;     // Файл звука щелчка котроллера при переключении позициций
   SAUTF:		       PChar;
   SAUTOFFF:                    PChar;
   PRSF:                        PChar;
@@ -117,22 +130,26 @@ var
   XCompressorF:                PChar = ' ';
   XCompressorCycleF:           PChar;
   VentF, VentTDF:              PChar;
-  LocoPowerEquipmentF:         PChar;     // РЎРёР»РѕРІРѕРµ РѕР±РѕСЂСѓРґРѕРІР°РЅРёРµ Р»РѕРєРѕРјРѕС‚РёРІР°(Р‘Р’, Р¤Р )
+  LocoPowerEquipmentF:         PChar;     // Силовое оборудование локомотива(БВ, ФР)
   VentCycleF:                  PChar;
   XVentF, XVentTDF:            PChar;
   XVentCycleF:                 PChar;
   VentCycleTDF, XVentCycleTDF: PChar;
   BrakeF:                      PChar;
+  BrakeScrF:                   PChar;   // Файл звука скрипа колодок при остановке
   SAVPEInfoF:                  PChar;
-  TrogF:                       PChar;   // РЈРґР°СЂ СЃС†РµРїРєРё РЅР° РњР’РџРЎ
-  StochistF:                   PChar;   // Р¤Р°Р№Р» Р·РІСѓРєР° РґРІРѕСЂРЅРёРєРѕРІ
+  TrogF:                       PChar;   // Удар сцепки на МВПС
+  StochistF:                   PChar;   // Файл звука дворников
   WalkSoundF:                  PChar;
   NatureF:                     PChar;
   ReduktorF:                   PChar;
   Brake254F:                   PChar;
   CycleBrake254F:              PChar;
   VR242F:                      PChar;
-  isPlaySAUTObjects:           Boolean; // Р¤Р»Р°Рі РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ СЂРµР¶РёРјР° Р°РІС‚РѕРІРµРґРµРЅРёСЏ РЎРђРЈРў
+  ZhalusiF:                    PChar;
+  ClockF:                      PChar;
+  ClockCycleF:                 PChar;
+  isPlaySAUTObjects:           Boolean; // Флаг для воспроизведения режима автоведения САУТ
   isPlaySAUTZvonok:            Boolean;
   isPlayRain:                  Boolean;
   isPlayVcheck:                Boolean;
@@ -144,44 +161,48 @@ var
   isPlayCycleVent:             Boolean = True;
   isPlayVentTD:                Boolean = True;
   isPlayCycleVentTD:           Boolean = True;
-  isPlayVentX:                 Boolean = True; // Р¤Р»Р°Рі РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєРѕРІ РІРµРЅС‚РёР»СЏС‚РѕСЂРѕРІ (РІРЅРµС€РЅРёС…)
-  isPlayCycleVentX:            Boolean = True; // Р¤Р»Р°Рі РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєРѕРІ РІРµРЅС‚РёР»СЏС‚РѕСЂРѕРІ (РІРЅРµС€РЅРёС…)
-  isPlayVentTDX:               Boolean = True; // Р¤Р»Р°Рі РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєРѕРІ РІРµРЅС‚РёР»СЏС‚РѕСЂРѕРІ (РІРЅРµС€РЅРёС…)
-  isPlayCycleVentTDX:          Boolean = True; // Р¤Р»Р°Рі РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєРѕРІ РІРµРЅС‚РёР»СЏС‚РѕСЂРѕРІ (РІРЅРµС€РЅРёС…)
+  isPlayVentX:                 Boolean = True; // Флаг для воспроизведения звуков вентиляторов (внешних)
+  isPlayCycleVentX:            Boolean = True; // Флаг для воспроизведения звуков вентиляторов (внешних)
+  isPlayVentTDX:               Boolean = True; // Флаг для воспроизведения звуков вентиляторов (внешних)
+  isPlayCycleVentTDX:          Boolean = True; // Флаг для воспроизведения звуков вентиляторов (внешних)
   isPlaySAVPEPeek:             Boolean;
   isPlaySAVPEInfo:             Boolean;
   isPlaySAVPEZvonok:           Boolean;
-  isPlayBrake:                 Boolean; // Р¤Р»Р°Рі РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° С‚СЂРµРЅРёСЏ РєРѕР»РѕРґРѕРє РїСЂРё С‚РѕСЂРјРѕР¶РµРЅРёРё
-  isPlayStochist:              Boolean; // Р¤Р»Р°Рі РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° РґРІРѕСЂРЅРёРєРѕРІ
-  isPlayStochistUdar:          Boolean; // Р¤Р»Р°Рі РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° СѓРґР°СЂР° Рѕ РєСЂР°Р№ СЃС‚РµРєР»Р° СѓРґР°СЂР° РґРІРѕСЂРЅРёРєРѕРІ
+  isPlayBrake:                 Boolean; // Флаг для воспроизведения звука трения колодок при торможении
+  isPlayBrakeScr:              Boolean; // Флаг для воспроизведения звука скрипа колодок при остановке
+  isPlayStochist:              Boolean; // Флаг для воспроизведения звука дворников
+  isPlayStochistUdar:          Boolean; // Флаг для воспроизведения звука удара о край стекла удара дворников
   isPlayBeltPool:              Boolean;
   isPlayClock:                 Boolean;
+  isPlayCycleClock:            Boolean;
   isPlayOgrSpKlub:             Integer;
   isPlayFTP:                   Boolean;
   isPlayBTP:                   Boolean;
   isPlayVstrech:               Boolean;
-  isPlayLocoPowerEquipment:    Boolean; // Р¤Р»Р°Рі РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєРѕРІ СЃРёР»РѕРІРѕРіРѕ РѕР±РѕСЂСѓРґРѕРІР°РЅРёСЏ Р»РѕРєРѕРјРѕС‚РёРІР°(Р‘Р’, Р¤Р )
-  isPlayCabinClicks:	       Boolean; // Р¤Р»Р°Рі РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ РєР°Р±РёРЅРЅС‹С… С‰РµР»С‡РєРѕРІ(395;254;РєРѕРЅС‚СЂРѕР»Р»РµСЂ;СЂРµРІРµСЂСЃРѕСЂ)
-  isPlayIMRZachelka:           Boolean; // Р¤Р»Р°Рі РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІРєРѕРІ С‰РµР»С‡РєР° Р­Рњ-Р·Р°С‰РµР»РєРё СЂРµРІРµСЂСЃРёРІРєРё
-  isPlayPRS:                   Boolean; // Р¤Р»Р°Рі РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ РїРѕРµР·РґРЅРѕР№ СЂР°РґРёРѕСЃРІСЏР·Рё
-  isPlayTED:		       Boolean; // Р¤Р»Р°Рі РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєРѕРІ РўР­Р”
-  isPlayVIP:                   Boolean; // Р¤Р»Р°Рі РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєРѕРІ Р’РРџ (Р­Рџ1Рј Рё 2Р­РЎ5Рє)
-  isPlayDiz:                   Boolean; // Р¤Р»Р°Рі РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєРѕРІ РґРёР·РµР»РµР№ РЅР° С‚РµРїР»РѕРІРѕР·Р°С…
-  isPlayPerestuk_OnStation:    Boolean; // Р¤Р»Р°Рі РїРµСЂРµСЃС‚СѓРєР° Р»РѕРєРѕРјРѕС‚РёРІР° РЅР° СЃС‚Р°РЅС†РёРё
-  isPlayPerestuk:              Boolean; // Р¤Р»Р°Рі РїРµСЂРµСЃС‚СѓРєР° С‚РµР»РµР¶РµРє Р»РѕРєРѕРјРѕС‚РёРІР° РЅР° СЃРІРµС‚РѕС„РѕСЂР°С… Рё РЅР° РїРµСЂРµРіРѕРЅРµ РІ СЃР»СѓС‡Р°Р№РЅС‹Рµ РїСЂРѕРјРµР¶СѓС‚РєРё РІСЂРµРјРµРЅРё
+  isPlayLocoPowerEquipment:    Boolean; // Флаг для воспроизведения звуков силового оборудования локомотива(БВ, ФР)
+  isPlayCabinClicks:	       Boolean; // Флаг для воспроизведения кабинных щелчков(395;254;контроллер;реверсор)
+  isPlayIMRZachelka:           Boolean; // Флаг для воспроизведения звков щелчка ЭМ-защелки реверсивки
+  isPlayPRS:                   Boolean; // Флаг для воспроизведения поездной радиосвязи
+  isPlayTED:		       Boolean; // Флаг для воспроизведения звуков ТЭД
+  isPlayVIP:                   Boolean; // Флаг для воспроизведения звуков ВИП (ЭП1м и 2ЭС5к)
+  isPlayDiz:                   Boolean; // Флаг для воспроизведения звуков дизелей на тепловозах
+  isPlayPerestuk_OnStation:    Boolean; // Флаг перестука локомотива на станции
+  isPlayPerestuk:              Boolean; // Флаг перестука тележек локомотива на светофорах и на перегоне в случайные промежутки времени
   isPlayWalkSound:             Boolean;
   isPlayNature:                Boolean;
   isPlayReduktor:              Boolean = True;
   isPlayBrake254:              Boolean = True;
   isPlayCycleBrake254:         Boolean = True;
   isPlayVR242:                 Boolean = True;
+  isPlayZhalusi:               Boolean = True;
+  PerehodLocoPerestuk:         Boolean;
 
 implementation
 
 uses Bass, UnitMain, SysUtils, Windows, ExtraUtils, bass_fx;
 
 //------------------------------------------------------------------------------//
-// РџРѕРґРїСЂРѕРіСЂР°РјРјР°, РІС‹Р·С‹РІР°РµС‚СЃСЏ РєРѕРіРґР° Р·Р°РєР°РЅС‡РёРІР°РµС‚ РёРіСЂР°С‚СЊ СЃСЌРјРїР» РїРµСЂРµСЃС‚СѓРєР° РЅР° СЃРІРµС‚РѕС„. //
+// Подпрограмма, вызывается когда заканчивает играть сэмпл перестука на светоф. //
 //------------------------------------------------------------------------------//
 procedure PlayPerestukIsEnd(vHandle, vStream, vData: Cardinal; vUser: Pointer); stdcall;
 begin
@@ -189,7 +210,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//      РџРѕРґРїСЂРѕРіСЂР°РјРјР°, РІС‹Р·С‹РІР°РµС‚СЃСЏ РєРѕРіРґР° Р·Р°РєР°РЅС‡РёРІР°РµС‚ РёРіСЂР°С‚СЊ РёРЅС„РѕСЂРјР°С‚РѕСЂ РЎРђР’РџР­      //
+//      Подпрограмма, вызывается когда заканчивает играть информатор САВПЭ      //
 //------------------------------------------------------------------------------//
 procedure PlaySAVPEINFOIsEnd(vHandle, vStream, vData: Cardinal; vUser: Pointer); stdcall;
 begin
@@ -197,7 +218,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//     РџРѕРґРїСЂРѕРіСЂР°РјРјР°, РІС‹Р·С‹РІР°РµС‚СЃСЏ РєРѕРіРґР° Р·Р°РєР°РЅС‡РёРІР°РµС‚ РёРіСЂР°С‚СЊ СЃСЌРјРїР» РєРѕРјРїСЂРµСЃСЃРѕСЂРѕРІ     //
+//     Подпрограмма, вызывается когда заканчивает играть сэмпл компрессоров     //
 //------------------------------------------------------------------------------//
 procedure PlayCompressorIsEnd(vHandle, vStream, vData: Cardinal; vUser: Pointer); stdcall;
 begin
@@ -206,7 +227,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-// РџРѕРґРїСЂРѕРіСЂР°РјРјР°, РІС‹Р·С‹РІР°РµС‚СЃСЏ РєРѕРіРґР° Р·Р°РєР°РЅС‡РёРІР°РµС‚ РёРіСЂР°С‚СЊ СЃСЌРјРїР» РєРѕРјРїСЂРµСЃСЃРѕСЂРѕРІ СЃРЅР°СЂСѓР¶Рё //
+// Подпрограмма, вызывается когда заканчивает играть сэмпл компрессоров снаружи //
 //------------------------------------------------------------------------------//
 procedure PlayXCompressorIsEnd(vHandle, vStream, vData: Cardinal; vUser: Pointer); stdcall;
 begin
@@ -222,23 +243,110 @@ begin
    Result := BASS_ChannelBytes2Seconds(chan, BASS_ChannelGetLength(chan, BASS_POS_BYTE) - BASS_ChannelGetPosition(chan, BASS_POS_BYTE));
 end;
 
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+procedure ComprRemaindTimeCheck();
+begin
+   if AnsiCompareStr(CompressorCycleF, '') <> 0 then begin
+      if (GetChannelRemaindPlayTime2Sec(Compressor_Channel) <= 0.8) and
+         (BASS_ChannelIsActive(CompressorCycleChannel)=0)
+      then isPlayCompressorCycle:=False;
+   end;
+   if AnsiCompareStr(XCompressorCycleF, '')<> 0 then begin
+      if (GetChannelRemaindPlayTime2Sec(XCompressor_Channel) <= 0.8) and
+         (BASS_ChannelIsActive(XCompressorCycleChannel)=0)
+      then isPlayXCompressorCycle:=False;
+   end;
+end;
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+procedure VentRemaindTimeCheck();
+begin
+   if StopVent = False then begin
+      if BASS_ChannelIsActive(Vent_Channel_FX) <> 0 then begin
+         if (GetChannelRemaindPlayTime2Sec(Vent_Channel_FX) <= 0.2) and
+            (BASS_ChannelIsActive(VentCycle_Channel_FX)=0)
+         then isPlayCycleVent:=False;
+      end;
+      if BASS_ChannelIsActive(XVent_Channel_FX) <> 0 then begin
+         if (GetChannelRemaindPlayTime2Sec(XVent_Channel_FX) <= 0.2) and
+            (BASS_ChannelIsActive(XVentCycle_Channel_FX)=0)
+         then isPlayCycleVentX:=False;
+      end;
+   end else begin
+      if BASS_ChannelIsActive(VentCycle_Channel_FX)<>0 then begin
+         if (GetChannelRemaindPlayTime2Sec(Vent_Channel_FX) >= 0.3) and
+            (BASS_ChannelIsActive(VentCycle_Channel_FX)<>0)
+         then begin BASS_ChannelStop(VentCycle_Channel_FX); BASS_StreamFree(VentCycle_Channel_FX); end;
+      end;
+      if BASS_ChannelIsActive(XVentCycle_Channel_FX)<>0 then begin
+         if (GetChannelRemaindPlayTime2Sec(XVent_Channel_FX) >= 0.3) and
+            (BASS_ChannelIsActive(XVentCycle_Channel_FX)<>0)
+         then begin BASS_ChannelStop(XVentCycle_Channel_FX); BASS_StreamFree(XVentCycle_Channel_FX); end;
+      end;
+   end;
+end;
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+procedure ClockRemaindTimeCheck();
+begin
+   if BASS_ChannelIsActive(ClockChannel) <> 0 then begin
+      if (GetChannelRemaindPlayTime2Sec(ClockChannel) <= 0.2) and
+         (BASS_ChannelIsActive(ClockCycleChannel)=0)
+         then isPlayCycleClock:=False;
+   end;
+end;
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+procedure VentTDRemaindTimeCheck();
+begin
+   if AnsiCompareText(VentCycleTDF, '')<>0 then begin
+      if (GetChannelRemaindPlayTime2Sec(VentTD_Channel_FX) <= 0.8) and
+         (BASS_ChannelIsActive(VentCycleTD_Channel_FX)=0)
+      then isPlayCycleVentTD:=False;
+   end;
+   if AnsiCompareText(XVentCycleTDF, '')<>0 then begin
+      if (GetChannelRemaindPlayTime2Sec(XVentTD_Channel_FX) <= 0.8) and
+         (BASS_ChannelIsActive(XVentCycleTD_Channel_FX)=0)
+      then isPlayCycleVentTDX:=False;
+   end;
+
+   if (AnsiCompareText(VentCycleTDF, '')=0) then begin
+      if (GetChannelRemaindPlayTime2Sec(VentTD_Channel_FX) >= 0.3) and
+         (BASS_ChannelIsActive(VentCycleTD_Channel_FX)<>0)
+      then begin BASS_ChannelStop(VentCycleTD_Channel_FX); BASS_StreamFree(VentCycleTD_Channel_FX); end;
+   end;
+   if (AnsiCompareText(XVentCycleTDF, '')=0) then begin
+      if (GetChannelRemaindPlayTime2Sec(XVentTD_Channel_FX) >= 0.3) and
+         (BASS_ChannelIsActive(XVentCycleTD_Channel_FX)<>0)
+      then begin BASS_ChannelStop(XVentCycleTD_Channel_FX); BASS_StreamFree(XVentCycleTD_Channel_FX); end;
+   end;
+end;
+
 procedure TWS_MVPitchRegulation();
 begin
-   // Р•СЃР»Рё Р»РѕРєРѕРјРѕС‚РёРІ СЃ СЂРµРіСѓР»РёСЂСѓРµРјРѕР№ С‚РѕРЅР°Р»СЊРЅРѕСЃС‚СЊСЋ РњР’ С‚Рѕ РґРµР»Р°РµРј РїРµСЂРµСЂРµРіСѓР»РёСЂРѕРІР°РЅРёРµ //
+   // Если локомотив с регулируемой тональностью МВ то делаем перерегулирование //
    if LocoWithMVPitch = True then begin
       if VentPitch > VentPitchDest then VentPitch := VentPitch - VentPitchIncrementer * MainCycleFreq;
       if VentPitch < VentPitchDest then VentPitch := VentPitch + VentPitchIncrementer * MainCycleFreq;
-      // Р—Р°РґР°С‘Рј С‚РѕРЅР°Р»СЊРЅРѕСЃС‚СЊ Р·РІСѓРєРѕРІ СЂР°Р±РѕС‚С‹ РІРµРЅС‚РёР»СЏС‚РѕСЂРѕРІ Р’РЈ //
+      // Задаём тональность звуков работы вентиляторов ВУ //
       BASS_ChannelSetAttribute(Vent_Channel_FX, BASS_ATTRIB_TEMPO_PITCH, VentPitch);
       BASS_ChannelSetAttribute(XVent_Channel_FX, BASS_ATTRIB_TEMPO_PITCH, VentPitch);
       BASS_ChannelSetAttribute(VentCycle_Channel_FX, BASS_ATTRIB_TEMPO_PITCH, VentPitch);
       BASS_ChannelSetAttribute(XVentCycle_Channel_FX, BASS_ATTRIB_TEMPO_PITCH, VentPitch);
    end;
-   // Р•СЃР»Рё Р»РѕРєРѕРјРѕС‚РёРІ СЃ СЂРµРіСѓР»РёСЂСѓРµРјРѕР№ С‚РѕРЅР°Р»СЊРЅРѕСЃС‚СЊСЋ РњР’ РўР” С‚Рѕ РґРµР»Р°РµРј РїРµСЂРµСЂРµРіСѓР»РёСЂРѕРІР°РЅРёРµ //
+   // Если локомотив с регулируемой тональностью МВ ТД то делаем перерегулирование //
    if LocoWithMVTDPitch = True then begin
-      if VentTDPitch > VentTDPitchDest then VentTDPitch := VentTDPitch - VentTDPitchIncrementer * MainCycleFreq;
+      if VentTDPitch > VentTDPitchDest then VentTDPitch := VentTDPitch - VentTDPitchDecrementer * MainCycleFreq;
       if VentTDPitch < VentTDPitchDest then VentTDPitch := VentTDPitch + VentTDPitchIncrementer * MainCycleFreq;
-      // Р—Р°РґР°С‘Рј С‚РѕРЅР°Р»СЊРЅРѕСЃС‚СЊ Р·РІСѓРєРѕРІ СЂР°Р±РѕС‚С‹ РІРµРЅС‚РёР»СЏС‚РѕСЂРѕРІ (РџРўР ) //
+      // Задаём тональность звуков работы вентиляторов (ПТР) //
       BASS_ChannelSetAttribute(VentTD_Channel_FX, BASS_ATTRIB_TEMPO_PITCH, VentTDPitch);
       BASS_ChannelSetAttribute(XVentTD_Channel_FX, BASS_ATTRIB_TEMPO_PITCH, VentTDPitch);
       BASS_ChannelSetAttribute(VentCycleTD_Channel_FX, BASS_ATTRIB_TEMPO_PITCH, VentTDPitch);
@@ -246,26 +354,38 @@ begin
    end;
 end;
 
+procedure TWS_DNoisePitchRegulation();
+begin
+      if DNoisePitch > DNoisePitchDest then DNoisePitch := DNoisePitch - DNoisePitchIncrementer * MainCycleFreq;
+      if DNoisePitch < DNoisePitchDest then DNoisePitch := DNoisePitch + DNoisePitchIncrementer * MainCycleFreq;
+      BASS_ChannelSetAttribute(LocoChannel_FX[0], BASS_ATTRIB_TEMPO_PITCH, DNoisePitch);
+      BASS_ChannelSetAttribute(LocoChannel_FX[1], BASS_ATTRIB_TEMPO_PITCH, DNoisePitch);
+end;
+
 //------------------------------------------------------------------------------//
-//   РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ РґРѕСЂРѕР¶РєРё С€СѓРјР° РµР·РґС‹ (РІ СЃС‚. РІР°СЂ. РїРµСЂРµСЃС‚СѓРєРё)  //
+//   Подпрограмма для воспроизведения дорожки шума езды (в ст. вар. перестуки)  //
 //------------------------------------------------------------------------------//
 procedure TWS_PlayDrivingNoise(FileName: PChar);
 begin
-      try BASS_ChannelStop(LocoChannel[ChannelNum]); BASS_StreamFree(LocoChannel[ChannelNum]);
-         LocoChannel[ChannelNum] := BASS_StreamCreateFile(FALSE, FileName, 0, 0, BASS_SAMPLE_LOOP {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF});
-         BASS_ChannelPlay(LocoChannel[ChannelNum], True);
-         BASS_ChannelSetAttribute(LocoChannel[ChannelNum], BASS_ATTRIB_VOL, 0);
+      try
+         BASS_ChannelStop(LocoChannel[ChannelNum]); BASS_StreamFree(LocoChannel[ChannelNum]);
+         BASS_ChannelStop(LocoChannel_FX[ChannelNum]); BASS_StreamFree(LocoChannel_FX[ChannelNum]);
+         LocoChannel[ChannelNum] := BASS_StreamCreateFile(FALSE, FileName, 0, 0, BASS_STREAM_DECODE);
+         LocoChannel_FX[ChannelNum] := BASS_FX_TempoCreate(LocoChannel[ChannelNum], BASS_FX_FREESOURCE);
+         BASS_ChannelFlags(LocoChannel_FX[ChannelNum], BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
+         BASS_ChannelPlay(LocoChannel_FX[ChannelNum], False);
+         BASS_ChannelSetAttribute(LocoChannel_FX[ChannelNum], BASS_ATTRIB_VOL, 0);
          if ChannelNum=0 then ChannelNum:=1 else ChannelNum:=0;
          if (Camera=0) Or (Camera=1) then LocoVolume := FormMain.trcBarLocoPerestukVol.Position;
          if Camera=2 then begin
             if Loco<>'ED4M' then LocoVolume:=0 else LocoVolume := FormMain.trcBarLocoPerestukVol.Position;
          end;
-         LocoVolume2:=0; PerehodLoco:=True;	// РЈСЃС‚Р°РЅРѕРІРєРё РґР»СЏ РїРµСЂРµС…РѕРґР°
+         LocoVolume2:=0; PerehodLoco:=True;	// Установки для перехода
       except end;
 end;
 
 //------------------------------------------------------------------------------//
-//  РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° Р·Р°РєСЂС‹С‚РёСЏ/РѕС‚РєСЂС‹С‚РёСЏ Р»РµРІРѕРіРѕ СЂСЏРґР° РґРІРµСЂРµР№ //
+//  Подпрограмма для воспроизведения звука закрытия/открытия левого ряда дверей //
 //------------------------------------------------------------------------------//
 procedure TWS_PlayLDOOR(FileName: PChar);
 begin
@@ -281,7 +401,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-// РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєР° Р·Р°РєСЂС‹С‚РёСЏ/РѕС‚РєСЂС‹С‚РёСЏ РїСЂР°РІРѕРіРѕ СЂСЏРґР° РґРІРµСЂРµР№ //
+// Подпрограмма для воспроизведения звука закрытия/открытия правого ряда дверей //
 //------------------------------------------------------------------------------//
 procedure TWS_PlayRDOOR(FileName: PChar);
 begin
@@ -297,7 +417,7 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//              РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ Р·РІСѓРєРѕРІ РЈРЅРёРїСѓР»СЊСЃР°               //
+//              Подпрограмма для воспроизведения звуков Унипульса               //
 //------------------------------------------------------------------------------//
 procedure TWS_PlayUnipuls(FileName: PChar; Loop: Boolean);
 begin
@@ -328,17 +448,19 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-//                РџРѕРґРїСЂРѕРіСЂР°РјРјР° РґР»СЏ Р·Р°РґР°РЅРёСЏ РіСЂРѕРјРєРѕСЃС‚Рё РІСЃРµРј Р·РІСѓРєР°Рј                //
+//                Подпрограмма для задания громкости всем звукам                //
 //------------------------------------------------------------------------------//
 procedure VolumeMaster_RefreshVolume;
 begin
    With FormMain do begin
-   // -/- Р’РР”: РљРђР‘РРќРђ; РџРћР›РћР–Р•РќРР•Р– Р’РќРЈРўР Р РљРђР‘РРќР« -/- //
+   // -/- ВИД: КАБИНА; ПОЛОЖЕНИЕЖ ВНУТРИ КАБИНЫ -/- //
       if Camera=0 then begin
          if isCameraInCabin=True then begin
-            BASS_ChannelSetAttribute(LocoChannel[0], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);	  // РЁСѓРј РµР·РґС‹ (РІ СЃС‚. РІР°СЂ. РїРµСЂРµСЃС‚СѓРє) [1]
-            BASS_ChannelSetAttribute(LocoChannel[1], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);       // РЁСѓРј РµР·РґС‹ (РІ СЃС‚. РІР°СЂ. РїРµСЂРµСЃС‚СѓРє) [2]
-            BASS_ChannelSetAttribute(LocoChannelPerestuk, BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
+            BASS_ChannelSetAttribute(LocoChannel_FX[0], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);	  // Шум езды (в ст. вар. перестук) [1]
+            BASS_ChannelSetAttribute(LocoChannel_FX[1], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);	  // Шум езды (в ст. вар. перестук) [1]
+            //BASS_ChannelSetAttribute(LocoChannel_FX[1], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);       // Шум езды (в ст. вар. перестук) [2]
+            BASS_ChannelSetAttribute(LocoChannelPerestuk[0], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
+            BASS_ChannelSetAttribute(LocoChannelPerestuk[1], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
             if cbExtIntSounds.Checked = False then
                BASS_ChannelSetAttribute(WagChannel, BASS_ATTRIB_VOL, 0)
             else
@@ -355,6 +477,7 @@ begin
             BASS_ChannelSetAttribute(Unipuls_Channel[1], BASS_ATTRIB_VOL, trcBarVspomMahVol.Position/100);
             BASS_ChannelSetAttribute(IMRZachelka, BASS_ATTRIB_VOL, trcBarLocoClicksVol.Position/100);
             BASS_ChannelSetAttribute(ClockChannel, BASS_ATTRIB_VOL, trcBarLocoClicksVol.Position/100);
+            BASS_ChannelSetAttribute(ClockCycleChannel, BASS_ATTRIB_VOL, trcBarLocoClicksVol.Position/100);
             BASS_ChannelSetAttribute(Stochist_Channel, BASS_ATTRIB_VOL, trcBarVspomMahVol.Position/100);
             BASS_ChannelSetAttribute(StochistUdar_Channel, BASS_ATTRIB_VOL, trcBarVspomMahVol.Position/100);
             BASS_ChannelSetAttribute(VentTD_Channel_FX, BASS_ATTRIB_VOL, VentTDVol);
@@ -373,14 +496,14 @@ begin
                   0: BASS_ChannelSetAttribute(DizChannel2, BASS_ATTRIB_VOL, trcBarDieselVol.Position/300);
                end;
             end;
-            // Р—Р°РґР°С‘Рј РіСЂРѕРјРєРѕСЃС‚СЊ РЅР°СЂСѓР¶РЅС‹С… РІРµРЅС‚РёР»СЏС‚РѕСЂРѕРІ 0
+            // Задаём громкость наружных вентиляторов 0
             if LocoWithExtMVSound = True then begin
                BASS_ChannelSetAttribute(XVent_Channel_FX, BASS_ATTRIB_VOL, 0);
                BASS_ChannelSetAttribute(XVentCycle_Channel_FX, BASS_ATTRIB_VOL, 0);
                BASS_ChannelSetAttribute(XVentTD_Channel_FX, BASS_ATTRIB_VOL, 0);
                BASS_ChannelSetAttribute(XVentCycleTD_Channel_FX, BASS_ATTRIB_VOL, 0);
             end;
-            // Р—Р°РґР°РµРј РіСЂРѕРјРєРѕСЃС‚СЊ РєРѕРјРїСЂРµСЃСЃРѕСЂРѕРІ СЃРЅР°СЂСѓР¶Рё 0
+            // Задаем громкость компрессоров снаружи 0
             if Loco='ED4M' then begin
                BASS_ChannelSetAttribute(Vent_Channel_FX, BASS_ATTRIB_VOL, trcBarVspomMahVol.Position/250);
                BASS_ChannelSetAttribute(VentCycle_Channel_FX, BASS_ATTRIB_VOL, trcBarVspomMahVol.Position/250);
@@ -395,14 +518,16 @@ begin
                BASS_ChannelSetAttribute(XCompressorCycleChannel, BASS_ATTRIB_VOL, 0);
             end;
          end else begin
-         // -/- Р’РР”: РљРђР‘РРќРђ; РџРћР›РћР–Р•РќРР•Р– РЎРќРђР РЈР–Р РљРђР‘РРќР« -/- //
-            BASS_ChannelSetAttribute(LocoChannel[0], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
-            BASS_ChannelSetAttribute(LocoChannel[1], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
-            BASS_ChannelSetAttribute(LocoChannelPerestuk, BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
+         // -/- ВИД: КАБИНА; ПОЛОЖЕНИЕЖ СНАРУЖИ КАБИНЫ -/- //
+            BASS_ChannelSetAttribute(LocoChannel_FX[0], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);	  // Шум езды (в ст. вар. перестук) [1]
+            BASS_ChannelSetAttribute(LocoChannel_FX[1], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);	  // Шум езды (в ст. вар. перестук) [1]
+            //BASS_ChannelSetAttribute(LocoChannel_FX[1], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
+            BASS_ChannelSetAttribute(LocoChannelPerestuk[0], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
+            BASS_ChannelSetAttribute(LocoChannelPerestuk[1], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
             BASS_ChannelSetAttribute(WagChannel, BASS_ATTRIB_VOL, trcBarWagsVol.Position/100);
             BASS_ChannelSetAttribute(PRSChannel, BASS_ATTRIB_VOL, trcBarPRSVol.Position/200);
             BASS_ChannelSetAttribute(Rain_Channel, BASS_ATTRIB_VOL, trcBarNatureVol.Position/100);
-            // Р”РµР»Р°РµРј РІРЅРµС€РЅРёРµ Р·РІСѓРєРё РњР’
+            // Делаем внешние звуки МВ
             if LocoWithExtMVSound = True then begin
                BASS_ChannelSetAttribute(VentTD_Channel_FX, BASS_ATTRIB_VOL, 0);
                BASS_ChannelSetAttribute(VentCycleTD_Channel_FX, BASS_ATTRIB_VOL, 0);
@@ -427,7 +552,7 @@ begin
                BASS_ChannelSetAttribute(XVent_Channel_FX, BASS_ATTRIB_VOL, 0);
                BASS_ChannelSetAttribute(XVentCycle_Channel_FX, BASS_ATTRIB_VOL, 0);
             end;
-            // Р”РµР»Р°РµРј РІРЅРµС€РЅРёРµ Р·РІСѓРєРё РњРљ
+            // Делаем внешние звуки МК
             if LocoWithExtMKSound = True then begin
                BASS_ChannelSetAttribute(Compressor_Channel, BASS_ATTRIB_VOL, 0);
                BASS_ChannelSetAttribute(CompressorCycleChannel, BASS_ATTRIB_VOL, 0);
@@ -453,15 +578,17 @@ begin
                end;
             end;
             BASS_ChannelSetAttribute(ClockChannel, BASS_ATTRIB_VOL, trcBarLocoClicksVol.Position/200);
+            BASS_ChannelSetAttribute(ClockCycleChannel, BASS_ATTRIB_VOL, trcBarLocoClicksVol.Position/200);
             BASS_ChannelSetAttribute(Stochist_Channel, BASS_ATTRIB_VOL, trcBarVspomMahVol.Position/200);
             BASS_ChannelSetAttribute(StochistUdar_Channel, BASS_ATTRIB_VOL, trcBarVspomMahVol.Position/200);
          end;
       end;
-      // -/- Р’РР”: РќРђ Р›РћРљРћРњРћРўРР’ -/- //
+      // -/- ВИД: НА ЛОКОМОТИВ -/- //
       if (Camera=1) then begin
-         BASS_ChannelSetAttribute(LocoChannel[0], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
-         BASS_ChannelSetAttribute(LocoChannel[1], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
-         BASS_ChannelSetAttribute(LocoChannelPerestuk, BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
+         BASS_ChannelSetAttribute(LocoChannel_FX[ChannelNum], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
+         //ASS_ChannelSetAttribute(LocoChannel_FX[1], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
+         BASS_ChannelSetAttribute(LocoChannelPerestuk[0], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
+         BASS_ChannelSetAttribute(LocoChannelPerestuk[1], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
          BASS_ChannelSetAttribute(WagChannel, BASS_ATTRIB_VOL, trcBarWagsVol.Position/100);
          BASS_ChannelSetAttribute(PRSChannel, BASS_ATTRIB_VOL, 0);
          BASS_ChannelSetAttribute(CabinClicks, BASS_ATTRIB_VOL, 0);
@@ -479,7 +606,7 @@ begin
          if ChannelNumDiz=0 then BASS_ChannelSetAttribute(DizChannel2, BASS_ATTRIB_VOL, trcBarDieselVol.Position/100);
          BASS_ChannelSetAttribute(Rain_Channel, BASS_ATTRIB_VOL, trcBarNatureVol.Position/100);
          BASS_ChannelSetAttribute(IMRZachelka, BASS_ATTRIB_VOL, 0);
-         // -/- РњР’ -/- //
+         // -/- МВ -/- //
          if LocoWithExtMVSound = True then begin
             BASS_ChannelSetAttribute(VentTD_Channel_FX, BASS_ATTRIB_VOL, 0);
             BASS_ChannelSetAttribute(VentCycleTD_Channel_FX, BASS_ATTRIB_VOL, 0);
@@ -504,7 +631,7 @@ begin
             BASS_ChannelSetAttribute(XVent_Channel_FX, BASS_ATTRIB_VOL, 0);
             BASS_ChannelSetAttribute(XVentCycle_Channel_FX, BASS_ATTRIB_VOL, 0);
          end;
-         // -/- РњРљ -/- //
+         // -/- МК -/- //
          if LocoWithExtMKSound = True then begin
             BASS_ChannelSetAttribute(Compressor_Channel, BASS_ATTRIB_VOL, 0);
             BASS_ChannelSetAttribute(CompressorCycleChannel, BASS_ATTRIB_VOL, 0);
@@ -517,24 +644,29 @@ begin
             BASS_ChannelSetAttribute(XCompressorCycleChannel, BASS_ATTRIB_VOL, 0);
          end;
          BASS_ChannelSetAttribute(ClockChannel, BASS_ATTRIB_VOL, 0);
+         BASS_ChannelSetAttribute(ClockCycleChannel, BASS_ATTRIB_VOL, 0);
          BASS_ChannelSetAttribute(Stochist_Channel, BASS_ATTRIB_VOL, 0);
          BASS_ChannelSetAttribute(StochistUdar_Channel, BASS_ATTRIB_VOL, 0);
       end;
-      // -/- Р’РР”: РҐР’РћРЎРў -/- //
+      // -/- ВИД: ХВОСТ -/- //
       if Camera=2 then begin
          BASS_ChannelSetAttribute(Rain_Channel, BASS_ATTRIB_VOL, trcBarNatureVol.Position/100);
          if Loco='ED4M' then begin
-            BASS_ChannelSetAttribute(LocoChannel[0], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
-            BASS_ChannelSetAttribute(LocoChannel[1], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
-            BASS_ChannelSetAttribute(LocoChannelPerestuk, BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
+            BASS_ChannelSetAttribute(LocoChannel_FX[ChannelNum], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
+            //BASS_ChannelSetAttribute(LocoChannel_FX[1], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
+            BASS_ChannelSetAttribute(LocoChannelPerestuk[0], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
+            BASS_ChannelSetAttribute(LocoChannelPerestuk[1], BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100);
             BASS_ChannelSetAttribute(Vent_Channel_FX, BASS_ATTRIB_VOL, trcBarVspomMahVol.Position/100);
             BASS_ChannelSetAttribute(VentCycle_Channel_FX, BASS_ATTRIB_VOL, trcBarVspomMahVol.Position/100);
             BASS_ChannelSetAttribute(Compressor_Channel, BASS_ATTRIB_VOL, trcBarVspomMahVol.Position/100);
             BASS_ChannelSetAttribute(CompressorCycleChannel, BASS_ATTRIB_VOL, trcBarVspomMahVol.Position/100);
          end else begin
+            BASS_ChannelSetAttribute(LocoChannel_FX[0], BASS_ATTRIB_VOL, 0);
+            BASS_ChannelSetAttribute(LocoChannel_FX[1], BASS_ATTRIB_VOL, 0);
             BASS_ChannelSetAttribute(LocoChannel[0], BASS_ATTRIB_VOL, 0);
             BASS_ChannelSetAttribute(LocoChannel[1], BASS_ATTRIB_VOL, 0);
-            BASS_ChannelSetAttribute(LocoChannelPerestuk, BASS_ATTRIB_VOL, 0);
+            BASS_ChannelSetAttribute(LocoChannelPerestuk[0], BASS_ATTRIB_VOL, 0);
+            BASS_ChannelSetAttribute(LocoChannelPerestuk[1], BASS_ATTRIB_VOL, 0);
             BASS_ChannelSetAttribute(Vent_Channel_FX, BASS_ATTRIB_VOL, 0);
             BASS_ChannelSetAttribute(VentCycle_Channel_FX, BASS_ATTRIB_VOL, 0);
             BASS_ChannelSetAttribute(Compressor_Channel, BASS_ATTRIB_VOL, 0);
@@ -551,8 +683,13 @@ begin
          BASS_ChannelSetAttribute(SAUTChannelZvonok, BASS_ATTRIB_VOL, 0);
          BASS_ChannelSetAttribute(Unipuls_Channel[0], BASS_ATTRIB_VOL, 0);
          BASS_ChannelSetAttribute(Unipuls_Channel[1], BASS_ATTRIB_VOL, 0);
-         BASS_ChannelSetAttribute(TEDChannel_FX , BASS_ATTRIB_VOL, 0);
-         BASS_ChannelSetAttribute(TEDChannel2, BASS_ATTRIB_VOL, 0);
+         if (Loco <> 'ED4M') And (Loco <> 'ED9M') then begin
+            BASS_ChannelSetAttribute(TEDChannel_FX , BASS_ATTRIB_VOL, 0);
+            BASS_ChannelSetAttribute(TEDChannel2, BASS_ATTRIB_VOL, 0);
+         end else begin
+            BASS_ChannelSetAttribute(TEDChannel_FX , BASS_ATTRIB_VOL, TEDVlm);
+            BASS_ChannelSetAttribute(TEDChannel2, BASS_ATTRIB_VOL, TEDVlm);
+         end;
          if ChannelNumDiz=1 then BASS_ChannelSlideAttribute(DizChannel , BASS_ATTRIB_VOL, 0, 1);
          if ChannelNumDiz=0 then BASS_ChannelSlideAttribute(DizChannel2, BASS_ATTRIB_VOL, 0, 1);
          BASS_ChannelSetAttribute(IMRZachelka, BASS_ATTRIB_VOL, 0);
@@ -565,6 +702,7 @@ begin
          BASS_ChannelSetAttribute(XCompressor_Channel, BASS_ATTRIB_VOL, 0);
          BASS_ChannelSetAttribute(XCompressorCycleChannel, BASS_ATTRIB_VOL, 0);
          BASS_ChannelSetAttribute(ClockChannel, BASS_ATTRIB_VOL, 0);
+         BASS_ChannelSetAttribute(ClockCycleChannel, BASS_ATTRIB_VOL, 0);
          BASS_ChannelSetAttribute(Stochist_Channel, BASS_ATTRIB_VOL, 0);
          BASS_ChannelSetAttribute(StochistUdar_Channel, BASS_ATTRIB_VOL, 0);
       end;
@@ -572,28 +710,32 @@ begin
 end;
 
 //------------------------------------------------------------------------------//
-// РџРѕРґРїСЂРѕРіСЂР°РјРјР° РїСЂРѕС…РѕРґР° Р·РІСѓРєРѕРІРѕРіРѕ РјРµРЅРµРґР¶РµСЂР° (СЃСЂР°РІРЅРµРЅРёРµ РЅСѓР¶РЅРѕ-Р»Рё С‡С‚Рѕ-С‚Рѕ РІРѕСЃРїСЂ.?) //
+// Подпрограмма прохода звукового менеджера (сравнение нужно-ли что-то воспр.?) //
 //------------------------------------------------------------------------------//
 procedure SoundManagerTick();
 var
-    NumPRS, Country:   Integer;			// РљРѕРґ СЃС‚СЂР°РЅС‹ Рё РєРѕРґ Р·РІСѓРєР° РџР РЎ
+    NumPRS, Country:   Integer;			// Код страны и код звука ПРС
     I: Integer;
 begin
     With FormMain do begin
-    // === РџР•Р Р•РЎРўРЈРљ РќРђ РЎР’Р•РўРћР¤РћР РђРҐ === //
+    // === ПЕРЕСТУК НА СВЕТОФОРАХ === //
     if isPlayPerestuk=False then begin
        try
-          BASS_ChannelStop(LocoChannelPerestuk); BASS_StreamFree(LocoChannelPerestuk);
-          LocoChannelPerestuk := BASS_StreamCreateFile(FALSE, LocoPerestukF, 0, 0, 0 {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF}); isPlayPerestuk:=True;
-          BASS_ChannelPlay(LocoChannelPerestuk, True); isPlayPerestuk:=True;
-          if (Camera<>2) or (Loco='ED4M') then
-             BASS_ChannelSetAttribute(LocoChannelPerestuk, BASS_ATTRIB_VOL, trcBarLocoPerestukVol.Position/100)
-          else
-             BASS_ChannelSetAttribute(LocoChannelPerestuk, BASS_ATTRIB_VOL, 0);
-          BASS_ChannelSetSync(LocoChannelPerestuk, BASS_SYNC_END, 0, @PlayPerestukIsEnd, nil);
+          BASS_ChannelStop(LocoChannelPerestuk[LChannelPerestuk]); BASS_StreamFree(LocoChannelPerestuk[LChannelPerestuk]);
+          LocoChannelPerestuk[LChannelPerestuk] := BASS_StreamCreateFile(FALSE, LocoPerestukF, 0, 0, 0 {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF}); isPlayPerestuk:=True;
+          BASS_ChannelPlay(LocoChannelPerestuk[LChannelPerestuk], True); isPlayPerestuk:=True;
+
+          if LChannelPerestuk=0 then LChannelPerestuk:=1 else LChannelPerestuk:=0;
+          if (Camera=0) Or (Camera=1) then LocoVolumePerestuk := FormMain.trcBarLocoPerestukVol.Position;
+          if Camera=2 then begin
+             if Loco<>'ED4M' then LocoVolumePerestuk:=0 else LocoVolumePerestuk := FormMain.trcBarLocoPerestukVol.Position;
+          end;
+          LocoVolumePerestuk2:=0; PerehodLocoPerestuk:=True;	// Установки для перехода
+
+          BASS_ChannelSetSync(LocoChannelPerestuk[LChannelPerestuk], BASS_SYNC_END, 0, @PlayPerestukIsEnd, nil);
        except end;
     end;
-    // === РџР•Р Р•РЎРўРЈРљ Р’РђР“РћРќРћР’ === //
+    // === ПЕРЕСТУК ВАГОНОВ === //
     if IsPLayWag=False then begin
        try
           BASS_ChannelStop(WagChannel); BASS_StreamFree(WagChannel);
@@ -608,7 +750,7 @@ begin
                 BASS_ChannelSetAttribute(WagChannel, BASS_ATTRIB_VOL, 0);
         except end;
      end;
-    // === РЎРђРЈРў РћР±СЉРµРєС‚С‹ [1] === //
+    // === САУТ Объекты [1] === //
     if (isPlaySAUTObjects=False) and (BASS_ChannelIsActive(SAUTChannelObjects)=0) then begin
        try
           BASS_ChannelStop(SAUTChannelObjects); BASS_StreamFree(SAUTChannelObjects);
@@ -624,7 +766,7 @@ begin
              BASS_ChannelSetAttribute(SAUTChannelObjects, BASS_ATTRIB_VOL, 0);
        	except end;
     end;
-    // === РЎРђРЈРў РћР±СЉРµРєС‚С‹ [2] === //
+    // === САУТ Объекты [2] === //
     if (isPlaySAUTObjects=False) and (BASS_ChannelIsActive(SAUTChannelObjects)<>0) then begin
        try
           BASS_ChannelStop(SAUTChannelObjects2); BASS_StreamFree(SAUTChannelObjects2);
@@ -640,7 +782,7 @@ begin
              BASS_ChannelSetAttribute(SAUTChannelObjects2, BASS_ATTRIB_VOL, 0);
        except end;
     end;
-    // === Р—Р’РћРќРћРљ РР— Р­Рљ === //
+    // === ЗВОНОК ИЗ ЭК === //
     if isPlaySAUTZvonok=True then begin
        try
           BASS_ChannelStop(SAUTChannelZvonok); BASS_StreamFree(SAUTChannelZvonok);
@@ -650,7 +792,7 @@ begin
           BASS_ChannelSetAttribute(SAUTChannelZvonok, BASS_ATTRIB_FREQ, 44100);
        except end;
     end;
-    // === РЈР”РђР  РЎР¦Р•РџРљР РќРђ РњР’РџРЎ === //
+    // === УДАР СЦЕПКИ НА МВПС === //
     if isPlayTrog=False then begin
        try
           BASS_ChannelStop(StukTrog); BASS_StreamFree(StukTrog);
@@ -662,7 +804,7 @@ begin
              BASS_ChannelSetAttribute(StukTrog, BASS_ATTRIB_VOL, 0)
        except end;
     end;
-    // === РџР РЎ === //
+    // === ПРС === //
     if isPlayPRS=False then begin
        Randomize;
        if (cbPRS_RZD.Checked = True) and (cbPRS_UZ.Checked = False) then begin
@@ -709,7 +851,7 @@ begin
              BASS_ChannelSetAttribute(PRSChannel, BASS_ATTRIB_VOL, 0);
        except end;
     end;
-    // === РљР°Р±РёРЅРЅС‹Рµ С‰РµР»С‡РєРё(395;254;РєРѕРЅС‚СЂРѕР»Р»РµСЂ;СЂРµРІРµСЂСЃРѕСЂ) === //
+    // === Кабинные щелчки(395;254;контроллер;реверсор) === //
     if isPlayCabinClicks=False then begin
        try
           BASS_ChannelStop(CabinClicks); BASS_StreamFree(CabinClicks);
@@ -721,7 +863,7 @@ begin
              BASS_ChannelSetAttribute(CabinClicks, BASS_ATTRIB_VOL, 0);
        except end;
     end;
-    // === РџР РћР’Р•Р РљРђ Р‘Р”РРўР•Р›Р¬РќРћРЎРўР === //
+    // === ПРОВЕРКА БДИТЕЛЬНОСТИ === //
     if isPlayVcheck=False then begin
        try
           BASS_ChannelStop(Vigilance_Check_Channel); BASS_StreamFree(Vigilance_Check_Channel);
@@ -730,7 +872,15 @@ begin
           BASS_ChannelSetAttribute(Vigilance_Check_Channel, BASS_ATTRIB_VOL, trcBarLocoClicksVol.Position/100);
        except end;
     end;
-    // === РўР­Р” [1] === //
+    if isPlayZhalusi=False then begin
+       try
+          BASS_ChannelStop(ZhalusiChannel); BASS_StreamFree(ZhalusiChannel);
+          ZhalusiChannel := BASS_StreamCreateFile(FALSE, ZhalusiF, 0, 0, 0 {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF});
+          BASS_ChannelPlay(ZhalusiChannel, True); isPlayZhalusi:=True;
+          BASS_ChannelSetAttribute(ZhalusiChannel, BASS_ATTRIB_VOL, trcBarVspomMahVol.Position/100);
+       except end;
+    end;
+    // === ТЭД [1] === //
     if (ChannelNumTED=0) and (isPlayTED=False) then begin
        try
           BASS_ChannelStop(TEDChannel); BASS_StreamFree(TEDChannel);
@@ -746,7 +896,7 @@ begin
           end;
        except end;
     end;
-    // === РўР­Р” [2] === //
+    // === ТЭД [2] === //
     if (ChannelNumTED=1) and (isPlayTED=False) then begin
        try
           BASS_ChannelStop(TEDChannel2); BASS_StreamFree(TEDChannel2);
@@ -756,7 +906,7 @@ begin
           PerehodTED:=True; TEDVolume:=TEDVlm; TEDVolume2:=0;
        except end;
     end;
-    // === Р Р•Р”РЈРљРўРћР  === //
+    // === РЕДУКТОР === //
     if isPlayReduktor = False then begin
        try
           BASS_ChannelStop(ReduktorChannel); BASS_StreamFree(ReduktorChannel);
@@ -768,7 +918,7 @@ begin
           BASS_ChannelPlay(ReduktorChannel_FX, False); isPlayReduktor := True;
        except end;
     end;
-    // === Р”РР—Р•Р›Р¬ [1] === //
+    // === ДИЗЕЛЬ [1] === //
     if (isPlayDiz=False) and (ChannelNumDiz=0) then begin
        try
           BASS_ChannelStop(DizChannel); BASS_StreamFree(DizChannel);
@@ -786,7 +936,7 @@ begin
           end;
        except end;
     end;
-    // === Р”РР—Р•Р›Р¬ [2] === //
+    // === ДИЗЕЛЬ [2] === //
     if (isPlayDiz=False) and (ChannelNumDiz=1) then begin
        try
           BASS_ChannelStop(DizChannel2); BASS_StreamFree(DizChannel2);
@@ -804,7 +954,7 @@ begin
           end;
        except end;
     end;
-    // === Р’РЎРўР Р•Р§РќР«Р™ РџРћР•Р—Р” === //
+    // === ВСТРЕЧНЫЙ ПОЕЗД === //
     if isPlayVstrech = False then begin
        try
           BASS_ChannelStop(Vstrech); BASS_StreamFree(Vstrech);
@@ -818,7 +968,7 @@ begin
           BASS_ChannelSetAttribute(Vstrech, BASS_ATTRIB_FREQ, I);
        except end;
     end;
-    // === Р—РђР©Р•Р›РљРђ/Р­РџРљ/Р Р­Р›Р®РҐР/Р РђР—РћР‘Р©РРўР•Р›Р¬РќР«Р™ РљР РђРќ === //
+    // === ЗАЩЕЛКА/ЭПК/РЭЛЮХИ/РАЗОБЩИТЕЛЬНЫЙ КРАН === //
     if isPlayIMRZachelka=False then begin
        try
           BASS_ChannelStop(IMRZachelka); BASS_StreamFree(IMRZachelka);
@@ -830,7 +980,7 @@ begin
              BASS_ChannelSetAttribute(IMRZachelka, BASS_ATTRIB_VOL, 0);
        except end;
     end;
-    // === РЎРђР’РџР­ РЅР°Р¶Р°С‚РёРµ РєРЅРѕРїРєРё === //
+    // === САВПЭ нажатие кнопки === //
     if isPlaySAVPEPeek=False then begin
        try
           BASS_ChannelStop(SAVPE_Peek_Channel); BASS_StreamFree(SAVPE_Peek_Channel);
@@ -839,7 +989,7 @@ begin
           BASS_ChannelSetAttribute(SAVPE_Peek_Channel, BASS_ATTRIB_VOL, trcBarSAVPVol.Position/100);
        except end;
     end;
-    // === РЎРђР’РџР­ Р·РІРѕРЅРѕРє === //
+    // === САВПЭ звонок === //
     if isPlaySAVPEZvonok=False then begin
        try
           BASS_ChannelStop(SAVPE_ZVONOK); BASS_StreamFree(SAVPE_ZVONOK);
@@ -848,7 +998,7 @@ begin
           BASS_ChannelSetAttribute(SAVPE_ZVONOK, BASS_ATTRIB_VOL, trcBarSAVPVol.Position/100);
        except end;
     end;
-    // === РЎРђР’РџР­ РёРЅС„РѕСЂРјР°С‚РѕСЂ === //
+    // === САВПЭ информатор === //
     if isPlaySAVPEInfo=False then begin
        try
           BASS_ChannelStop(SAVPE_INFO_Channel); BASS_MusicFree(SAVPE_INFO_Channel);
@@ -862,7 +1012,7 @@ begin
           BASS_ChannelSetAttribute(SAVPE_INFO_Channel, BASS_ATTRIB_VOL, trcBarSAVPVol.Position/100);
        except end;
     end;
-    // === РљРќРћРџРљРђ Р Р‘ === //
+    // === КНОПКА РБ === //
     if isPlayRB=False then begin
        try
           BASS_ChannelStop(RB_Channel); BASS_StreamFree(RB_Channel);
@@ -874,7 +1024,7 @@ begin
              BASS_ChannelSetAttribute(RB_Channel, BASS_ATTRIB_VOL, 0);
       except end;
     end;
-    // === РџР•Р Р•Р”РќРР™ РўРџ === //
+    // === ПЕРЕДНИЙ ТП === //
     if isPlayFTP=False then begin
        try
           BASS_ChannelStop(FrontTP_Channel); BASS_StreamFree(FrontTP_Channel);
@@ -882,7 +1032,7 @@ begin
           BASS_ChannelPlay(FrontTP_Channel, True); BASS_ChannelSetAttribute(FrontTP_Channel, BASS_ATTRIB_VOL, trcBarVspomMahVol.Position/100);
        except end;
     end;
-    // === Р—РђР”РќРР™ РўРџ === //
+    // === ЗАДНИЙ ТП === //
     if isPlayBTP=False then begin
        try
           BASS_ChannelStop(BackTP_Channel); BASS_StreamFree(BackTP_Channel);
@@ -890,7 +1040,7 @@ begin
           BASS_ChannelPlay(BackTP_Channel, True); BASS_ChannelSetAttribute(BackTP_Channel, BASS_ATTRIB_VOL, (trcBarVspomMahVol.Position/100)/2);
        except end;
     end;
-    // === РњРљ === //
+    // === МК === //
     if isPlayCompressor=False then begin
        try
           BASS_ChannelStop(Compressor_Channel); BASS_StreamFree(Compressor_Channel);
@@ -903,7 +1053,7 @@ begin
              BASS_ChannelSetSync(Compressor_Channel, BASS_SYNC_END, 0, @PlayCompressorIsEnd, nil);
        except end;
     end;
-    // === РњРљ [Р’РќР•РЁРќРР™] === //
+    // === МК [ВНЕШНИЙ] === //
     if (isPlayXCompressor=False) then begin
        try
           BASS_ChannelStop(XCompressor_Channel); BASS_StreamFree(XCompressor_Channel);
@@ -916,7 +1066,7 @@ begin
              BASS_ChannelSetSync(XCompressor_Channel, BASS_SYNC_END, 0, @PlayXCompressorIsEnd, nil)
        except end;
     end;
-    // === РњРљ [Р¦РРљР›] === //
+    // === МК [ЦИКЛ] === //
     if isPlayCompressorCycle=False then begin
        try
           BASS_ChannelStop(CompressorCycleChannel); BASS_StreamFree(CompressorCycleChannel);
@@ -926,7 +1076,7 @@ begin
           CompressorCycleF:=PChar('');
        except end;
     end;
-    // === РњРљ [Р¦РРљР›] [Р’РќР•РЁРќРР™] === //
+    // === МК [ЦИКЛ] [ВНЕШНИЙ] === //
     if (isPlayXCompressorCycle=False) and (AnsiCompareText(XCompressorCycleF, '')<>0) then begin
        try
           BASS_ChannelStop(XCompressorCycleChannel); BASS_StreamFree(XCompressorCycleChannel);
@@ -936,7 +1086,7 @@ begin
           XCompressorCycleF:=PChar('');
        except end;
     end;
-    // === РњР’ === //
+    // === МВ === //
     if isPlayVent=False then begin
        try
           BASS_ChannelStop(Vent_Channel); BASS_StreamFree(Vent_Channel);
@@ -958,7 +1108,7 @@ begin
           end;
        except end;
     end;
-    // === РњР’ [Р’РќР•РЁРќРР™] === //
+    // === МВ [ВНЕШНИЙ] === //
     if isPlayVentX=False then begin
        try
           BASS_ChannelStop(XVent_Channel); BASS_StreamFree(XVent_Channel);
@@ -973,7 +1123,7 @@ begin
           isPlayVentX:=True; BASS_ChannelPlay(XVent_Channel, True); Inc(CameraX);
        except end;
     end;
-    // === РњР’ [Р¦РРљР›] === //
+    // === МВ [ЦИКЛ] === //
     if isPlayCycleVent=False then begin
        try
           BASS_ChannelStop(VentCycle_Channel); BASS_StreamFree(VentCycle_Channel);
@@ -988,7 +1138,7 @@ begin
           BASS_ChannelStop(Vent_Channel_FX); BASS_StreamFree(Vent_Channel_FX);
        except end;
     end;
-    // === РњР’ [Р¦РРљР›] [Р’РќР•РЁРќРР™] === //
+    // === МВ [ЦИКЛ] [ВНЕШНИЙ] === //
     if (isPlayCycleVentX=False) then begin
        try
           BASS_ChannelStop(XVentCycle_Channel); BASS_StreamFree(XVentCycle_Channel);
@@ -1003,7 +1153,7 @@ begin
           BASS_ChannelStop(XVent_Channel_FX); BASS_StreamFree(XVent_Channel_FX);
        except end;
     end;
-    // === РњР’ РўР” === //
+    // === МВ ТД === //
     if isPlayVentTD=False then begin
        try
           BASS_ChannelStop(VentTD_Channel); BASS_StreamFree(VentTD_Channel);
@@ -1015,7 +1165,7 @@ begin
           isPlayVentTD:=True; Inc(CameraX);
        except end;
     end;
-    // === РњР’ РўР” [Р’РќР•РЁРќРР™] === //
+    // === МВ ТД [ВНЕШНИЙ] === //
     if isPlayVentTDX=False then begin
        try
           BASS_ChannelStop(XVentTD_Channel); BASS_StreamFree(XVentTD_Channel);
@@ -1027,7 +1177,7 @@ begin
           isPlayVentTDX:=True; Inc(CameraX);
        except end;
     end;
-    // === РњР’ РўР” [Р¦РРљР›] === //
+    // === МВ ТД [ЦИКЛ] === //
     if isPlayCycleVentTD=False then begin
        try
           BASS_ChannelStop(VentCycleTD_Channel); BASS_StreamFree(VentCycleTD_Channel);
@@ -1040,7 +1190,7 @@ begin
           isPlayCycleVentTD:=True; Inc(CameraX);
        except end;
     end;
-    // РњР’ РўР” [Р¦РРљР›] [Р’РќР•РЁРќРР™] === //
+    // МВ ТД [ЦИКЛ] [ВНЕШНИЙ] === //
     if isPlayCycleVentTDX=False then begin
        try
           BASS_ChannelStop(XVentCycleTD_Channel); BASS_StreamFree(XVentCycleTD_Channel);
@@ -1081,7 +1231,7 @@ begin
           BASS_ChannelStop(Brake254_Channel_FX[0]); BASS_StreamFree(Brake254_Channel_FX[0]);
        except end;
     end;
-    // === РўР Р•РќРР• РљРћР›РћР”РћРљ === //
+    // === ТРЕНИЕ КОЛОДОК === //
     if isPlayBrake=False then begin
        try
           BASS_ChannelStop(Brake_Channel[0]); BASS_StreamFree(Brake_Channel[0]);
@@ -1105,7 +1255,17 @@ begin
           BASS_ChannelPlay(Brake_Channel[1], True);
        except end;
     end;
-    // === Р”РћР–Р”Р¬ === //
+
+    // === СКРИП КОЛОДОК ПРИ ОСТАНОВКЕ === //
+    if isPlayBrakeScr=False then begin
+       try
+          BASS_ChannelStop(BrakeScr_Channel); BASS_StreamFree(BrakeScr_Channel);
+          BrakeScr_Channel := BASS_StreamCreateFile(FALSE, BrakeScrF, 0, 0, BASS_SAMPLE_LOOP {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF}); isPlayBrakeScr:=True;
+          BASS_ChannelSetAttribute(BrakeScr_Channel, BASS_ATTRIB_VOL, 0.0);
+          BASS_ChannelPlay(BrakeScr_Channel, True);
+       except end;
+    end;
+    // === ДОЖДЬ === //
     if isPlayRain=False then begin
        try
           BASS_ChannelStop(Rain_Channel); BASS_StreamFree(Rain_Channel);
@@ -1114,14 +1274,14 @@ begin
           BASS_ChannelSetAttribute(Rain_Channel, BASS_ATTRIB_VOL, trcBarNatureVol.Position/100);
        except end;
     end;
-    // === РҐРћР”Р¬Р‘Рђ РџРћ РЎРќР•Р“РЈ === //
+    // === ХОДЬБА ПО СНЕГУ === //
     if (isPlayWalkSound=True) and (BASS_ChannelIsActive(WalkSoundChannel)=0) then begin
        //BASS_ChannelStop(WalkSoundChannel); BASS_StreamFree(WalkSoundChannel);
        WalkSoundChannel := BASS_StreamCreateFile(FALSE,WalkSoundF,0,0,BASS_SAMPLE_LOOP {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF});
        BASS_ChannelSetAttribute(WalkSoundChannel, BASS_ATTRIB_VOL, trcBarNatureVol.Position/100);
        BASS_ChannelPlay(WalkSoundChannel, TRUE); isPlayWalkSound := False;
     end;
-    // === РџР РћРўРЇР–РљРђ Р›Р•РќРўР« === //
+    // === ПРОТЯЖКА ЛЕНТЫ === //
     if isPlayBeltPool=False then begin
        try
           BASS_ChannelStop(BeltPool_Channel); BASS_StreamFree(BeltPool_Channel);
@@ -1130,7 +1290,7 @@ begin
           BASS_ChannelSetAttribute(BeltPool_Channel, BASS_ATTRIB_VOL, trcBarLocoClicksVol.Position/100);
        except end;
     end;
-    // === Р—Р’РЈР РћРљР РЈР–Р•РќРРЇ === //
+    // === ЗВУИ ОКРУЖЕНИЯ === //
     if isPlayNature = True then begin
        BASS_ChannelStop(NatureChannel); BASS_StreamFree(NatureChannel);
        BASS_ChannelStop(NatureChannel_FX); BASS_StreamFree(NatureChannel_FX);
@@ -1152,22 +1312,34 @@ begin
        BASS_ChannelSetAttribute(VR242Channel_FX, BASS_ATTRIB_VOL, 0);
        isPlayVR242 := True;
     end;
-    // === 3РЎР›2Рј Р§РђРЎР« === //
+    // === 3СЛ2м ЧАСЫ === //
     if isPlayClock=False then begin
        try
           BASS_ChannelStop(ClockChannel); BASS_StreamFree(ClockChannel);
-          if Speed<=2 then
-             ClockChannel:=BASS_StreamCreateFile(FALSE,PChar('TWS/clock.wav'),0,0,BASS_SAMPLE_LOOP {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF});
-          if Speed>2 then
-             ClockChannel:=BASS_StreamCreateFile(FALSE,PChar('TWS/skorostemer.wav'),0,0,BASS_SAMPLE_LOOP {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF});
-           BASS_ChannelPlay(ClockChannel, True); isPlayClock:=True;
+          BASS_ChannelStop(ClockCycleChannel); BASS_StreamFree(ClockCycleChannel);
+          ClockChannel:=BASS_StreamCreateFile(FALSE,ClockF,0,0,0 {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF});
+          //if Speed<=2 then
+          //   ClockChannel:=BASS_StreamCreateFile(FALSE,PChar('TWS/clock.wav'),0,0,BASS_SAMPLE_LOOP {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF});
+          //if Speed>2 then
+          //   ClockChannel:=BASS_StreamCreateFile(FALSE,PChar('TWS/skorostemer.wav'),0,0,BASS_SAMPLE_LOOP {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF});
+          BASS_ChannelPlay(ClockChannel, True); isPlayClock:=True;
           if Camera=0 then
              BASS_ChannelSetAttribute(ClockChannel, BASS_ATTRIB_VOL, trcBarLocoClicksVol.Position/100)
           else
              BASS_ChannelSetAttribute(ClockChannel, BASS_ATTRIB_VOL, 0);
        except end;
     end;
-    // === Р”Р’РћР РќРРљР === //
+    if isPlayCycleClock = False then begin
+       BASS_ChannelStop(ClockCycleChannel); BASS_StreamFree(ClockCycleChannel);
+       ClockCycleChannel:=BASS_StreamCreateFile(FALSE,ClockCycleF,0,0,BASS_SAMPLE_LOOP {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF});
+       BASS_ChannelPlay(ClockCycleChannel, True); isPlayCycleClock:=True;
+       if Camera=0 then
+          BASS_ChannelSetAttribute(ClockCycleChannel, BASS_ATTRIB_VOL, trcBarLocoClicksVol.Position/100)
+       else
+          BASS_ChannelSetAttribute(ClockCycleChannel, BASS_ATTRIB_VOL, 0);
+       BASS_ChannelStop(ClockChannel); BASS_StreamFree(ClockChannel);
+    end;
+    // === ДВОРНИКИ === //
     if isPlayStochist=False then begin
        try
           BASS_ChannelStop(Stochist_Channel); BASS_StreamFree(Stochist_Channel);
@@ -1179,7 +1351,7 @@ begin
              BASS_ChannelSetAttribute(Stochist_Channel, BASS_ATTRIB_VOL, 0);
        except end;
     end;
-    // === РЈР”РђР  Р”Р’РћР РќРРљРђ === //
+    // === УДАР ДВОРНИКА === //
     if isPlayStochistUdar=False then begin
        try
           BASS_ChannelStop(StochistUdar_Channel); BASS_StreamFree(StochistUdar_Channel);
@@ -1191,7 +1363,7 @@ begin
              BASS_ChannelSetAttribute(StochistUdar_Channel, BASS_ATTRIB_VOL, 0);
        except end;
     end;
-    // === РљР›РђР’РРђРўРЈР Рђ РљР›РЈР‘-Сѓ === //
+    // === КЛАВИАТУРА КЛУБ-у === //
     if ((cbKLUBSounds.Checked=True) and (KLUBOpen=1) and (prevKeyLKM=0) and (getasynckeystate(1)<>0)) then begin
        try
           BASS_ChannelStop(PickKLUBChannel); BASS_StreamFree(PickKLUBChannel);
@@ -1205,7 +1377,7 @@ begin
        except end;
     end;
     if getasynckeystate(1)=0 then PrevKeyLKM:=0;
-    // === РљР›РЈР‘-Сѓ СЃРјРµРЅР° РїРѕРєР°Р·Р°РЅРёСЏ СЃРІРµС‚РѕС„РѕСЂР° === //
+    // === КЛУБ-у смена показания светофора === //
     if (cbKLUBSounds.Checked=True) and (Svetofor<>PrevSvetofor) then begin
        try
           BASS_ChannelStop(KLUB_BEEP); BASS_StreamFree(KLUB_BEEP);
@@ -1213,7 +1385,7 @@ begin
           BASS_ChannelPlay(KLUB_BEEP, True); BASS_ChannelSetAttribute(KLUB_BEEP, BASS_ATTRIB_VOL, trcBarLocoClicksVol.Position/100);
        except end;
     end;
-    // === РљР›РЈР‘-Сѓ РµР·РґР° РїРѕ РѕРіСЂР°РЅРёС‡РµРЅРёСЋ ===
+    // === КЛУБ-у езда по ограничению ===
     if (cbKLUBSounds.Checked=True) and (isPlayOgrSpKlub=1) then begin
        try
           BASS_ChannelStop(Ogr_Speed_KLUB); BASS_StreamFree(Ogr_Speed_KLUB); isPlayOgrSpKlub:=-1;
@@ -1221,7 +1393,7 @@ begin
           BASS_ChannelPlay(Ogr_Speed_KLUB, True); BASS_ChannelSetAttribute(Ogr_Speed_KLUB, BASS_ATTRIB_VOL, trcBarLocoClicksVol.Position/100);
        except end;
     end;
-    // === РЎРР›РћР’РћР• РћР‘РћР РЈР”РћР’РђРќРР• Р›РћРљРћРњРћРўРР’Рђ(Р‘Р’, Р¤Р ) === //
+    // === СИЛОВОЕ ОБОРУДОВАНИЕ ЛОКОМОТИВА(БВ, ФР) === //
     if isPlayLocoPowerEquipment=False then begin
        try
           BASS_ChannelStop(LocoPowerEquipment); BASS_StreamFree(LocoPowerEquipment); isPlayLocoPowerEquipment:=True;
@@ -1229,7 +1401,7 @@ begin
           BASS_ChannelPlay(LocoPowerEquipment, True); BASS_ChannelSetAttribute(LocoPowerEquipment, BASS_ATTRIB_VOL, trcBarVspomMahVol.Position/100);
        except end;
     end;
-    // Р¤СѓРЅРєС†РёСЏ РїСЂРѕРёРіСЂС‹РІР°РЅРёСЏ РґРѕСЂРѕР¶РєРё "РЎРђРЈРў РІС‹РєР»СЋС‡РµРЅ"
+    // Функция проигрывания дорожки "САУТ выключен"
     if (SAUTOff=True) and (BASS_IsStarted = True) then begin
     try
        BASS_ChannelStop(SAUTChannelObjects); BASS_StreamFree(SAUTChannelObjects);

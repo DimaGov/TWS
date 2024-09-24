@@ -1,12 +1,12 @@
 object FormMain: TFormMain
-  Left = 399
+  Left = 351
   Top = 94
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'TWS 2.7.2'
-  ClientHeight = 475
-  ClientWidth = 320
-  Color = clBtnFace
+  Caption = 'TWS 2.8'
+  ClientHeight = 478
+  ClientWidth = 319
+  Color = clCream
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -181,13 +181,6 @@ object FormMain: TFormMain
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
-  end
-  object Label1: TLabel
-    Left = 280
-    Top = 448
-    Width = 31
-    Height = 13
-    Caption = 'Label1'
   end
   object groupBoxSAVPEbox: TGroupBox
     Left = 0
@@ -1038,14 +1031,13 @@ object FormMain: TFormMain
     WordWrap = False
   end
   object Memo3: TMemo
-    Left = 400
-    Top = 616
-    Width = 185
-    Height = 57
+    Left = 376
+    Top = 544
+    Width = 337
+    Height = 121
     Lines.Strings = (
       'Memo3')
     TabOrder = 6
-    Visible = False
     WordWrap = False
   end
   object Memo8: TMemo
@@ -1144,6 +1136,15 @@ object FormMain: TFormMain
       TabOrder = 2
       OnChange = ChangeVolume
     end
+  end
+  object Button1: TButton
+    Left = 400
+    Top = 496
+    Width = 75
+    Height = 25
+    Caption = 'Button1'
+    TabOrder = 10
+    OnClick = Button1Click
   end
   object ClockMain: TTimer
     Interval = 20
@@ -1257,5 +1258,12 @@ object FormMain: TFormMain
     OnTimer = timerVigilanceUSAVPDelayTimer
     Left = 440
     Top = 336
+  end
+  object timerDoorCloseZvonok: TTimer
+    Enabled = False
+    Interval = 5000
+    OnTimer = timerDoorCloseZvonokTimer
+    Left = 440
+    Top = 104
   end
 end
