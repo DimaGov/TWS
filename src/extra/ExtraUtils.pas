@@ -23,6 +23,7 @@ interface
    function BoolToStr(const value : boolean) : string;
    function FindTask(ExeFileName: string): Boolean;
    function OneInstance: boolean;
+   function GetFileCount(Dir: string):integer;
 
 implementation
 
@@ -220,6 +221,26 @@ begin
     i:=i+1;
   end;
   Result:=St2;
+end;
+
+//------------------------------------------------------------------------------//
+//      Подпрограмма для поиска количества файлов *.res в заданной папке        //
+//------------------------------------------------------------------------------//
+function GetFileCount(Dir: string):integer;
+var
+  fs: TSearchRec;
+  pics: integer;
+begin
+  pics:=0;
+  if FindFirst(Dir+'/*.res', faAnyFile, fs) = 0
+    then
+    repeat
+      inc(pics);
+    until
+      FindNext(fs) <> 0;
+  //FindClose(fs);
+
+Result := Pics-1;
 end;
 
 function FindTask(ExeFileName: string): Boolean;

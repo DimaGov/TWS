@@ -1,6 +1,6 @@
 object FormMain: TFormMain
-  Left = 351
-  Top = 94
+  Left = 1037
+  Top = 155
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'TWS 2.8'

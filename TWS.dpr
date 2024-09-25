@@ -33,7 +33,8 @@ uses
   CHS2K in 'src\loc\CHS2K\CHS2K.pas',
   VL11M in 'src\loc\VL11M\VL11M.pas',
   sl2m in 'src\SL2m\sl2m.pas',
-  VL82M in 'src\loc\VL82m\VL82M.pas';
+  VL82M in 'src\loc\VL82m\VL82M.pas',
+  CHS4 in 'src\loc\CHS4\CHS4.pas';
 
 {$R *.res}
 

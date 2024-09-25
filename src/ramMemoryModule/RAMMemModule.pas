@@ -474,12 +474,21 @@ end;
 //          Подпрограмма для чтения локальных переменных локомотива ЧС4         //
 //------------------------------------------------------------------------------//
 procedure ReadDataMemoryCHS4();
+var
+    tpByte: PByte;
 begin
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4T_FTP, @FrontTP, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4T_BTP, @BackTP, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ptr($0536FA2F), @ReversorPos, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4T_VENT, @Vent, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4T_COMPRESSOR, @Compressor, 4, temp);  except end;
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_VOLTAGE, @Voltage, 4, temp);  except end;
+
+    tpByte := ADDR_PNEVM;
+    try ReadProcessMemory(UnitMain.pHandle, tpByte, @GR, 8, temp); except end;
+    GR := RoundTo(GR, -2);
+    Inc(tpByte, 40);
+    try ReadProcessMemory(UnitMain.pHandle, tpByte, @TC, 8, temp); except end;
 end;
 
 //------------------------------------------------------------------------------//
@@ -1105,7 +1114,7 @@ begin
         end;
         // -/- ЧС4 (CHS4) -/- //
         if LocoGlobal='CHS4' then begin
-           LocoWorkDir         := 'TWS/CHS4t/';
+           LocoWorkDir         := 'TWS/CHS4KVR/';
            UltimateTEDAmperage := 1500;         // Задаем предельный ток нагрузки ТЭД
            LocoSectionsNum     := 1;		// Задаем количество секций для текущего локомотива
            LocoPowerVoltage    := 25;           // Тип электрофикации локомотива [0, -, ~]
@@ -1116,10 +1125,16 @@ begin
            LocoWithSndKM       := True;         // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := True;         // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
-           LocoWithExtMVSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МВ
-           LocoWithExtMKSound  := False;        // Задаем состояние наличия на данном локомотиве внешних звуков МК
-           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithExtMVSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МВ
+           LocoWithExtMKSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МК
+           LocoWithMVPitch     := True;         // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
            LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
+           VentStartF          := PChar('TWS/CHS4KVR/ventVU-start.wav');
+           VentCycleF          := PChar('TWS/CHS4KVR/ventVU.wav');
+           VentStopF           := PChar('TWS/CHS4KVR/ventVU-stop.wav');
+           XVentStartF         := PChar('TWS/CHS4KVR/x_ventVU-start.wav');
+           XVentCycleF         := PChar('TWS/CHS4KVR/x_ventVU.wav');
+           XVentStopF          := PChar('TWS/CHS4KVR/x_ventVU-stop.wav');
            VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
            VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
            VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ

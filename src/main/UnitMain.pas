@@ -10,10 +10,10 @@
  |    Copyright:  Dmitry Govorukha a.k.a DimaGVRH                    |     |
  |    Author:     Dmitry Govorukha a.k.a DimaGVRH                    |     |
  |                                                                   |     +
- |    UKRAINE, DNEPR CITY, 2017-2021 (C)                             |    /
+ |    UKRAINE, DNEPR CITY, 2017-2024 (C)                             |    /
  |                                                                   |   /
- |    zdsimulator.com.ua                                             |  /
- |    forum.zdsimulator.com.ua                                       | /
+ |                                                                   |  /
+ |                                                                   | /
  |                                                                   |/
  +-------------------------------------------------------------------+
 *)
@@ -28,7 +28,7 @@ uses
   ValEdit, jpeg, UnitSAVPEHelp, UnitDebug, Math, UnitUSAVP,
   EncdDecd, SAVP, RAMMemModule, FileManager, ExtraUtils, SoundManager, Debug,
   bass_fx, UnitSOVIHelp, UnitSoundRRS, CHS8, CHS4KVR, CHS7, CHS4T, VL80T,
-  ES5K, EP1M, ED4M, ED9M, CHS2K, sl2m, VL82M;
+  ES5K, EP1M, ED4M, ED9M, CHS2K, sl2m, VL82M, CHS4;
 
 type
   TFormMain = class(TForm)
@@ -224,6 +224,7 @@ var
   CHS4T__: chs4t_;
   CHS2K__: chs2k_;
   CHS4KVR__: chs4kvr_;
+  CHS4__: chs4_;
   VL80T__: vl80t_;
   EP1M__: ep1m_;
   ES5K__: es5k_;
@@ -665,6 +666,7 @@ begin
   CHS4T__ := chs4t_.Create;
   CHS2K__ := chs2k_.Create;
   CHS4KVR__ := chs4kvr_.Create;
+  CHS4__ := chs4_.Create;
   VL80T__ := vl80t_.Create;
   EP1M__ := ep1m_.Create;
   ES5K__ := es5k_.Create;
@@ -709,23 +711,6 @@ begin
   ComboBox2Change(FormMain);
 end;
 
-function GetFileCount(Dir: string):integer;
-var
-  fs: TSearchRec;
-  pics: integer;
-begin
-  pics:=0;
-  if FindFirst(Dir+'/*.res', faAnyFile, fs) = 0
-    then
-    repeat
-      inc(pics);
-    until
-      FindNext(fs) <> 0;
-  FindClose(fs);
-
-Result := Pics-1;
-end;
-
 function TFormMain.CheckInstallation(): Boolean;
 begin
     if FileExists('Launcher.exe') = False then begin
@@ -734,22 +719,6 @@ begin
            Result:=False;
         end else Result:=True;
     end else Result:=True;
-end;
-
-procedure PlayMemoryStreamFromFile(SoundFileName: String; var ChannelName: Cardinal;
-				   var MemoryStreamName: TMemoryStream; StopChannel: Boolean);
-var
-   FS: TFileStream;
-begin
-   if StopChannel=True then begin
-      BASS_ChannelStop(ChannelName); BASS_StreamFree(ChannelName);
-   end;
-   try MemoryStreamName.Free; except end;
-   MemoryStreamName:=TMemoryStream.Create;
-   FS := TFileStream.Create(SoundFileName, fmShareDenyNone);
-   MemoryStreamName.LoadFromStream(FS);
-   FS.Free;
-   MemoryStreamName.Free;
 end;
 
 function CameraInCabinCheck(CameraX: Integer; Camera: Byte) : Boolean;
@@ -1833,6 +1802,7 @@ try
     if LocoGlobal = 'CHS4t' then chs4t__.step();
     if LocoGlobal = 'CHS2K' then chs2k__.step();
     if LocoGlobal = 'CHS4 KVR' then chs4kvr__.step();
+    if LocoGlobal = 'CHS4' then chs4__.step();
     if LocoGlobal = 'VL80t' then vl80t__.step();
     if LocoGlobal = 'VL82m' then vl82m__.step();
     if LocoGlobal = 'EP1m' then ep1m__.step();
