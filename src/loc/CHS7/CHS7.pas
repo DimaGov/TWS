@@ -18,6 +18,7 @@ type chs7_ = class (TObject)
       procedure vent_step();
       procedure em_latch_step();
       procedure pbk_step();
+      procedure reversor_step();
     protected
 
     public
@@ -62,6 +63,7 @@ implementation
          kr21__.step();
          U_relay_step();
          em_latch_step();
+         reversor_step();
       end;
    end;
 
@@ -234,6 +236,25 @@ implementation
       if (Vent=0) and (Prev_Vent<>0) then begin
          StopVent:=True;
          isPlayVent:=False; isPlayVentX:=False; VentPitchDest := 0;
+      end;
+   end;
+
+   // ----------------------------------------------------
+   //  PEBEPCOPbl
+   // ----------------------------------------------------
+   procedure CHS7_.reversor_step();
+   begin
+      if ReversorPos <> PrevReversorPos then begin
+         if ReversorPos = 1 then
+            CabinClicksF:=StrNew(PChar(soundDir + 'revers_N_+1.wav'));
+
+         if ReversorPos = 255 then
+            CabinClicksF:=StrNew(PChar(soundDir + 'revers_N_-1.wav'));
+
+         if ReversorPos = 0 then
+            CabinClicksF:=StrNew(PChar(soundDir + 'revers_-+_N.wav'));
+            
+         isPlayCabinClicks:=False;
       end;
    end;
 

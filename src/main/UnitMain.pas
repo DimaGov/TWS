@@ -28,7 +28,7 @@ uses
   ValEdit, jpeg, UnitSAVPEHelp, UnitDebug, Math, UnitUSAVP,
   EncdDecd, SAVP, RAMMemModule, FileManager, ExtraUtils, SoundManager, Debug,
   bass_fx, UnitSOVIHelp, UnitSoundRRS, CHS8, CHS4KVR, CHS7, CHS4T, VL80T,
-  ES5K, EP1M, ED4M, ED9M, CHS2K, sl2m, VL82M, CHS4, TE10U;
+  ES5K, EP1M, ED4M, ED9M, CHS2K, sl2m, VL82M, CHS4, TE10U, M62;
 
 type
   TFormMain = class(TForm)
@@ -232,6 +232,7 @@ var
   ED9M__: ed9m_;
   VL82M__: vl82m_;
   TE10U__: te10u_;
+  M62__: m62_;
 
   SL2M__: sl2m_;
 
@@ -262,7 +263,6 @@ var
   LocoWithTED:                 Boolean;    // Переменная для определения, есть-ли на данный локомотив звук ТЭД-ов
   LocoWithReductor:            Boolean;
   LocoWithDIZ:                 Boolean;
-  LocoWithSndReversor:         Boolean;
   LocoWithSndKM:               Boolean;    // Переменная для определения, есть-ли на данный локомотив звук щелчка котнроллера
   LocoWithSndKM_OP:            Boolean;    // Переменная для определения, есть-ли на данный локомотив звук постановки ОП
   LocoWithSndTP:               Boolean;    // Переменная для определения, есть-ли на данный локомотив звуки ТП
@@ -270,7 +270,6 @@ var
   LocoWithExtMKSound:          Boolean;    // Переменная для определения, есть-ли на данный локомотив внешние звуки МК
   LocoWithMVPitch:             Boolean;
   LocoWithMVTDPitch:           Boolean;
-  LocoSndReversorType:         Byte;       // Тип звуков реверсора на локомотиве (0 - читаем состояние с памяти, 1 - по нажатию соответствующих клавиш
   LocoTEDNamePrefiks:          String;
   LocoReductorNamePrefiks:     String;
   LocoDIZNamePrefiks:          String;
@@ -675,6 +674,7 @@ begin
   ED9M__ := ed9m_.Create;
   VL82M__ := vl82m_.Create;
   TE10U__ := te10u_.Create;
+  M62__ := m62_.Create;
 
   isGameOnPause := True;
 
@@ -1179,7 +1179,6 @@ try
      if GetAsyncKeyState(16)+GetAsyncKeyState(78)=0 then PrevKeyEPK:=0;
      // БЛОК ЩЕЛЧКА КОНТРОЛЛЕРА //
      if LocoWithSndKM = True then begin
-        if LocoSndReversorType = 1 then ReversorPos := 1;	// Локомотивы на которых не удалось отследить положение реверсора
         if ReversorPos<>0 then begin
            if KM_Pos_1 <> Prev_KMAbs then begin
               if LocoGlobal = 'M62' then begin
@@ -1200,42 +1199,6 @@ try
 
         if getasynckeystate(65)=0 then PrevKeyA:=0; if getasynckeystate(68)=0 then PrevKeyD:=0;
         if getasynckeystate(69)=0 then PrevKeyE:=0; if getasynckeystate(81)=0 then PrevKeyQ:=0;
-     end;
-     // БЛОК ЩЕЛЧКА РЕВЕРСИВКИ //
-     if LocoWithSndReversor=True then begin
-        if LocoSndReversorType = 2 then begin
-           if (ReversorPos = 0) and (PrevReversorPos <> 0) then begin
-              CabinClicksF := RevPos_N_F;
-              isPlayCabinClicks:=False;
-           end;
-           if (ReversorPos = 1) and (PrevReversorPos = 0) then begin
-              CabinClicksF := RevPos_N_1_F;
-              isPlayCabinClicks:=False;
-           end;
-           if (ReversorPos = 255) and (PrevReversorPos = 0) then begin
-              CabinClicksF := RevPos_N_255_F;
-              isPlayCabinClicks:=False;
-           end;
-        end;
-        if LocoSndReversorType = 1 then begin
-           if KM_Pos_1=0 then begin
-              if (PrevKeyW=0) and (GetAsyncKeyState(87)<>0) then begin
-                 CabinClicksF:=RevPosF; isPlayCabinClicks:=False; PrevKeyW:=1;
-              end;
-
-              if (PrevKeyS=0) and (GetAsyncKeyState(83)<>0) then begin
-                 CabinClicksF:=RevPosF; isPlayCabinClicks:=False; PrevKeyS:=1;
-              end;
-           end;
-
-           if GetAsyncKeyState(83)=0 then PrevKeyS:=0; if GetAsyncKeyState(87)=0 then PrevKeyW:=0;
-        end;
-
-        if LocoSndReversorType = 0 then
-           if ReversorPos<>PrevReversorPos then begin
-              CabinClicksF:=RevPosF;
-              isPlayCabinClicks:=False;
-           end;
      end;
   end;
   // ***************** //
@@ -1812,6 +1775,7 @@ try
     if LocoGlobal = 'ED4M' then ed4m__.step();
     if LocoGlobal = 'ED9M' then ed9m__.step();
     if LocoGlobal = '2TE10U' then te10u__.step();
+    if LocoGlobal = 'M62' then m62__.step();
 
     SAVPTick();
 

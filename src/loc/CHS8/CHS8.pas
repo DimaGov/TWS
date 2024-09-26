@@ -25,6 +25,7 @@ interface
       procedure vent_step();
       procedure mk_step();
       procedure em_latch_step();
+      procedure reversor_step();
     protected
 
     public
@@ -76,6 +77,7 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils, Math;
       if FormMain.cbCabinClicks.Checked = True then begin
          kr21__.step();
          em_latch_step();
+         reversor_step();
       end;
 
       if FormMain.cbVspomMash.Checked = True then begin
@@ -385,6 +387,31 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils, Math;
          If UnipulsFaktPos = 10 then begin
             TWS_PlayUnipuls(StrNew(PChar(unipulsDir + '1200-~.wav')), True); end;
       end;
+   end;
+
+   // ----------------------------------------------------
+   //  PEBEPCOPbl
+   // ----------------------------------------------------
+   procedure CHS8_.reversor_step();
+   var
+      local_str: string;
+   begin
+      if (LocoNum > 0) and (LocoNum < 33) then local_str := 'E1';
+      if LocoNum >= 33 then local_str := 'E2';
+
+      if KM_Pos_1=0 then begin
+         if (PrevKeyW=0) and (GetAsyncKeyState(87)<>0) then begin
+            CabinClicksF := StrNew(PChar(soundDir + local_str + '\revers.wav'));
+            isPlayCabinClicks:=False; PrevKeyW:=1;
+         end;
+
+         if (PrevKeyS=0) and (GetAsyncKeyState(83)<>0) then begin
+            CabinClicksF := StrNew(PChar(soundDir + local_str + '\revers.wav'));
+            isPlayCabinClicks:=False; PrevKeyS:=1;
+         end;
+      end;
+
+      if GetAsyncKeyState(83)=0 then PrevKeyS:=0; if GetAsyncKeyState(87)=0 then PrevKeyW:=0;
    end;
 
 end.

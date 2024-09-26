@@ -107,10 +107,6 @@ var
 
   LocoPerestukF:               PChar; 	  // Файл звука перестука тележек локомотива
   CabinClicksF:                PChar;     // Кабинные щелчки (395;254;контроллер;реверсор)
-  RevPosF:                     PChar;
-  RevPos_N_F:		       PChar;
-  RevPos_N_1_F:		       PChar;
-  RevPos_N_255_F:              PChar;
   LocoFTemp:		       PChar;
   WagF :                       PChar;
   dizF:                        PChar;	  // Файлы дизелей

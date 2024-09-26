@@ -484,6 +484,7 @@ begin
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4T_VENT, @Vent, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4T_COMPRESSOR, @Compressor, 4, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_VOLTAGE, @Voltage, 4, temp);  except end;
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4KVR_REVERSOR, @ReversorPos, 1, temp);  except end;
 
     tpByte := ADDR_PNEVM;
     try ReadProcessMemory(UnitMain.pHandle, tpByte, @GR, 8, temp); except end;
@@ -879,7 +880,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
@@ -899,10 +899,8 @@ begin
            LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
            LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
            LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
-           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemoryVL80t;		// Задаем указатель на функцию чтения памяти
         end;
@@ -915,7 +913,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
@@ -929,10 +926,8 @@ begin
            LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
            LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
            LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
-           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemoryVL85;		// Задаем указатель на функцию чтения памяти
         end;
@@ -945,7 +940,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
@@ -962,10 +956,8 @@ begin
            LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
            LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
            LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
-           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemoryVL82m;		// Задаем указатель на функцию чтения памяти
         end;
@@ -978,7 +970,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
@@ -998,10 +989,8 @@ begin
            LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
            LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
            LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
-           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemoryVL11m;		// Задаем указатель на функцию чтения памяти
         end;
@@ -1014,7 +1003,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
@@ -1034,10 +1022,8 @@ begin
            LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
            LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
            LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
-           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemory2ES5k;		// Задаем указатель на функцию чтения памяти
         end;
@@ -1050,7 +1036,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := True;         // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
@@ -1070,10 +1055,8 @@ begin
            LocoTEDNamePrefiks  := 'EP_TED';     // Задаем префикс названия папки с звуками ТЭД
            LocoReductorNamePrefiks := 'EP_TED'; // Задаем префикс названия папки со звуками редуктора
            LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
-           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemoryEP1m;		// Задаем указатель на функцию чтения памяти
         end;
@@ -1086,7 +1069,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
@@ -1106,10 +1088,8 @@ begin
            LocoTEDNamePrefiks  := 'CHS_TED';    // Задаем префикс названия папки с звуками ТЭД
            LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
            LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
-           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemoryCHS2k;		// Задаем указатель на функцию чтения памяти
         end;
@@ -1122,7 +1102,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := True;         // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := True;         // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := True;         // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
@@ -1142,11 +1121,8 @@ begin
            LocoTEDNamePrefiks  := 'CHS_TED';    // Задаем префикс названия папки с звуками ТЭД
            LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
            LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
-           RevPosF             := PChar(
-                      'TWS/revers-CHS.wav');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 0;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemoryCHS4;		// Задаем указатель на функцию чтения памяти
         end;
@@ -1159,7 +1135,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := True;         // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := True;         // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := True;         // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
@@ -1179,11 +1154,8 @@ begin
            LocoTEDNamePrefiks  := 'CHS_TED';    // Задаем префикс названия папки с звуками ТЭД
            LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
            LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
-           RevPosF             := PChar(
-                      'TWS/Devices/21KR/revers.wav');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 0;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemoryCHS4kvr;		// Задаем указатель на функцию чтения памяти
         end;
@@ -1196,7 +1168,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := True;         // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := True;         // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := True;         // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
@@ -1210,11 +1181,8 @@ begin
            LocoTEDNamePrefiks  := 'CHS_TED';    // Задаем префикс названия папки с звуками ТЭД
            LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
            LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
-           RevPosF             := PChar(
-                      'TWS/Devices/21KR/revers.wav');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemoryCHS4t;		// Задаем указатель на функцию чтения памяти
         end;
@@ -1227,7 +1195,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := True;         // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := True;         // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := True;         // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
@@ -1241,15 +1208,8 @@ begin
            LocoTEDNamePrefiks  := 'CHS_TED';    // Задаем префикс названия папки с звуками ТЭД
            LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
            LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
-           if (LocoNum > 2) and (LocoNum < 33) then
-              RevPosF             := PChar(
-                         'TWS/CHS8/E1/revers.wav') // Задаем имя файла реверсора
-           else
-              RevPosF             := PChar(
-                         'TWS/CHS8/E2/revers.wav');// Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemoryCHS8;		// Задаем указатель на функцию чтения памяти
         end;
@@ -1262,7 +1222,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := True;         // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := True;         // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := True;         // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
@@ -1282,15 +1241,8 @@ begin
            LocoTEDNamePrefiks  := 'CHS_TED';    // Задаем префикс названия папки с звуками ТЭД
            LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
            LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
-           RevPos_N_F          := PChar(
-                      'TWS/CHS7/revers_-+_N.wav');    // Задаем имя файла реверсора
-           RevPos_N_1_F          := PChar(
-                      'TWS/CHS7/revers_N_+1.wav');
-           RevPos_N_255_F          := PChar(
-                      'TWS/CHS7/revers_N_-1.wav');
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 2;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemoryCHS7;		// Задаем указатель на функцию чтения памяти
         end;
@@ -1303,7 +1255,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := True;         // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := False;        // Задаем состояние наличия на данном локомотиве звука ТП
@@ -1317,10 +1268,8 @@ begin
            LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
            LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
            LocoDIZNamePrefiks  := 'TEP70';      // Задаем префикс названия папки с звуками работы дизеля
-           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemoryTEP70;		// Задаем указатель на функцию чтения памяти
         end;
@@ -1333,7 +1282,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := True;         // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := False;        // Задаем состояние наличия на данном локомотиве звука ТП
@@ -1347,10 +1295,8 @@ begin
            LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
            LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
            LocoDIZNamePrefiks  := 'TEP70bs';    // Задаем префикс названия папки с звуками работы дизеля
-           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemoryTEP70BS;		// Задаем указатель на функцию чтения памяти
         end;
@@ -1366,7 +1312,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := True;         // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := True;         // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := True;         // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := False;        // Задаем состояние наличия на данном локомотиве звука ТП
@@ -1380,11 +1325,8 @@ begin
            LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
            LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
            LocoDIZNamePrefiks  := 'M62';        // Задаем префикс названия папки с звуками работы дизеля
-           RevPosF             := PChar(
-                      'TWS/M62/reverser.wav');  // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemoryM62;		// Задаем указатель на функцию чтения памяти
         end;
@@ -1397,7 +1339,6 @@ begin
            LocoWithTED         := False;        // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := False;        // Задаем состояние наличия на данном локомотиве звука ТП
@@ -1410,10 +1351,8 @@ begin
            VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
            LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
            LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
-           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemoryTEM18dm;		// Задаем указатель на функцию чтения памяти
         end;
@@ -1426,7 +1365,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := True;         // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := False;        // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := False;        // Задаем состояние наличия на данном локомотиве звука ТП
@@ -1440,10 +1378,8 @@ begin
            LocoTEDNamePrefiks  := 'VL_TED';     // Задаем префикс названия папки с звуками ТЭД
            LocoReductorNamePrefiks := '';       // Задаем префикс названия папки со звуками редуктора
            LocoDIZNamePrefiks  := '2TE10U';     // Задаем префикс названия папки с звуками работы дизеля
-           RevPosF             := PChar('');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 1;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemory2TE10U;		// Задаем указатель на функцию чтения памяти
         end;
@@ -1456,7 +1392,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := True;         // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := True;         // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := True;         // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
@@ -1477,15 +1412,8 @@ begin
            LocoReductorNamePrefiks := 'ED4m';   // Задаем префикс названия папки со звуками редуктора
            ReduktorF := PChar('TWS/'+LocoReductorNamePrefiks+'/ted_vibeg.wav');
            LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
-           if LocoNum < 160 then
-              RevPosF             := PChar(
-                         'TWS/ED4m/revers.wav')    // Задаем имя файла реверсора
-           else
-              RevPosF             := PChar(
-                         'TWS/ED4m/CPPK_revers.wav');
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 0;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemoryED4M;		// Задаем указатель на функцию чтения памяти
         end;
@@ -1498,7 +1426,6 @@ begin
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := True;         // Задаем состояние наличия на данном локомотиве звука редуктора
            LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
-           LocoWithSndReversor := True;         // Задаем состояние надичия на данном локомотиве звуков реверсора
            LocoWithSndKM       := True;         // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
@@ -1519,11 +1446,8 @@ begin
            LocoReductorNamePrefiks := 'ED4m';   // Задаем префикс названия папки со звуками редуктора
            ReduktorF := PChar('TWS/'+LocoReductorNamePrefiks+'/ted_vibeg.wav');
            LocoDIZNamePrefiks  := '';           // Задаем префикс названия папки с звуками работы дизеля
-           RevPosF             := PChar(
-                      'TWS/ED4m/CPPK_revers.wav');    // Задаем имя файла реверсора
            LocoSvistokF        := 'svistok';
            LocoHornF           := 'tifon';
-           LocoSndReversorType := 0;            // Задаем тип воспроизведения звука реверсора (0-данные с памяти, 1-по нажатию клавиши)
            @ProcReadDataMemoryAddr :=
               @ReadDataMemoryED9M;		// Задаем указатель на функцию чтения памяти
         end;

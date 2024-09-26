@@ -36,6 +36,7 @@ type chs4_ = class (TObject)
       procedure vent_step();
       procedure mk_step();
       procedure em_latch_step();
+      procedure reversor_step();
     protected
 
     public
@@ -87,6 +88,7 @@ implementation
          kr21__.step();
          em_latch_step();
          vr242__.step();
+         reversor_step();
       end;
    end;
 
@@ -190,6 +192,21 @@ implementation
                XVentTDF := StrNew(PChar(soundDir + 'x_ventTD-stop.wav'));
                XVentCycleTDF:=PChar(''); isPlayVentTDX:=False; end;
          end;
+      end;
+   end;
+
+   // ----------------------------------------------------
+   //  PEBEPCOPbl
+   // ----------------------------------------------------
+   procedure CHS4_.reversor_step();
+   begin
+      if ReversorPos <> PrevReversorPos then begin
+         if ReversorPos = 1 then
+            CabinClicksF := StrNew(PChar(soundDir + 'revers_0-1.wav'));
+         if ReversorPos = 0 then
+            CabinClicksF := StrNew(PChar(soundDir + 'revers_1-0.wav'));
+            
+         isPlayCabinClicks:=False;
       end;
    end;
 

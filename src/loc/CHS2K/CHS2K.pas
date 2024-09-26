@@ -141,9 +141,9 @@ implementation
    begin
       if ReversorPos <> PrevReversorPos then begin
          if ReversorPos > 0 then
-            CabinClicksF:=PChar(soundDir + 'revers_0-1.wav')
+            CabinClicksF := StrNew(PChar(soundDir + 'revers_0-1.wav'))
          else
-            CabinClicksF:=PChar(soundDir + 'revers_1-0.wav');
+            CabinClicksF := StrNew(PChar(soundDir + 'revers_1-0.wav'));
 
          isPlayCabinClicks:=False;
       end;

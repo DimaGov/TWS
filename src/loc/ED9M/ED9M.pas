@@ -13,6 +13,7 @@ type ed9m_ = class (TObject)
       procedure ept_step();
       procedure hLights_step();
       procedure trolleyClick_step();
+      procedure reversor_step();
       // Комбинированый кран
       procedure combCrane_step();
       // Вспом. машины
@@ -65,6 +66,7 @@ implementation
          hLights_step();
          trolleyClick_step();
          combCrane_step();
+         reversor_step();
       end;
 
       if FormMain.cbLocPerestuk.Checked = True then begin
@@ -226,6 +228,19 @@ implementation
       if (Vent=0) and (Prev_Vent<>0) then begin
          StopVent:=True;
          isPlayVent:=False; isPlayVentX:=False; VentPitchDest := 0;
+      end;
+   end;
+
+   // ----------------------------------------------------
+   //  PEBEPCOPbl
+   // ----------------------------------------------------
+   procedure ed9m_.reversor_step();
+   var
+      local_str: String;
+   begin
+      if ReversorPos <> PrevReversorPos then begin
+         CabinClicksF := StrNew(PChar(soundDir + 'CPPK_revers.wav'));
+         isPlayCabinClicks:=False;
       end;
    end;
 

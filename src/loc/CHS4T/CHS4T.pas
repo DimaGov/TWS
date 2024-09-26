@@ -29,6 +29,7 @@ type chs4t_ = class (TObject)
       procedure vent_step();
       procedure mk_step();
       procedure em_latch_step();
+      procedure reversor_step();
     protected
 
     public
@@ -45,7 +46,7 @@ type chs4t_ = class (TObject)
 
 implementation
 
-   uses UnitMain, soundManager, Bass, SysUtils, Math;
+   uses UnitMain, soundManager, Bass, SysUtils, Math, Windows;
 
    // ----------------------------------------------------
    //  Процедура создания класса CHS4T
@@ -79,6 +80,7 @@ implementation
          kr21__.step();
          em_latch_step();
          vr242__.step();
+         reversor_step();
       end;
    end;
 
@@ -209,6 +211,26 @@ implementation
             VentTDPitchDest := 3
          else
             VentTDPitchDest := 0;*)
+   end;
+
+   // ----------------------------------------------------
+   //  PEBEPCOPbl
+   // ----------------------------------------------------
+   procedure CHS4T_.reversor_step();
+   begin
+      if KM_Pos_1=0 then begin
+         if (PrevKeyW=0) and (GetAsyncKeyState(87)<>0) then begin
+            CabinClicksF := StrNew(PChar('TWS\Devices\21KR\revers.wav'));
+            isPlayCabinClicks:=False; PrevKeyW:=1;
+         end;
+
+         if (PrevKeyS=0) and (GetAsyncKeyState(83)<>0) then begin
+            CabinClicksF := StrNew(PChar('TWS\Devices\21KR\revers.wav'));
+            isPlayCabinClicks:=False; PrevKeyS:=1;
+         end;
+      end;
+
+      if GetAsyncKeyState(83)=0 then PrevKeyS:=0; if GetAsyncKeyState(87)=0 then PrevKeyW:=0;
    end;
 
 end.
