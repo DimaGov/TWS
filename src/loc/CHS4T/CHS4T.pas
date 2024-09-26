@@ -150,28 +150,6 @@ implementation
    var
      temp: Double;
    begin
-      (*GR := RoundTo(GR, -2);
-
-      if GR > PrevGR then begin
-         If GRIncrementer = 0 then begin
-            temp := GR; GRIncrementer := 1;
-         end;
-         if (GRIncrementer = 1) and ((GR-temp) >= 0.2) then begin
-            if ((BASS_ChannelIsActive(Compressor_Channel) = 0) Or
-                (BASS_ChannelIsActive(CompressorCycleChannel) = 0)) then begin
-            //GRIncrementer := 0;
-            Compressor := 1;
-            end;
-         end;
-      end;
-      if ((BASS_ChannelIsActive(Compressor_Channel)     <> 0) or
-         (BASS_ChannelIsActive(CompressorCycleChannel) <> 0)) and (GR < PrevGR) then begin
-         //Inc(GRIncrementer);
-         //if GRIncrementer > 2 then begin
-         GRIncrementer := 0;
-         Compressor := 0;
-         //end;
-      end;*)
 
       if Voltage < 1.0 then Compressor := 0;
 
@@ -216,13 +194,21 @@ implementation
          VentCycleTDF:=PChar(''); XVentCycleTDF:=PChar('');
          isPlayVentTD := False; isPlayVentTDX := False; StopVentTD:=True;
       end;
-      if TEDAmperage<700 then
+
+      if (LocoNum >= 608) Or (CHS4tVentNewSystemOnAllLocos = True) then begin
+         if TEDAmperage < 700 then
+            VentTDPitchDest := -3
+         else
+            VentTDPitchDest := 0;
+      end else begin VentTDPitchDest := 0; end;
+
+      (*if TEDAmperage<700 then
          VentTDPitchDest := 0
       else
          if (LocoNum >= 608) Or (CHS4tVentNewSystemOnAllLocos = True) then
             VentTDPitchDest := 3
          else
-            VentTDPitchDest := 0;
+            VentTDPitchDest := 0;*)
    end;
 
 end.

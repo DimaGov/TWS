@@ -64,7 +64,7 @@ implementation
             end;
 
             BASS_ChannelSetAttribute(VR242Channel_FX, BASS_ATTRIB_VOL, vol);
-            BASS_ChannelSetAttribute(VR242Channel_FX, BASS_ATTRIB_TEMPO_PITCH, 0.0);
+            BASS_ChannelSetAttribute(VR242Channel_FX, BASS_ATTRIB_TEMPO_PITCH, pitch);
          end;
       end;
    end;

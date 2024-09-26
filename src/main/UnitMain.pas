@@ -28,7 +28,7 @@ uses
   ValEdit, jpeg, UnitSAVPEHelp, UnitDebug, Math, UnitUSAVP,
   EncdDecd, SAVP, RAMMemModule, FileManager, ExtraUtils, SoundManager, Debug,
   bass_fx, UnitSOVIHelp, UnitSoundRRS, CHS8, CHS4KVR, CHS7, CHS4T, VL80T,
-  ES5K, EP1M, ED4M, ED9M, CHS2K, sl2m, VL82M, CHS4;
+  ES5K, EP1M, ED4M, ED9M, CHS2K, sl2m, VL82M, CHS4, TE10U;
 
 type
   TFormMain = class(TForm)
@@ -231,6 +231,7 @@ var
   ED4M__: ed4m_;
   ED9M__: ed9m_;
   VL82M__: vl82m_;
+  TE10U__: te10u_;
 
   SL2M__: sl2m_;
 
@@ -673,6 +674,7 @@ begin
   ED4M__ := ed4m_.Create;
   ED9M__ := ed9m_.Create;
   VL82M__ := vl82m_.Create;
+  TE10U__ := te10u_.Create;
 
   isGameOnPause := True;
 
@@ -1809,6 +1811,7 @@ try
     if LocoGlobal = '2ES5K' then es5k__.step();
     if LocoGlobal = 'ED4M' then ed4m__.step();
     if LocoGlobal = 'ED9M' then ed9m__.step();
+    if LocoGlobal = '2TE10U' then te10u__.step();
 
     SAVPTick();
 

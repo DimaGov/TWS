@@ -113,7 +113,7 @@ RootDir=C:\Program Files (x86)\Borland\Delphi7\Bin\
 IncludeVerInfo=1
 AutoIncBuild=0
 MajorVer=2
-MinorVer=7
+MinorVer=8
 Release=0
 Build=0
 Debug=0
@@ -126,13 +126,13 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=DimaGVRH Production
 FileDescription=
-FileVersion=2.7.0.0
+FileVersion=2.8.0.0
 InternalName=
 LegalCopyright=
 LegalTrademarks=
 OriginalFilename=
 ProductName=
-ProductVersion=2.7
+ProductVersion=2.8
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;

@@ -34,7 +34,8 @@ uses
   VL11M in 'src\loc\VL11M\VL11M.pas',
   sl2m in 'src\SL2m\sl2m.pas',
   VL82M in 'src\loc\VL82m\VL82M.pas',
-  CHS4 in 'src\loc\CHS4\CHS4.pas';
+  CHS4 in 'src\loc\CHS4\CHS4.pas',
+  TE10U in 'src\loc\2TE10U\TE10U.pas';
 
 {$R *.res}
 

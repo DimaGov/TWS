@@ -467,6 +467,7 @@ begin
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS2K_BV, @BV, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS2K_BTP, @BackTP, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_VOLTAGE, @Voltage, 4, temp);  except end;
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_REVERSOR, @ReversorPos, 1, temp);  except end;         // Реверсор
     if ((BV=0) Or (Voltage<1.5)) and (Vent<>0) then Vent := 0 else Vent := Vent;
 end;
 

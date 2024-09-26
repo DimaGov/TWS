@@ -15,6 +15,7 @@ type chs2k_ = class (TObject)
       procedure ept_step();
       procedure vent_step();
       procedure hLights_step();
+      procedure reversor_step();
     protected
 
     public
@@ -50,6 +51,7 @@ implementation
          ept_step();
          hLights_step();
          vr242__.step();
+         reversor_step();
       end;
 
       if FormMain.cbVspomMash.Checked = True then begin
@@ -129,6 +131,21 @@ implementation
       if (Vent=0) and (Prev_Vent<>0) then begin
          StopVent:=True;
          isPlayVent:=False; isPlayVentX:=False; VentPitchDest := 0;
+      end;
+   end;
+
+   // ----------------------------------------------------
+   //  PEBEPCOPbl
+   // ----------------------------------------------------
+   procedure CHS2K_.reversor_step();
+   begin
+      if ReversorPos <> PrevReversorPos then begin
+         if ReversorPos > 0 then
+            CabinClicksF:=PChar(soundDir + 'revers_0-1.wav')
+         else
+            CabinClicksF:=PChar(soundDir + 'revers_1-0.wav');
+
+         isPlayCabinClicks:=False;
       end;
    end;
 
