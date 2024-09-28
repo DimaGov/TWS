@@ -220,12 +220,12 @@ implementation
    begin
       if KM_Pos_1=0 then begin
          if (PrevKeyW=0) and (GetAsyncKeyState(87)<>0) then begin
-            CabinClicksF := StrNew(PChar('TWS\Devices\21KR\revers.wav'));
+            CabinClicksF := StrNew(PChar(soundDir + 'revers.wav'));
             isPlayCabinClicks:=False; PrevKeyW:=1;
          end;
 
          if (PrevKeyS=0) and (GetAsyncKeyState(83)<>0) then begin
-            CabinClicksF := StrNew(PChar('TWS\Devices\21KR\revers.wav'));
+            CabinClicksF := StrNew(PChar(soundDir + 'revers.wav'));
             isPlayCabinClicks:=False; PrevKeyS:=1;
          end;
       end;

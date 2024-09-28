@@ -2108,7 +2108,7 @@ procedure TFormMain.cb3SL2mSoundsClick(Sender: TObject);
 begin
 	if cb3SL2mSounds.Checked=True then begin
            cbKLUBSounds.Checked:=False; isPlayClock:=False;
-           SL2M__ := sl2m_.Create('TWS/Devices/3SL2m/1-ASMR/');
+           SL2M__ := sl2m_.Create('TWS/Devices/3SL2m/');
         end else begin
            BASS_ChannelStop(ClockChannel); BASS_StreamFree(ClockChannel);
            SL2M__.Destroy();

@@ -1223,6 +1223,7 @@ object FormMain: TFormMain
       end
       object N5: TMenuItem
         Caption = #1054#1090#1082#1088#1099#1090#1100' '#1087#1072#1087#1082#1091' '#1089' '#1073#1072#1090#1085#1080#1082#1072#1084#1080
+        Visible = False
         OnClick = N5Click
       end
     end
@@ -1245,6 +1246,7 @@ object FormMain: TFormMain
       end
       object N7: TMenuItem
         Caption = #1054' '#1087#1088#1086#1075#1088#1072#1084#1084#1077
+        Visible = False
       end
       object N10: TMenuItem
         Caption = #1057#1080#1089#1090#1077#1084#1085#1072#1103' '#1080#1085#1092#1086#1088#1084#1072#1094#1080#1103
