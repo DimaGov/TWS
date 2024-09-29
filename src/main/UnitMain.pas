@@ -967,56 +967,6 @@ try
                   if EDTAmperage<>0 then TEDvlm := (EDTAmperage / (UltimateTEDAmperage*0.75)) * (trcBarTedsVol.Position/100) else
                   TEDVlm := 0.0;
                end;
-               if LocoTEDNamePrefiks = 'ED4m' then begin
-
-                  if BASS_ChannelIsActive(ReduktorChannel_FX)=0 then begin
-                     ReduktorF := PChar('TWS/ED4m/ted_vibeg.wav');
-                     isPlayReduktor:=False;
-                  end;
-
-                  if Speed>0 then begin
-                     if LocoGlobal = 'ED4M' then I:=2 else I:=1;
-                     if KM_Pos_1 >= I then begin
-
-                        // Рассчёт громкости ТЭД-ов, если камера находится в кабине
-                        //if isCameraInCabin=True then begin
-                           TEDVlmDest := SimpleRoundTo(abs(Acceleretion)*1.5, -2);
-                           //ReduktorVolume := 0.0;
-                        //end;
-
-                        if TEDVlmDest > (trcBarTedsVol.Position/100) then TEDVlmDest := trcBarTedsVol.Position/100;
-                        if isCameraInCabin = True then TEDVlmDest := TEDVlmDest * 0.6;
-
-                        if (KM_Pos_1>0) and (KM_Pos_1<32768) then begin
-                           BASS_ChannelSetAttribute(TEDChannel_FX, BASS_ATTRIB_REVERSE_DIR, 1);
-                        end;
-                        if KM_Pos_1>32768 then begin
-                           BASS_ChannelSetAttribute(TEDChannel_FX, BASS_ATTRIB_REVERSE_DIR, -1);
-                        end;
-                     end else begin
-                        //if TEDVlm > 0 then TEDVlm := TEDVlm - 0.05;
-                        TEDVlmDest := 0.0;
-                     end;
-                     if isCameraInCabin = False then begin
-                        //if KM_Pos_1 < I then begin
-                           ReduktorVolume := (Speed / 80) * (trcBarTedsVol.Position/100);
-                           ReduktorPitch := (Tanh(Speed/70)*21) - 23;
-                           if ReduktorVolume > (trcBarTedsVol.Position/100) then ReduktorVolume := trcBarTedsVol.Position/100;
-                        //end;
-                     end;
-                     if (PrevisCameraInCabin = False) And (isCameraInCabin = True) then begin
-                        if MVPSTedInCabin = True then
-                           TEDVlm := TEDVlmDest;
-                        ReduktorVolume := 0.0;
-                     end;
-                     if (PrevisCameraInCabin = True) And (isCameraInCabin = False) And (MVPSTedInCabin = False) then begin
-                        TEDVlm := TEDVlmDest;
-                     end;
-                     if (isCameraInCabin = True) And (MVPSTedInCabin = False) then begin
-                        TEDVlm := 0.0;
-                     end;
-                  end else begin TEDVlm := 0.0; TEDVlmDest := 0.0; end;
-               end;
                if (Speed <= 7) And (LocoTEDNamePrefiks <> 'ED4m') then TEDVlm := 0.0;
 
                if LocoTEDNamePrefiks = 'CHS_TED' then TEDPitchDest := power(Speed * 2350, 0.3) - 35;
@@ -1034,14 +984,6 @@ try
               if LocoTEDNamePrefiks = 'VL_TED'  then begin
                  if Speed <= 65 then TEDPitchDest := power(Speed*18.8, 0.5) - 35;
                  if Speed >  65 then TEDPitchDest := (Speed - 65) / 8;
-              end;
-              if LocoTEDNamePrefiks = 'ED4m' then begin
-                 //TEDPitchDest := power(Speed * 2350, 0.2) - 12;
-                 //TEDPitchDest := (Tanh(Speed/50)*45) - 48; //(tanh(x/35)*10)-8
-                 TEDPitchDest := (Tanh(Speed/70)*21) - 23; //(tanh(x/35)*10)-8
-                 if TEDVlm < TEDVlmDest then TEDVlm := TEDVlm + 0.01;
-                 if TEDVlm > TEDVlmDest then TEDVlm := TEDVlm - 0.01;
-                 if TEDVlm < 0 then TEDVlm := 0.0;
               end;
 
               if TEDPitch > TEDPitchDest then TEDPitch := TEDPitch - ((TEDPitch-TEDPitchDest)/100);

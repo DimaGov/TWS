@@ -24,6 +24,8 @@ type ed9m_ = class (TObject)
       // Звуки прибытия-отправления
       procedure prib_step();
       procedure trog_step();
+      // ТЭД - ЭДТ
+      procedure ted_step();
     protected
 
     public
@@ -38,7 +40,7 @@ type ed9m_ = class (TObject)
 
 implementation
 
-   uses UnitMain, SysUtils, soundManager, Bass, Windows;
+   uses UnitMain, SysUtils, soundManager, Bass, Windows, Math, bass_fx;
 
    // ----------------------------------------------------
    //
@@ -72,6 +74,10 @@ implementation
       if FormMain.cbLocPerestuk.Checked = True then begin
          trog_step();
          prib_step();
+      end;
+
+      if FormMain.cbTEDs.Checked = True then begin
+         ted_step();
       end;
    end;
 
@@ -242,6 +248,62 @@ implementation
          CabinClicksF := StrNew(PChar(soundDir + 'CPPK_revers.wav'));
          isPlayCabinClicks:=False;
       end;
+   end;
+
+   // ----------------------------------------------------
+   //  Motor
+   // ----------------------------------------------------
+   procedure ed9m_.ted_step();
+   var
+      VolumeLimit: Single;
+   begin
+      VolumeLimit := FormMain.trcBarTedsVol.Position / 100;
+
+      if BASS_ChannelIsActive(ReduktorChannel_FX)=0 then begin
+         ReduktorF := PChar(soundDir + 'ted_vibeg.wav');
+         isPlayReduktor:=False;
+      end;
+
+      if Speed>0 then begin
+         if KM_Pos_1 >= 1 then begin
+
+            TEDVlmDest := SimpleRoundTo(abs(Acceleretion)*1.5, -2);
+
+            if TEDVlmDest > VolumeLimit then TEDVlmDest := VolumeLimit;
+
+            if isCameraInCabin = True then TEDVlmDest := TEDVlmDest * 0.6;
+
+            if (KM_Pos_1>0) and (KM_Pos_1<32768) then begin
+               BASS_ChannelSetAttribute(TEDChannel_FX, BASS_ATTRIB_REVERSE_DIR, 1);  // Motor-accelerating
+            end;
+            if KM_Pos_1>32768 then begin
+               BASS_ChannelSetAttribute(TEDChannel_FX, BASS_ATTRIB_REVERSE_DIR, -1); // Motor-braking
+            end;
+
+         end else TEDVlmDest := 0.0;
+
+         if isCameraInCabin = False then begin
+            ReduktorVolume := Speed / 80;
+            //ReduktorPitch := (Tanh(Speed/70)*21) - 23;
+            ReduktorPitch := (Tanh(Speed/70)*21) - 19.5;
+            if ReduktorVolume > VolumeLimit then ReduktorVolume := VolumeLimit;
+         end;
+         if (PrevisCameraInCabin = False) And (isCameraInCabin = True) then begin
+            if MVPSTedInCabin = True then TEDVlm := TEDVlmDest;
+            ReduktorVolume := 0.0;
+         end;
+         if (PrevisCameraInCabin = True) And (isCameraInCabin = False) And (MVPSTedInCabin = False) then begin
+            TEDVlm := TEDVlmDest;
+         end;
+         if (isCameraInCabin = True) And (MVPSTedInCabin = False) then begin
+            TEDVlm := 0.0;
+         end;
+      end else begin TEDVlm := 0.0; TEDVlmDest := 0.0; end;
+
+      TEDPitchDest := (Tanh(Speed/70)*21) - 23; //(tanh(x/35)*10)-8
+      if TEDVlm < TEDVlmDest then TEDVlm := TEDVlm + 0.01;
+      if TEDVlm > TEDVlmDest then TEDVlm := TEDVlm - 0.01;
+      if TEDVlm < 0 then TEDVlm := 0.0;
    end;
 
 end.
