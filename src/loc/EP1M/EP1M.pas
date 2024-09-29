@@ -39,7 +39,7 @@ implementation
    begin
       if FormMain.cbVspomMash.Checked = True then begin
          mk_step();
-         vent_step();
+         //vent_step();
       end;
    end;
 

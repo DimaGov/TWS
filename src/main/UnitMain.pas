@@ -1023,7 +1023,7 @@ try
                if LocoTEDNamePrefiks = 'EP_TED' then begin
                   TEDPitchDest := power(Speed * 2350, 0.3) - 35;
                   ReduktorPitch := (power(Speed*100, 0.3) - 30) * 2 + 30;
-                  ReduktorVolume := (3-(Speed/50))*power((TEDAmperage / (UltimateTEDAmperage * 0.8)),2);
+                  //ReduktorVolume := (3-(Speed/50))*power((TEDAmperage / (UltimateTEDAmperage * 0.8)),2);
                   BASS_ChannelSetAttribute(ReduktorChannel_FX, BASS_ATTRIB_Vol, ReduktorVolume * trcBarTedsVol.Position / 100);
                   BASS_ChannelSetAttribute(ReduktorChannel_FX, BASS_ATTRIB_TEMPO_PITCH, ReduktorPitch);
                   if BASS_ChannelIsActive(ReduktorChannel_FX) = 0 then begin

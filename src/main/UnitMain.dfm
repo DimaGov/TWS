@@ -3,7 +3,7 @@ object FormMain: TFormMain
   Top = 155
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'TWS 2.8'
+  Caption = 'TWS 2.8 Beta1'
   ClientHeight = 474
   ClientWidth = 321
   Color = clCream

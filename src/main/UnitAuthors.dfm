@@ -124,9 +124,9 @@ object FormAuthors: TFormAuthors
   object Label18: TLabel
     Left = 0
     Top = 0
-    Width = 493
+    Width = 595
     Height = 37
-    Caption = 'T.W.S. 2.8 '#1040#1074#1090#1086#1088#1099' '#1080' '#1089#1086'-'#1072#1074#1090#1086#1088#1099
+    Caption = 'T.W.S. 2.8 Beta1 '#1040#1074#1090#1086#1088#1099' '#1080' '#1089#1086'-'#1072#1074#1090#1086#1088#1099
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clRed
     Font.Height = -31
