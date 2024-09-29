@@ -132,53 +132,6 @@ implementation
    var
      temp: Double;
    begin
-      (*Inc(GRIncrementer2);
-      if GRIncrementer2 > 10 then begin
-        faktGR := GR;
-        GRIncrementer2 := 0;
-
-              if faktGR > PrevGR then begin
-         Compressor := 1;
-      end else begin
-         Compressor := 0;
-      end;
-      end;*)
-      (*if Voltage > 1.0 then begin
-         //GR := RoundTo(GR, -4);
-
-         if (GR > PrevGR_KVR[1]) And (PrevGR_KVR[1] > PrevGR_KVR[0]) then begin
-            Compressor := 1;
-         end;
-         if ((BASS_ChannelIsActive(Compressor_Channel)     <> 0) or
-             (BASS_ChannelIsActive(CompressorCycleChannel) <> 0)) and (GR < PrevGR_KVR[1]) then begin
-             Compressor := 0;
-         end;
-      end;*)
-      (*if Voltage > 1.0 then begin
-      if GR > PrevGR then begin
-         If GRIncrementer = 0 then begin
-            temp := GR; GRIncrementer := 1;
-         end;
-         if (GRIncrementer = 1) and ((GR-temp) >= 0.2) then begin
-            if ((BASS_ChannelIsActive(Compressor_Channel) = 0) Or
-                (BASS_ChannelIsActive(CompressorCycleChannel) = 0)) then begin
-            //GRIncrementer := 0;
-            Compressor := 1;
-            end;
-         end;
-      end;
-      if ((BASS_ChannelIsActive(Compressor_Channel)     <> 0) or
-         (BASS_ChannelIsActive(CompressorCycleChannel) <> 0)) and (GR < PrevGR) then begin
-         //Inc(GRIncrementer);
-         //if GRIncrementer > 2 then begin
-         GRIncrementer := 0;
-         Compressor := 0;
-         //end;
-      end;
-      end else begin
-         Compressor := 0;
-      end;*)
-
       if Voltage < 1.0 then Compressor := 0;
 
       ComprRemaindTimeCheck();
@@ -197,13 +150,6 @@ implementation
             isPlayCompressor := False; isPlayXCompressor := False;
          end;
       end;
-
-      //if GRIncrementer > MainCycleFreq then begin
-      //PrevGR_KVR[0] := PrevGR_KVR[1];
-      //PrevGR_KVR[1] := GR;
-      //end;
-
-      //Inc(GRIncrementer);
    end;
 
    // ----------------------------------------------------

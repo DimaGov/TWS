@@ -325,6 +325,9 @@ begin
            AddNewLineToDebugger('Unipuls2secWait', CHS8__.Unipuls2SecWait, 'TWS переменная');
            AddNewLineToDebugger('CHS4T Compressor GR Difference', CHS4T__.CompressorGRDifference, 'TWS переменная');
            AddNewLineToDebugger('CHS4KVR Compressor GR Difference', CHS4KVR__.CompressorGRDifference, 'TWS переменная');
+           AddNewLineToDebugger('Vent [VU][FX] Channel Is Active', BASS_ChannelIsActive(Vent_Channel_FX), 'TWS переменная');
+           AddNewLineToDebugger('CycleVent [VU][FX] Channel Is Active', BASS_ChannelIsActive(VentCycle_Channel_FX), 'TWS переменная');
+           AddNewLineToDebugger('Vent Remaind Time', GetChannelRemaindPlayTime2Sec(Vent_Channel_FX), 'TWS переменная');
         end;
 end;
 
@@ -440,6 +443,9 @@ begin
               92: ListItem.SubItems[3] := BoolToStr(CHS8__.Unipuls2SecWait);
               93: ListItem.SubItems[3] := FloatToStr(CHS4T__.CompressorGRDifference);
               94: ListItem.SubItems[3] := FloatToStr(CHS4KVR__.CompressorGRDifference);
+              95: ListItem.SubItems[3] := IntToStr(BASS_ChannelIsActive(Vent_Channel_FX));
+              96: ListItem.SubItems[3] := IntToStr(BASS_ChannelIsActive(VentCycle_Channel_FX));
+              97: ListItem.SubItems[3] := FloatToStr(GetChannelRemaindPlayTime2Sec(Vent_Channel_FX));
            end;
         end;
         end;

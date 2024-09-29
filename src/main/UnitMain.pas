@@ -139,7 +139,6 @@ type
     N10: TMenuItem;
     ReadME1: TMenuItem;
     timerDoorCloseZvonok: TTimer;
-    Button1: TButton;
     
     procedure ChangeVolume(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -483,6 +482,7 @@ var
   CHS4tVentNewSystemOnAllLocos:Boolean = False;
   MVPS5secZvonok:              Boolean;
   VR242Allow:                  Boolean;
+  MVPSTedInCabin:              Boolean;
   VentSingleVolume: Single;
   VentSingleVolumeIncrementer: Extended;
   TEDPitch, TEDPitchDest:      Single;
@@ -1005,7 +1005,15 @@ try
                         //end;
                      end;
                      if (PrevisCameraInCabin = False) And (isCameraInCabin = True) then begin
-                        TEDVlm := TEDVlmDest; ReduktorVolume := 0.0;
+                        if MVPSTedInCabin = True then
+                           TEDVlm := TEDVlmDest;
+                        ReduktorVolume := 0.0;
+                     end;
+                     if (PrevisCameraInCabin = True) And (isCameraInCabin = False) And (MVPSTedInCabin = False) then begin
+                        TEDVlm := TEDVlmDest;
+                     end;
+                     if (isCameraInCabin = True) And (MVPSTedInCabin = False) then begin
+                        TEDVlm := 0.0;
                      end;
                   end else begin TEDVlm := 0.0; TEDVlmDest := 0.0; end;
                end;

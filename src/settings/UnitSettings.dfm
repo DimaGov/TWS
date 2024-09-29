@@ -90,5 +90,14 @@ object FormSettings: TFormSettings
       TabOrder = 5
       OnClick = cbVR242AllowClick
     end
+    object cbMVPSTedSInCabinAllow: TCheckBox
+      Left = 16
+      Top = 128
+      Width = 281
+      Height = 17
+      Caption = #1042#1086#1089#1087#1088#1086#1080#1079#1074#1086#1076#1080#1090#1100' '#1079#1074#1091#1082#1080' '#1058#1069#1044' '#1074' '#1082#1072#1073#1080#1085#1077' '#1101#1083#1077#1082#1090#1088#1080#1095#1082#1080
+      TabOrder = 6
+      OnClick = cbMVPSTedSInCabinAllowClick
+    end
   end
 end

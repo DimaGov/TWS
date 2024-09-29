@@ -83,6 +83,8 @@ begin
      if Temp=1 then MVPS5secZvonok := True;
      Temp:=StrToInt(Ini.ReadString('settings', 'CB24', '1'));
      if Temp=1 then VR242Allow := True;
+     Temp:=StrToInt(Ini.ReadString('settings', 'CB25', '1'));
+     if Temp=1 then MVPSTedInCabin := True;
      Temp:=StrToInt(Ini.ReadString('settings', 'RB1', '1'));
      if Temp=1 then begin RadioButton1.Checked:=True; end else RadioButton1.Checked:=False;
      Temp:=StrToInt(Ini.ReadString('settings', 'RB2', '1'));
@@ -174,6 +176,8 @@ begin
      Ini.WriteString('settings', 'CB23', IntToStr(Temp));
      if VR242Allow = True then Temp:=1 else Temp:=0;
      Ini.WriteString('settings', 'CB24', IntToStr(Temp));
+     if MVPSTedInCabin = True then Temp:=1 else Temp:=0;
+     Ini.WriteString('settings', 'CB25', IntToStr(Temp));
      if RadioButton1.Checked=True then Temp:=1 else Temp:=0;
      Ini.WriteString('settings', 'RB1', IntToStr(Temp));
      if RadioButton2.Checked=True then Temp:=1 else Temp:=0;

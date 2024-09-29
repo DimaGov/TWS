@@ -15,6 +15,7 @@ type
     cbCHS4tNewMVSystemOnAllLocoNum: TCheckBox;
     cbMVPSZvonok5secDoorClose: TCheckBox;
     cbVR242Allow: TCheckBox;
+    cbMVPSTedSInCabinAllow: TCheckBox;
     procedure cbSlowComputerClick(Sender: TObject);
     procedure cbTEDNewSystemClick(Sender: TObject);
     procedure cbCHS4tNewMVSystemOnAllLocoNumClick(Sender: TObject);
@@ -22,6 +23,7 @@ type
     procedure cbMVPSZvonok5secDoorCloseClick(Sender: TObject);
     procedure cbVR242AllowClick(Sender: TObject);
     procedure cbHornClickClick(Sender: TObject);
+    procedure cbMVPSTedSInCabinAllowClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -44,6 +46,7 @@ begin
     cbSlowComputer.Checked := SlowComputer;
     cbMVPSZvonok5secDoorClose.Checked := MVPS5secZvonok;
     cbVR242Allow.Checked := VR242Allow;
+    cbMVPSTedSInCabinAllow.Checked := MVPSTedInCabin;
 end;
 
 // -------------------------------------------------
@@ -100,6 +103,14 @@ end;
 procedure TFormSettings.cbHornClickClick(Sender: TObject);
 begin
    SimpleHorn := cbHornClick.Checked;
+end;
+
+// -------------------------------------------------
+// 
+// -------------------------------------------------
+procedure TFormSettings.cbMVPSTedSInCabinAllowClick(Sender: TObject);
+begin
+   MVPSTedInCabin := cbMVPSTedSInCabinAllow.Checked;
 end;
 
 end.

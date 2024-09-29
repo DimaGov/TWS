@@ -1,11 +1,11 @@
 object FormMain: TFormMain
-  Left = 1037
+  Left = 1029
   Top = 155
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'TWS 2.8'
-  ClientHeight = 478
-  ClientWidth = 319
+  ClientHeight = 474
+  ClientWidth = 321
   Color = clCream
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -1136,15 +1136,6 @@ object FormMain: TFormMain
       TabOrder = 2
       OnChange = ChangeVolume
     end
-  end
-  object Button1: TButton
-    Left = 400
-    Top = 496
-    Width = 75
-    Height = 25
-    Caption = 'Button1'
-    TabOrder = 10
-    OnClick = Button1Click
   end
   object ClockMain: TTimer
     Interval = 20

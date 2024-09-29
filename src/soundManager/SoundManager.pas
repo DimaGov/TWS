@@ -245,12 +245,12 @@ end;
 procedure ComprRemaindTimeCheck();
 begin
    if AnsiCompareStr(CompressorCycleF, '') <> 0 then begin
-      if (GetChannelRemaindPlayTime2Sec(Compressor_Channel) <= 0.8) and
+      if (GetChannelRemaindPlayTime2Sec(Compressor_Channel) <= 0.3) and
          (BASS_ChannelIsActive(CompressorCycleChannel)=0)
       then isPlayCompressorCycle:=False;
    end;
    if AnsiCompareStr(XCompressorCycleF, '')<> 0 then begin
-      if (GetChannelRemaindPlayTime2Sec(XCompressor_Channel) <= 0.8) and
+      if (GetChannelRemaindPlayTime2Sec(XCompressor_Channel) <= 0.3) and
          (BASS_ChannelIsActive(XCompressorCycleChannel)=0)
       then isPlayXCompressorCycle:=False;
    end;
@@ -263,12 +263,12 @@ procedure VentRemaindTimeCheck();
 begin
    if StopVent = False then begin
       if BASS_ChannelIsActive(Vent_Channel_FX) <> 0 then begin
-         if (GetChannelRemaindPlayTime2Sec(Vent_Channel_FX) <= 0.2) and
+         if (GetChannelRemaindPlayTime2Sec(Vent_Channel_FX) <= 0.3) and
             (BASS_ChannelIsActive(VentCycle_Channel_FX)=0)
          then isPlayCycleVent:=False;
       end;
       if BASS_ChannelIsActive(XVent_Channel_FX) <> 0 then begin
-         if (GetChannelRemaindPlayTime2Sec(XVent_Channel_FX) <= 0.2) and
+         if (GetChannelRemaindPlayTime2Sec(XVent_Channel_FX) <= 0.3) and
             (BASS_ChannelIsActive(XVentCycle_Channel_FX)=0)
          then isPlayCycleVentX:=False;
       end;
@@ -304,12 +304,12 @@ end;
 procedure VentTDRemaindTimeCheck();
 begin
    if AnsiCompareText(VentCycleTDF, '')<>0 then begin
-      if (GetChannelRemaindPlayTime2Sec(VentTD_Channel_FX) <= 0.8) and
+      if (GetChannelRemaindPlayTime2Sec(VentTD_Channel_FX) <= 0.3) and
          (BASS_ChannelIsActive(VentCycleTD_Channel_FX)=0)
       then isPlayCycleVentTD:=False;
    end;
    if AnsiCompareText(XVentCycleTDF, '')<>0 then begin
-      if (GetChannelRemaindPlayTime2Sec(XVentTD_Channel_FX) <= 0.8) and
+      if (GetChannelRemaindPlayTime2Sec(XVentTD_Channel_FX) <= 0.3) and
          (BASS_ChannelIsActive(XVentCycleTD_Channel_FX)=0)
       then isPlayCycleVentTDX:=False;
    end;
@@ -1130,8 +1130,8 @@ begin
           BASS_ChannelPlay(VentCycle_Channel_FX, False);
           BASS_ChannelSetAttribute(VentCycle_Channel_FX, BASS_ATTRIB_VOL, 0);
           isPlayCycleVent:=True; Inc(CameraX);
-          BASS_ChannelStop(Vent_Channel); BASS_StreamFree(Vent_Channel);
-          BASS_ChannelStop(Vent_Channel_FX); BASS_StreamFree(Vent_Channel_FX);
+          //BASS_ChannelStop(Vent_Channel); BASS_StreamFree(Vent_Channel);
+          //BASS_ChannelStop(Vent_Channel_FX); BASS_StreamFree(Vent_Channel_FX);
        except end;
     end;
     // === ÌÂ [ÖÈÊË] [ÂÍÅØÍÈÉ] === //
@@ -1145,8 +1145,8 @@ begin
           BASS_ChannelPlay(XVentCycle_Channel_FX, False);
           BASS_ChannelSetAttribute(XVentCycle_Channel_FX, BASS_ATTRIB_VOL, 0);
           isPlayCycleVentX:=True; Inc(CameraX);
-          BASS_ChannelStop(XVent_Channel); BASS_StreamFree(XVent_Channel);
-          BASS_ChannelStop(XVent_Channel_FX); BASS_StreamFree(XVent_Channel_FX);
+          //BASS_ChannelStop(XVent_Channel); BASS_StreamFree(XVent_Channel);
+          //BASS_ChannelStop(XVent_Channel_FX); BASS_StreamFree(XVent_Channel_FX);
        except end;
     end;
     // === ÌÂ ÒÄ === //
