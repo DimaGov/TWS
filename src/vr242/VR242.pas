@@ -53,7 +53,7 @@ implementation
             if vol < 0 then vol := 0.0;
 
             if pitch < destPitch then pitch := pitch + 0.1;
-            if pitch > destPitch then pitch := pitch - 0.1;
+            if pitch > destPitch then pitch := pitch - 0.05;
 
             if UnitMain.VR242 > 0 then begin
                destVol := UnitMain.VR242 / 2;

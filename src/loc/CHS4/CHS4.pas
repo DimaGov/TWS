@@ -37,6 +37,7 @@ type chs4_ = class (TObject)
       procedure mk_step();
       procedure em_latch_step();
       procedure reversor_step();
+      procedure np22_step();
     protected
 
     public
@@ -82,6 +83,7 @@ implementation
          vent_step();
          mk_step();
          //kvt254__.step();
+         np22_step();
       end;
 
       if FormMain.cbCabinClicks.Checked = True then begin
@@ -102,6 +104,35 @@ implementation
       end;
       if ((Prev_KMAbs>0) and (KM_Pos_1=0)) or ((KM_Pos_1=0) and (Prev_KMAbs>0)) then begin
          IMRZashelka:=PChar('TWS\Devices\21KR\EM_zashelka_OFF.wav'); isPlayIMRZachelka:=False;
+      end;
+   end;
+
+   // ----------------------------------------------------
+   //
+   // ----------------------------------------------------
+   procedure CHS4_.np22_step();
+   begin
+      if KM_Pos_1 > Prev_KMAbs then begin
+         if KM_pos_1 mod 2 = 0 then
+            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'np22/22NP_nabor_2.wav'))
+         else
+            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'np22/22NP_nabor_1.wav'));
+         isPlayLocoPowerEquipment := False;
+      end;
+      if KM_Pos_1 < Prev_KMAbs then begin
+         if KM_Pos_1 mod 2 = 0 then
+            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'np22/22NP_sbros_2.wav'))
+         else
+            LocoPowerEquipmentF := StrNew(PChar(soundDir + 'np22/22NP_sbros_1.wav'));
+         isPlayLocoPowerEquipment := False;
+      end;
+      if KM_OP > Prev_KM_OP then begin
+         LocoPowerEquipmentF := StrNew(PChar(soundDir + 'np22/22NP_op_plus.wav'));
+         isPlayLocoPowerEquipment := False;
+      end;
+      if KM_OP < Prev_KM_OP then begin
+         LocoPowerEquipmentF := StrNew(PChar(soundDir + 'np22/22NP_op_minus.wav'));
+         isPlayLocoPowerEquipment := False;
       end;
    end;
 

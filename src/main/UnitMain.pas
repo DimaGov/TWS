@@ -404,6 +404,9 @@ var
   AB_ZB_1, AB_ZB_2:            Byte;
   PrevAB_ZB_1, PrevAB_ZB_2:    Byte;
   PrevBoks_Stat, Boks_Stat:    Byte;
+  Brake_scrVolume:             Single;
+  Brake_scrDestVolume:         Single;
+  Brake_scrVolumeIncrementer:  Single = 0.035;
   // ------------------------------------------------------ //
   // ******* ‘À¿√» ******* //
   SAVPENextMessage:            Boolean = False;
@@ -1470,15 +1473,29 @@ try
 
   // ¡ÀŒ  «¬” ¿ — –»œ¿  ŒÀŒƒŒ  œ–» Œ—“¿ÕŒ¬ ≈ //
   if cbLocPerestuk.Checked = True then begin
-     if (BASS_ChannelIsActive(BrakeScr_Channel) = 0) then begin
-        if (Speed <= 5) and (BrakeCylinders > 0.0) then begin
+     if (Speed <= 5) and (BrakeCylinders > 0.0) then begin
+        if BASS_ChannelIsActive(BrakeScr_Channel) = 0 then begin
            BrakeScrF  := PChar('TWS/' + Loco + '/brake_scr.wav');
            isPlayBrakeScr := False;
         end;
-     end else begin
-        if Speed > 0 then BASS_ChannelSetAttribute(BrakeScr_Channel, BASS_ATTRIB_VOL, (BrakeCylinders/36)*(trcBarLocoPerestukVol.Position/100))
-                     else BASS_ChannelSetAttribute(BrakeScr_Channel, BASS_ATTRIB_VOL, 0.0);
-        if Speed > 5 then begin BASS_ChannelStop(BrakeScr_Channel); BASS_StreamFree(BrakeScr_Channel); end;
+
+        Brake_scrDestVolume := (Abs(Acceleretion)/0.25)*(trcBarLocoPerestukVol.Position/100);
+
+        if Speed <> 0 then BASS_ChannelSetAttribute(BrakeScr_Channel, BASS_ATTRIB_VOL, Brake_scrVolume)
+                      else begin
+           //BASS_ChannelSetAttribute(BrakeScr_Channel, BASS_ATTRIB_VOL, 0.0);
+        end;
+     end;
+
+     if Brake_scrVolume < Brake_scrDestVolume then Brake_scrVolume := Brake_scrVolume + Brake_scrVolumeIncrementer;
+     if Brake_scrVolume > Brake_scrDestVolume then Brake_scrVolume := Brake_scrVolume - Brake_scrVolumeIncrementer;
+
+     if (Speed > 5) or (BrakeCylinders = 0) Or (Speed = 0) then begin
+        if (Brake_scrVolume < 0.01) then begin
+           BASS_ChannelStop(BrakeScr_Channel); BASS_StreamFree(BrakeScr_Channel);
+        end;
+        //Brake_scrVolume := 0.0;
+        Brake_scrDestVolume := 0.0;
      end;
   end;
 

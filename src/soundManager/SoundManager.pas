@@ -276,12 +276,12 @@ begin
       if BASS_ChannelIsActive(VentCycle_Channel_FX)<>0 then begin
          if (GetChannelRemaindPlayTime2Sec(Vent_Channel_FX) >= 0.3) and
             (BASS_ChannelIsActive(VentCycle_Channel_FX)<>0)
-         then begin BASS_ChannelStop(VentCycle_Channel_FX); BASS_StreamFree(VentCycle_Channel_FX); end;
+         then begin if (LocoGlobal <> 'VL80t') then begin BASS_ChannelStop(VentCycle_Channel_FX); BASS_StreamFree(VentCycle_Channel_FX); end; end;
       end;
       if BASS_ChannelIsActive(XVentCycle_Channel_FX)<>0 then begin
          if (GetChannelRemaindPlayTime2Sec(XVent_Channel_FX) >= 0.3) and
             (BASS_ChannelIsActive(XVentCycle_Channel_FX)<>0)
-         then begin BASS_ChannelStop(XVentCycle_Channel_FX); BASS_StreamFree(XVentCycle_Channel_FX); end;
+         then begin if (LocoGlobal <> 'VL80t') then begin BASS_ChannelStop(XVentCycle_Channel_FX); BASS_StreamFree(XVentCycle_Channel_FX); end; end;
       end;
    end;
 end;

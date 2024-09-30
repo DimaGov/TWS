@@ -328,6 +328,9 @@ begin
            AddNewLineToDebugger('Vent [VU][FX] Channel Is Active', BASS_ChannelIsActive(Vent_Channel_FX), 'TWS переменная');
            AddNewLineToDebugger('CycleVent [VU][FX] Channel Is Active', BASS_ChannelIsActive(VentCycle_Channel_FX), 'TWS переменная');
            AddNewLineToDebugger('Vent Remaind Time', GetChannelRemaindPlayTime2Sec(Vent_Channel_FX), 'TWS переменная');
+           AddNewLineToDebugger('Brake_scr VolumeDestination', Brake_scrDestVolume, 'TWS переменная');
+           AddNewLineToDebugger('Brake_scr Volume Fact', Brake_scrVolume, 'TWS переменная');
+           AddNewLineToDebugger('Brake_scr Volume Incrementer (%)', Brake_scrVolumeIncrementer, 'TWS переменная');
         end;
 end;
 
@@ -446,6 +449,9 @@ begin
               95: ListItem.SubItems[3] := IntToStr(BASS_ChannelIsActive(Vent_Channel_FX));
               96: ListItem.SubItems[3] := IntToStr(BASS_ChannelIsActive(VentCycle_Channel_FX));
               97: ListItem.SubItems[3] := FloatToStr(GetChannelRemaindPlayTime2Sec(Vent_Channel_FX));
+              98: ListItem.SubItems[3] := FloatToStr(Brake_scrDestVolume);
+              99: ListItem.SubItems[3] := FloatToStr(Brake_scrVolume);
+              100: ListItem.SubItems[3] := FloatToStr(Brake_scrVolumeIncrementer);
            end;
         end;
         end;
