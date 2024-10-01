@@ -77,6 +77,7 @@ var
    ADDR_CHS7_VENT:                          Pointer; // Адрес состояния вентиляторов на ЧС7 (Тумблер, положение)
    ADDR_CHS7_VOLTAGE:                       Pointer; // Адрес напряжения на ЧС7
    ADDR_CHS7_BV:                            Pointer; // Адрес состояния БВ на ЧС7
+   ADDR_CHS7_BV_PAKETNIK:                   Pointer; // Адрес состояния пакетника БВ на ЧС7
    ADDR_CHS7_REVERSOR:                      Pointer;
    ADDR_CHS7_FTP:                           Pointer;
    ADDR_CHS7_BTP:                           Pointer;
@@ -549,6 +550,7 @@ begin
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_BV, @BV, 1, temp);  except end;		    // БВ
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_VENT, @Vent, 1, temp);  except end;                // Вентилятор (положение тумблера)
     try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_ZHALUZI, @Zhaluzi, 1, temp); except end;       // Жалюзи
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_BV_PAKETNIK, @BV_Paketnik, 4, temp);  except end;          // Напряжение на эл-возе
     if ((BV=0) Or (Voltage<1.5)) and (Vent<>0) then Vent := 0 else Vent := Vent;
 end;
 
@@ -827,7 +829,7 @@ begin
           ADDR_OUTSIDE_LOCO_STATUS:=ptr($00749865);ADDR_CHS8_VENT_VOLUME:=ptr($091D48BC); ADDR_CHS8_VENT_VOLUME_INCREMENTER:=ptr($091D48CC);
           ADDR_2ES5K_BV :=ptr($091D48CC); ADDR_CHS8_UNIPULS_AVARIA:= ptr($091D5024); ADDR_CHS8_GV_1  :=   ptr($09007FB4);
           ADDR_VR242    :=ptr($0911080C); ADDR_PNEVM_SIGNAL   :=     ptr($0538D8D4); ADDR_TEP70_TED  :=   ptr($091D5BD8);
-          ADDR_VL82_VENT:=ptr($091D48BC);      ADDR_VL82_COMPRESSOR:=ptr($091D48B8);
+          ADDR_VL82_VENT:=ptr($091D48BC);      ADDR_VL82_COMPRESSOR:=ptr($091D48B8); ADDR_CHS7_BV_PAKETNIK:=ptr($091D5B9C);
        end;
        if versionID = 1 then begin
           ADDR_Speed :=   ptr($0072CB38);       ADDR_Track    :=     ptr($0072CBFC); ADDR_KM_POS     :=   ptr($090F3F9C);

@@ -336,6 +336,7 @@ var
   RBS,               PrevRBS:         Byte;         // Переменные для РБC (ПИКУРОВ)
   EPT,               PrevEPT:         Byte;         // Переменная состояния ЭПТ (для тумблера ЭД-шэк)
   BV,                PrevBV:          Byte;         // БВ, ЭД4(9)м, ЧС7 чтобы сделать щелчок тумблера и вентиляторы на ЧС7
+  BV_Paketnik,       PrevBV_Paketnik: Integer;      // Пакетник БВ
   Voltage,           PrevVoltage:     Single;       // Напряжение на электровозе ЧС7
   CameraX,           PrevCameraX:     WORD;         // Переменные для определения положения головы в кабине
   KME_ED,            PrevKME_ED:      Integer;
@@ -1812,6 +1813,7 @@ try
     //PrevGR := GR;
     PrevVR242 := VR242;
     PrevisCameraInCabin := isCameraInCabin;
+    PrevBV_Paketnik := BV_Paketnik;
 end;	// Конец блока если игра не на паузе!!!!!
 
 PrevConMem:=isConnectedMemory;
@@ -2245,10 +2247,8 @@ end;
 procedure TFormMain.ComboBox3Change(Sender: TObject);
 var
 	sr:TSearchRec;
-        TempSc: TStringList;
 begin
 	ComboBox4.Items.Clear;
-        TempSc := TStringList.Create;
         if FindFirst('TWS/SOVI_INFORMATOR/Info/'+ComboBox3.Items[ComboBox3.ItemIndex]+'/*.TWS',faAnyFile,sr)=0 then
         repeat
            if (sr.Attr <> 0) and (sr.Name <> '.') and (sr.Name <> '..') then begin

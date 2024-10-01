@@ -6,10 +6,6 @@ type sl2m_ = class (TObject)
     private
       soundDir:    String;
 
-      FNameLoop:   String;
-      FNameStart:  String;
-      FNameStop:   String;
-
       PrevKeyTAB:  Byte;
     protected
 

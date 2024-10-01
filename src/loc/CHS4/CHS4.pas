@@ -17,21 +17,14 @@ type chs4_ = class (TObject)
     private
       soundDir: String;
 
-      GRIncrementer: Byte;
-
       CompressorDifferenceTimer: TTimer;
       CompressorDifferenceTimerEvents: TTimerEvents;
 
       PrevGR_chs4: Double;
 
-      PrevGR_KVR:       array[0..1] of Double;
-      Compressor_zapusk:               Boolean;
-
       kr21__: kr21_;
       kvt254__: kvt254_;
       vr242__: vr242_;
-
-      faktGR: Double;
 
       procedure vent_step();
       procedure mk_step();

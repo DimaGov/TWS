@@ -274,12 +274,14 @@ begin
       end;
    end else begin
       if BASS_ChannelIsActive(VentCycle_Channel_FX)<>0 then begin
-         if (GetChannelRemaindPlayTime2Sec(Vent_Channel_FX) >= 0.3) and
+         //if (GetChannelRemaindPlayTime2Sec(Vent_Channel_FX) >= 0.3) and
+         if (BASS_ChannelIsActive(Vent_Channel) <> 0) and
             (BASS_ChannelIsActive(VentCycle_Channel_FX)<>0)
          then begin if (LocoGlobal <> 'VL80t') then begin BASS_ChannelStop(VentCycle_Channel_FX); BASS_StreamFree(VentCycle_Channel_FX); end; end;
       end;
       if BASS_ChannelIsActive(XVentCycle_Channel_FX)<>0 then begin
-         if (GetChannelRemaindPlayTime2Sec(XVent_Channel_FX) >= 0.3) and
+         //if (GetChannelRemaindPlayTime2Sec(XVent_Channel_FX) >= 0.3) and
+         if (BASS_ChannelIsActive(XVent_Channel) <> 0) and
             (BASS_ChannelIsActive(XVentCycle_Channel_FX)<>0)
          then begin if (LocoGlobal <> 'VL80t') then begin BASS_ChannelStop(XVentCycle_Channel_FX); BASS_StreamFree(XVentCycle_Channel_FX); end; end;
       end;
@@ -303,12 +305,14 @@ end;
 //------------------------------------------------------------------------------
 procedure VentTDRemaindTimeCheck();
 begin
-   if AnsiCompareText(VentCycleTDF, '')<>0 then begin
+   //if AnsiCompareText(VentCycleTDF, '')<>0 then begin
+   if BASS_ChannelIsActive(VentTD_Channel_FX) <> 0 then begin
       if (GetChannelRemaindPlayTime2Sec(VentTD_Channel_FX) <= 0.3) and
          (BASS_ChannelIsActive(VentCycleTD_Channel_FX)=0)
       then isPlayCycleVentTD:=False;
    end;
-   if AnsiCompareText(XVentCycleTDF, '')<>0 then begin
+   //if AnsiCompareText(XVentCycleTDF, '')<>0 then begin
+   if BASS_ChannelIsActive(XVentTD_Channel_FX) <> 0 then begin
       if (GetChannelRemaindPlayTime2Sec(XVentTD_Channel_FX) <= 0.3) and
          (BASS_ChannelIsActive(XVentCycleTD_Channel_FX)=0)
       then isPlayCycleVentTDX:=False;
@@ -1092,10 +1096,10 @@ begin
           else
              Vent_Channel := BASS_StreamCreateFile(FALSE, VentStopF, 0, 0, BASS_STREAM_DECODE);
           Vent_Channel_FX := BASS_FX_TempoCreate(Vent_Channel, BASS_FX_FREESOURCE);
-          BASS_ChannelPlay(Vent_Channel_FX, False);
-          BASS_ChannelSetAttribute(Vent_Channel_FX, BASS_ATTRIB_VOL, 0);
           if LocoWithMVPitch then
              BASS_ChannelSetAttribute(Vent_Channel_FX, BASS_ATTRIB_TEMPO_PITCH, VentPitch);
+          BASS_ChannelPlay(Vent_Channel_FX, False);
+          BASS_ChannelSetAttribute(Vent_Channel_FX, BASS_ATTRIB_VOL, 0);
           isPlayVent:=True; Inc(CameraX);
 
           if (LocoGlobal='VL80t') Or (LocoGlobal='EP1m') Or (LocoGlobal='2ES5K') then begin
@@ -1116,10 +1120,10 @@ begin
           else
              XVent_Channel := BASS_StreamCreateFile(FALSE, XVentStopF, 0, 0, BASS_STREAM_DECODE);
           XVent_Channel_FX := BASS_FX_TempoCreate(XVent_Channel, BASS_FX_FREESOURCE);
-          BASS_ChannelPlay(XVent_Channel_FX, False);
-          BASS_ChannelSetAttribute(XVent_Channel_FX, BASS_ATTRIB_VOL, 0);
           if LocoWithMVPitch then
              BASS_ChannelSetAttribute(XVent_Channel_FX, BASS_ATTRIB_TEMPO_PITCH, VentPitch);
+          BASS_ChannelPlay(XVent_Channel_FX, False);
+          BASS_ChannelSetAttribute(XVent_Channel_FX, BASS_ATTRIB_VOL, 0);
           isPlayVentX:=True; BASS_ChannelPlay(XVent_Channel, True); Inc(CameraX);
        except end;
     end;
@@ -1131,6 +1135,8 @@ begin
           VentCycle_Channel := BASS_StreamCreateFile(FALSE, VentCycleF, 0, 0, BASS_STREAM_DECODE);
           VentCycle_Channel_FX := BASS_FX_TempoCreate(VentCycle_Channel, BASS_FX_FREESOURCE);
           BASS_ChannelFlags(VentCycle_Channel_FX, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
+          if LocoWithMVPitch then
+             BASS_ChannelSetAttribute(VentCycle_Channel_FX, BASS_ATTRIB_TEMPO_PITCH, VentPitch);
           BASS_ChannelPlay(VentCycle_Channel_FX, False);
           BASS_ChannelSetAttribute(VentCycle_Channel_FX, BASS_ATTRIB_VOL, 0);
           isPlayCycleVent:=True; Inc(CameraX);
@@ -1146,6 +1152,8 @@ begin
           XVentCycle_Channel := BASS_StreamCreateFile(FALSE, XVentCycleF, 0, 0, BASS_STREAM_DECODE);
           XVentCycle_Channel_FX := BASS_FX_TempoCreate(XVentCycle_Channel, BASS_FX_FREESOURCE);
           BASS_ChannelFlags(XVentCycle_Channel_FX, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
+          if LocoWithMVPitch then
+             BASS_ChannelSetAttribute(XVentCycle_Channel_FX, BASS_ATTRIB_TEMPO_PITCH, VentPitch);
           BASS_ChannelPlay(XVentCycle_Channel_FX, False);
           BASS_ChannelSetAttribute(XVentCycle_Channel_FX, BASS_ATTRIB_VOL, 0);
           isPlayCycleVentX:=True; Inc(CameraX);

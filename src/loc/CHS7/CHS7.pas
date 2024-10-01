@@ -17,6 +17,8 @@ type chs7_ = class (TObject)
 
       kr21__: kr21_;
 
+      ventPtrStarted: Boolean;
+
       VentOffDelayTimer: TTimer;
       VentOffDelayTimerEvents: TTimerEvents;
 
@@ -112,6 +114,12 @@ implementation
       if ((Prev_KMAbs>0) and (KM_Pos_1=0)) or ((KM_Pos_1=0) and (Prev_KMAbs>0)) then begin
          IMRZashelka:=PChar('TWS\Devices\21KR\EM_zashelka_OFF.wav'); isPlayIMRZachelka:=False;
       end;
+      if (BV_Paketnik = 256) and (PrevBV_Paketnik = 0) then begin
+         IMRZashelka:=PChar('TWS\Devices\21KR\EM_zashelka_OFF.wav'); isPlayIMRZachelka:=False;
+      end;
+      if (BV_Paketnik = 0) and (PrevBV_Paketnik = 256) then begin
+         IMRZashelka:=PChar('TWS\Devices\21KR\EM_zashelka_ON.wav'); isPlayIMRZachelka:=False;
+      end;
    end;
 
    // ----------------------------------------------------
@@ -128,13 +136,13 @@ implementation
 
       if (KM_Pos_1 <> Prev_KMAbs) Or (BV <> PrevBV) Or (Voltage <> PrevVoltage) then begin
          I := BASS_ChannelIsActive(VentTD_Channel) + BASS_ChannelIsActive(VentCycleTD_Channel);
-         if ((I = 0) Or (StopVentTD = True)) and (BV <> 0) and (Voltage <> 0) then begin
+         if ((I = 0) Or (StopVentTD = True)) and (BV <> 0) and (Voltage <> 0) and (ventPtrStarted = False) then begin
             if (KM_Pos_1 in [1..17]) Or (KM_Pos_1 in [21..35]) Or (KM_Pos_1 in [39..53]) then begin
                VentTDF       := StrNew(PChar(soundDir + 'mvPTR_start.wav'));
                VentCycleTDF  := StrNew(PChar(soundDir + 'mvPTR_loop.wav'));
                XVentTDF      := StrNew(PChar(soundDir + 'x_mvPTR_start.wav'));
                XVentCycleTDF := StrNew(PChar(soundDir + 'x_mvPTR_loop.wav'));
-               isPlayVentTD := False; isPlayVentTDX := False; StopVentTD:=False;
+               isPlayVentTD := False; isPlayVentTDX := False; StopVentTD:=False; ventPtrStarted := True;
             end;
          end;
          if (I <> 0) and (StopVentTD = False) then begin
@@ -146,7 +154,7 @@ implementation
                VentCycleTDF := PChar('');
                XVentTDF := StrNew(PChar(soundDir + 'x_mvPTR_stop.wav'));
                XVentCycleTDF:=PChar('');
-               isPlayVentTD := False; isPlayVentTDX := False; StopVentTD:=True;
+               isPlayVentTD := False; isPlayVentTDX := False; StopVentTD:=True; ventPtrStarted := False;
             end;
          end;
       end;
