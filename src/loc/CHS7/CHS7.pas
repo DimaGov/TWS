@@ -131,7 +131,8 @@ implementation
    begin
       VentTDRemaindTimeCheck();
 
-      VentTDVol := power((TEDAmperage/UltimateTEDAmperage*1.2), 0.5) * (FormMain.trcBarVspomMahVol.Position/100);
+      VentTDVol := FormMain.trcBarVspomMahVol.Position/100;
+      //VentTDVol := power((TEDAmperage/UltimateTEDAmperage*1.2), 0.5) * (FormMain.trcBarVspomMahVol.Position/100);
       VentTDPitch := -7 + TEDAmperage * 10 / UltimateTEDAmperage;
 
       if (KM_Pos_1 <> Prev_KMAbs) Or (BV <> PrevBV) Or (Voltage <> PrevVoltage) then begin

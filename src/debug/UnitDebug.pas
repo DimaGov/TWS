@@ -331,6 +331,7 @@ begin
            AddNewLineToDebugger('Brake_scr VolumeDestination', Brake_scrDestVolume, 'TWS переменная');
            AddNewLineToDebugger('Brake_scr Volume Fact', Brake_scrVolume, 'TWS переменная');
            AddNewLineToDebugger('Brake_scr Volume Incrementer (%)', Brake_scrVolumeIncrementer, 'TWS переменная');
+           AddNewLineToDebugger('Brake_slipp Volume', Brake_slipp_Volume, 'TWS переменная');
         end;
 end;
 
@@ -452,6 +453,7 @@ begin
               98: ListItem.SubItems[3] := FloatToStr(Brake_scrDestVolume);
               99: ListItem.SubItems[3] := FloatToStr(Brake_scrVolume);
               100: ListItem.SubItems[3] := FloatToStr(Brake_scrVolumeIncrementer);
+              101: ListItem.SubItems[3] := FloatToStr(Brake_slipp_Volume);
            end;
         end;
         end;

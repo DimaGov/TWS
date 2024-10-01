@@ -1246,7 +1246,9 @@ begin
           BASS_ChannelStop(Brake_Channel[1]); BASS_StreamFree(Brake_Channel[1]);
           Brake_Channel[0] := BASS_StreamCreateFile(FALSE, BrakeF, 0, 0, BASS_SAMPLE_LOOP {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF}); isPlayBrake:=True;
           Brake_Channel[1] := BASS_StreamCreateFile(FALSE, PChar('TWS/x_brake_slipp.wav'), 0, 0, BASS_SAMPLE_LOOP {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF}); isPlayBrake:=True;
-          if isCameraInCabin then begin
+          BASS_ChannelSetAttribute(Brake_Channel[0], BASS_ATTRIB_VOL, 0);
+          BASS_ChannelSetAttribute(Brake_Channel[1], BASS_ATTRIB_VOL, 0);
+          (*if isCameraInCabin then begin
              if EDTAmperage=0 then
                 BASS_ChannelSetAttribute(Brake_Channel[0], BASS_ATTRIB_VOL, ((BrakeCylinders/36)*(Speed/40))*(trcBarLocoPerestukVol.Position/100))
              else
@@ -1258,7 +1260,7 @@ begin
              else
                 BASS_ChannelSetAttribute(Brake_Channel[1], BASS_ATTRIB_VOL, (((BrakeCylinders/36)*(Speed/40))*(trcBarLocoPerestukVol.Position/100))/8);
              BASS_ChannelSetAttribute(Brake_Channel[0], BASS_ATTRIB_VOL, 0);
-          end;
+          end;*)
           BASS_ChannelPlay(Brake_Channel[0], True);
           BASS_ChannelPlay(Brake_Channel[1], True);
        except end;

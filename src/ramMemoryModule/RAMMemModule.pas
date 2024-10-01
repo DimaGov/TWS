@@ -798,7 +798,7 @@ begin
           ADDR_KLUB_OPEN:=ptr($0538D915);     ADDR_CAMERA     :=     ptr($09008024); ADDR_CAMERA_X   :=   ptr($007499EE);
           ADDR_RB    :=   ptr($00749914);  ADDR_CHS7_REVERSOR :=     ptr($0538BFD6); ADDR_RBS        :=   ptr($00749910);
           ADDR_OGRANICH:= ptr($0074987C); ADDR_SVETOFOR_DISTANCE:=   ptr($09007EB8);ADDR_VIGILANCE_CHECK:=ptr($007499D0);
-          ADDR_CHS7_BV := ptr($091D5B9E); ADDR_BRAKE_CYLINDERS:=     ptr($0538C268); ADDR_CHS7_VOLTAGE:=  ptr($091106B8);
+          ADDR_CHS7_BV := ptr($091D5B9E); ADDR_BRAKE_CYLINDERS:=     ptr($091107B0); ADDR_CHS7_VOLTAGE:=  ptr($091106B8);
           ADDR_CHS7_VENT:=ptr($091D5BA0); ADDR_CHS7_COMPRESSOR:=     ptr($091D48C8); ADDR_CHS7_FTP   :=   ptr($091D5BAF);
           ADDR_CHS7_BTP:= ptr($091D5BB3);       ADDR_STOCHIST :=     ptr($007497CC); ADDR_STCHSTDGR  :=   ptr($007497BC);
           ADDR_RAIN  :=   ptr($00803D56);       ADDR_CHS8_FTP :=     ptr($09110707); ADDR_CHS8_BTP   :=   ptr($091108B7);
