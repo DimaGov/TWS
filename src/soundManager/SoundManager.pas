@@ -1094,6 +1094,8 @@ begin
           Vent_Channel_FX := BASS_FX_TempoCreate(Vent_Channel, BASS_FX_FREESOURCE);
           BASS_ChannelPlay(Vent_Channel_FX, False);
           BASS_ChannelSetAttribute(Vent_Channel_FX, BASS_ATTRIB_VOL, 0);
+          if LocoWithMVPitch then
+             BASS_ChannelSetAttribute(Vent_Channel_FX, BASS_ATTRIB_TEMPO_PITCH, VentPitch);
           isPlayVent:=True; Inc(CameraX);
 
           if (LocoGlobal='VL80t') Or (LocoGlobal='EP1m') Or (LocoGlobal='2ES5K') then begin
@@ -1116,6 +1118,8 @@ begin
           XVent_Channel_FX := BASS_FX_TempoCreate(XVent_Channel, BASS_FX_FREESOURCE);
           BASS_ChannelPlay(XVent_Channel_FX, False);
           BASS_ChannelSetAttribute(XVent_Channel_FX, BASS_ATTRIB_VOL, 0);
+          if LocoWithMVPitch then
+             BASS_ChannelSetAttribute(XVent_Channel_FX, BASS_ATTRIB_TEMPO_PITCH, VentPitch);
           isPlayVentX:=True; BASS_ChannelPlay(XVent_Channel, True); Inc(CameraX);
        except end;
     end;

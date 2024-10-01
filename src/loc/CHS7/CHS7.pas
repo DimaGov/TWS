@@ -2,13 +2,23 @@ unit CHS7;
 
 interface
 
-uses KR21;
+uses KR21, ExtCtrls;
+
+type TTimerEvents = class
+    public
+
+      procedure OnTimer(Sender: TObject);
+      
+    end;
 
 type chs7_ = class (TObject)
     private
       soundDir: String;
 
       kr21__: kr21_;
+
+      VentOffDelayTimer: TTimer;
+      VentOffDelayTimerEvents: TTimerEvents;
 
       procedure vent_PTR_step();
       procedure bv_step();
@@ -41,6 +51,12 @@ implementation
    constructor CHS7_.Create;
    begin
       soundDir := 'TWS\CHS7\';
+
+      // Создаем таймер для проверки разницы показаний давления ГР в промежутке времени
+      VentOffDelayTimer := TTimer.Create(UnitMain.FormMain);
+      VentOffDelayTimer.Interval := 1200;
+      VentOffDelayTimer.OnTimer := VentOffDelayTimerEvents.OnTimer;
+      VentOffDelayTimer.Enabled := False;
 
       kr21__ := kr21_.Create('TWS\Devices\21KR\');
    end;
@@ -219,6 +235,19 @@ implementation
    // ----------------------------------------------------
    //
    // ----------------------------------------------------
+   procedure TTimerEvents.OnTimer(Sender: TObject);
+   begin
+      if Vent = 0 then begin
+         StopVent:=True;
+         isPlayVent:=False; isPlayVentX:=False; VentPitchDest := 0;
+      end;
+
+      CHS7__.VentOffDelayTimer.Enabled := False;
+   end;
+
+   // ----------------------------------------------------
+   //
+   // ----------------------------------------------------
    procedure CHS7_.vent_step();
    begin
       VentRemaindTimeCheck();
@@ -227,15 +256,16 @@ implementation
          if (BASS_ChannelIsActive(Vent_Channel_FX)<>0) and (StopVent = True) then begin
             BASS_ChannelStop(Vent_Channel_FX); BASS_StreamFree(Vent_Channel_FX);
             BASS_ChannelStop(XVent_Channel_FX); BASS_StreamFree(XVent_Channel_FX);
-            isPlayCycleVent := False; isPlayCycleVentX := False;
+            //isPlayCycleVent := False; isPlayCycleVentX := False;
+         end;
+         if BASS_ChannelIsActive(VentCycle_Channel) = 0 then begin
+            isPlayVent:=False; isPlayVentX:=False;
          end;
          if Vent = 255 then VentPitchDest := 3 else VentPitchDest := 0;
          StopVent:=False;
-         isPlayVent:=False; isPlayVentX:=False;
       end;
       if (Vent=0) and (Prev_Vent<>0) then begin
-         StopVent:=True;
-         isPlayVent:=False; isPlayVentX:=False; VentPitchDest := 0;
+         VentOffDelayTimer.Enabled := True;
       end;
    end;
 

@@ -773,9 +773,6 @@ var
   I, J: Integer;
   Station1, Station2: String;
   SR: TSearchRec;
-  CompTimeLeft: Single;
-  XCompTimeLeft: Single;
-  temp_single: Single;
 label
   Next1;
 begin
@@ -1473,7 +1470,7 @@ try
 
   // ÁËÎÊ ÇÂÓÊÀ ÑÊĞÈÏÀ ÊÎËÎÄÎÊ ÏĞÈ ÎÑÒÀÍÎÂÊÅ //
   if cbLocPerestuk.Checked = True then begin
-     if (Speed <= 5) and (BrakeCylinders > 0.0) then begin
+     if (Speed <= 4) and (BrakeCylinders > 0.0) then begin
         if BASS_ChannelIsActive(BrakeScr_Channel) = 0 then begin
            BrakeScrF  := PChar('TWS/' + Loco + '/brake_scr.wav');
            isPlayBrakeScr := False;
@@ -1490,12 +1487,13 @@ try
      if Brake_scrVolume < Brake_scrDestVolume then Brake_scrVolume := Brake_scrVolume + Brake_scrVolumeIncrementer;
      if Brake_scrVolume > Brake_scrDestVolume then Brake_scrVolume := Brake_scrVolume - Brake_scrVolumeIncrementer;
 
-     if (Speed > 5) or (BrakeCylinders = 0) Or (Speed = 0) then begin
-        if (Brake_scrVolume < 0.01) then begin
+     if (Speed > 4) or (BrakeCylinders = 0) Or (Speed = 0) then begin
+        if (Brake_scrVolume <= Brake_scrVolumeIncrementer) then begin
            BASS_ChannelStop(BrakeScr_Channel); BASS_StreamFree(BrakeScr_Channel);
         end;
+        BASS_ChannelSlideAttribute(BrakeScr_Channel, BASS_ATTRIB_VOL, 0, 100);
         //Brake_scrVolume := 0.0;
-        Brake_scrDestVolume := 0.0;
+        //Brake_scrDestVolume := 0.0;
      end;
   end;
 

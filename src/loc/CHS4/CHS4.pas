@@ -162,8 +162,6 @@ implementation
    //
    // ----------------------------------------------------
    procedure CHS4_.mk_step();
-   var
-     temp: Double;
    begin
       if Voltage < 1.0 then Compressor := 0;
 
