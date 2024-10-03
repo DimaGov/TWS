@@ -103,6 +103,12 @@ implementation
       if ((Prev_KMAbs>0) and (KM_Pos_1=0)) or ((KM_Pos_1=0) and (Prev_KMAbs>0)) then begin
          IMRZashelka:=PChar('TWS\Devices\21KR\EM_zashelka_OFF.wav'); isPlayIMRZachelka:=False;
       end;
+      if (BV_Paketnik = 0) and (PrevBV_Paketnik = 1) then begin
+         IMRZashelka:=PChar('TWS\Devices\21KR\EM_zashelka_OFF.wav'); isPlayIMRZachelka:=False;
+      end;
+      if (BV_Paketnik = 1) and (PrevBV_Paketnik = 0) then begin
+         IMRZashelka:=PChar('TWS\Devices\21KR\EM_zashelka_ON.wav'); isPlayIMRZachelka:=False;
+      end;
    end;
 
    // ----------------------------------------------------

@@ -1501,25 +1501,41 @@ try
 
   // ÁËÎÊ ÇÂÓÊÀ ÒÐÅÍÈß ÊÎËÎÄÎÊ ÏÐÈ ÒÎÐÌÎÆÅÍÈÈ //
   if cbBrakingSounds.Checked=True then begin
-      if (BrakeCylinders>0) and (PrevBrkCyl=0) and (Speed<>0) and (Brake=False) then Begin Brake_Counter:=0; BrakeF:=PChar('TWS/brake_slipp.wav'); isPlayBrake:=False; Brake:=True; end;
+      Brake_slipp_Volume := BrakeCylinders / 8;
+      if Brake_slipp_Volume > trcBarLocoPerestukVol.Position/100 then Brake_slipp_Volume := trcBarLocoPerestukVol.Position/100;
+      if (BrakeCylinders>0) then begin
+          if (Speed<>0) and (Brake=False) then Begin Brake_Counter:=0; BrakeF:=PChar('TWS/brake_slipp.wav'); isPlayBrake:=False; Brake:=True; end;
+      end;
       if (Brake=True) then begin
-
-           Brake_slipp_Volume := ((BrakeCylinders/5)*(Speed/40))*(trcBarLocoPerestukVol.Position/100);
 
            if isCameraInCabin=True then begin
               //if EDTAmperage=0 then
       	         BASS_ChannelSetAttribute(Brake_Channel[0], BASS_ATTRIB_VOL, Brake_slipp_Volume); //else
                  //BASS_ChannelSetAttribute(Brake_Channel[0], BASS_ATTRIB_VOL, (((BrakeCylinders/36)*(Speed/40))*(trcBarLocoPerestukVol.Position/100))/4);
               BASS_ChannelSetAttribute(Brake_Channel[1], BASS_ATTRIB_VOL, 0);
+              BASS_ChannelSetAttribute(Brake_Channel[2], BASS_ATTRIB_VOL, 0);
            end else begin
               BASS_ChannelSetAttribute(Brake_Channel[0], BASS_ATTRIB_VOL, 0);
               //if EDTAmperage=0 then
-      	         BASS_ChannelSetAttribute(Brake_Channel[1], BASS_ATTRIB_VOL, Brake_slipp_Volume); //else
+              if Camera <> 2 then begin
+                 BASS_ChannelSetAttribute(Brake_Channel[1], BASS_ATTRIB_VOL, Brake_slipp_Volume); //else
+                 BASS_ChannelSetAttribute(Brake_Channel[2], BASS_ATTRIB_VOL, Brake_slipp_Volume*0.6);
+              end;
+              if Camera = 2 then begin
+                 BASS_ChannelSetAttribute(Brake_Channel[2], BASS_ATTRIB_VOL, Brake_slipp_Volume);
+                 BASS_ChannelSetAttribute(Brake_Channel[1], BASS_ATTRIB_VOL, 0);
+              end;
                  //BASS_ChannelSetAttribute(Brake_Channel[1], BASS_ATTRIB_VOL, (((BrakeCylinders/36)*(Speed/40))*(trcBarLocoPerestukVol.Position/100))/8);
            end;
       end;
-      if ((BrakeCylinders=0) and (Brake_Counter>10)) or (Speed=0) then begin BASS_ChannelStop(Brake_Channel[0]); BASS_StreamFree(Brake_Channel[0]); BASS_ChannelStop(Brake_Channel[1]); BASS_StreamFree(Brake_Channel[1]); Brake:=False; end;
-      if (BrakeCylinders=0) then Inc(Brake_Counter);
+      if BrakeCylinders=0 then begin
+         if (Brake_Counter>10) or (Speed=0) then begin
+         BASS_ChannelStop(Brake_Channel[0]); BASS_StreamFree(Brake_Channel[0]);
+         BASS_ChannelStop(Brake_Channel[1]); BASS_StreamFree(Brake_Channel[1]);
+         BASS_ChannelStop(Brake_Channel[2]); BASS_StreamFree(Brake_Channel[2]); Brake:=False;
+         end;
+      end;
+      if BrakeCylinders=0 then Inc(Brake_Counter);
   end;
   // **************************************** //
 
@@ -2121,6 +2137,7 @@ begin
 	if cbBrakingSounds.Checked=False then begin
            BASS_ChannelStop(Brake_Channel[0]); BASS_StreamFree(Brake_Channel[0]);
            BASS_ChannelStop(Brake_Channel[1]); BASS_StreamFree(Brake_Channel[1]);
+           BASS_ChannelStop(Brake_Channel[2]); BASS_StreamFree(Brake_Channel[2]);
         end else begin
            BrakeCylinders:=0.0;
         end;

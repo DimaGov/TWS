@@ -332,6 +332,7 @@ begin
            AddNewLineToDebugger('Brake_scr Volume Fact', Brake_scrVolume, 'TWS переменная');
            AddNewLineToDebugger('Brake_scr Volume Incrementer (%)', Brake_scrVolumeIncrementer, 'TWS переменная');
            AddNewLineToDebugger('Brake_slipp Volume', Brake_slipp_Volume, 'TWS переменная');
+           AddNewLineToDebugger('Пакетник БВ/ГВ (Управление) на ЧС-ах', BV_Paketnik, 'TWS переменная');
         end;
 end;
 
@@ -454,6 +455,7 @@ begin
               99: ListItem.SubItems[3] := FloatToStr(Brake_scrVolume);
               100: ListItem.SubItems[3] := FloatToStr(Brake_scrVolumeIncrementer);
               101: ListItem.SubItems[3] := FloatToStr(Brake_slipp_Volume);
+              102: ListItem.SubItems[3] := IntToStr(BV_Paketnik);
            end;
         end;
         end;

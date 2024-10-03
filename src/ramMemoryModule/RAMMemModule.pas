@@ -94,6 +94,8 @@ var
    ADDR_CHS4T_COMPRESSOR:                   Pointer;
    ADDR_CHS4T_FTP:                          Pointer;
    ADDR_CHS4T_BTP:                          Pointer;
+   ADDR_CHS4T_GV_PAKETNIK_OFFSET:           Pointer; // Адрес состояния пакетника БВ на ЧС4т (Указатель!!)
+   ADDR_CHS4T_GV_PAKETNIK:                  PByte;   // Адрес состояния пакетника БВ на ЧС4т (Указатель!!)
    ADDR_CHS4KVR_FTP:                        Pointer;
    ADDR_CHS4KVR_BTP:                        Pointer;
    ADDR_CHS4KVR_REVERSOR:                   Pointer;
@@ -492,6 +494,9 @@ begin
     GR := RoundTo(GR, -2);
     Inc(tpByte, 40);
     try ReadProcessMemory(UnitMain.pHandle, tpByte, @TC, 8, temp); except end;
+    ADDR_CHS4T_GV_PAKETNIK := ReadPointer(ADDR_CHS4T_GV_PAKETNIK_OFFSET);
+    Inc(ADDR_CHS4T_GV_PAKETNIK, 56);
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4T_GV_PAKETNIK, @BV_Paketnik, 4, temp);  except end;
 end;
 
 //------------------------------------------------------------------------------//
@@ -514,6 +519,9 @@ begin
     GR := RoundTo(GR, -3);
     Inc(tpByte, 40);
     try ReadProcessMemory(UnitMain.pHandle, tpByte, @TC, 8, temp); except end;
+    ADDR_CHS4T_GV_PAKETNIK := ReadPointer(ADDR_CHS4T_GV_PAKETNIK_OFFSET);
+    Inc(ADDR_CHS4T_GV_PAKETNIK, 56);
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4T_GV_PAKETNIK, @BV_Paketnik, 4, temp);  except end;
 end;
 
 //------------------------------------------------------------------------------//
@@ -535,6 +543,9 @@ begin
     GR := RoundTo(GR, -2);
     Inc(tpByte, 40);
     try ReadProcessMemory(UnitMain.pHandle, tpByte, @TC, 8, temp); except end;
+    ADDR_CHS4T_GV_PAKETNIK := ReadPointer(ADDR_CHS4T_GV_PAKETNIK_OFFSET);
+    Inc(ADDR_CHS4T_GV_PAKETNIK, 56);
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS4T_GV_PAKETNIK, @BV_Paketnik, 4, temp);  except end;
 end;
 
 //------------------------------------------------------------------------------//
@@ -798,7 +809,7 @@ begin
           ADDR_KLUB_OPEN:=ptr($0538D915);     ADDR_CAMERA     :=     ptr($09008024); ADDR_CAMERA_X   :=   ptr($007499EE);
           ADDR_RB    :=   ptr($00749914);  ADDR_CHS7_REVERSOR :=     ptr($0538BFD6); ADDR_RBS        :=   ptr($00749910);
           ADDR_OGRANICH:= ptr($0074987C); ADDR_SVETOFOR_DISTANCE:=   ptr($09007EB8);ADDR_VIGILANCE_CHECK:=ptr($007499D0);
-          ADDR_CHS7_BV := ptr($091D5B9E); ADDR_BRAKE_CYLINDERS:=     ptr($091107B0); ADDR_CHS7_VOLTAGE:=  ptr($091106B8);
+          ADDR_CHS7_BV := ptr($091D5B9E); ADDR_BRAKE_CYLINDERS:=     ptr($0538C268); ADDR_CHS7_VOLTAGE:=  ptr($091106B8);
           ADDR_CHS7_VENT:=ptr($091D5BA0); ADDR_CHS7_COMPRESSOR:=     ptr($091D48C8); ADDR_CHS7_FTP   :=   ptr($091D5BAF);
           ADDR_CHS7_BTP:= ptr($091D5BB3);       ADDR_STOCHIST :=     ptr($007497CC); ADDR_STCHSTDGR  :=   ptr($007497BC);
           ADDR_RAIN  :=   ptr($00803D56);       ADDR_CHS8_FTP :=     ptr($09110707); ADDR_CHS8_BTP   :=   ptr($091108B7);
@@ -830,6 +841,7 @@ begin
           ADDR_2ES5K_BV :=ptr($091D48CC); ADDR_CHS8_UNIPULS_AVARIA:= ptr($091D5024); ADDR_CHS8_GV_1  :=   ptr($09007FB4);
           ADDR_VR242    :=ptr($0911080C); ADDR_PNEVM_SIGNAL   :=     ptr($0538D8D4); ADDR_TEP70_TED  :=   ptr($091D5BD8);
           ADDR_VL82_VENT:=ptr($091D48BC);      ADDR_VL82_COMPRESSOR:=ptr($091D48B8); ADDR_CHS7_BV_PAKETNIK:=ptr($091D5B9C);
+          ADDR_CHS4T_GV_PAKETNIK_OFFSET:=ptr($07D22254);
        end;
        if versionID = 1 then begin
           ADDR_Speed :=   ptr($0072CB38);       ADDR_Track    :=     ptr($0072CBFC); ADDR_KM_POS     :=   ptr($090F3F9C);

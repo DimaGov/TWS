@@ -67,8 +67,8 @@ var
   XVentCycle_Channel:        Cardinal;
   XVentTD_Channel:           Cardinal;
   XVentCycleTD_Channel:      Cardinal;
-  Brake_Channel:             array[0..1] of Cardinal;    // Трение колодок, 0 - внутри локомотива, 1 - снаружи
-  BrakeScr_Channel:          Cardinal;      // Скрип колодок при остановке, 0 - внутри локомотива, 1 - снаружи
+  Brake_Channel:             array[0..2] of Cardinal;    // Трение колодок, 0 - внутри локомотива, 1 - снаружи, 2 - хвост
+  BrakeScr_Channel:          Cardinal;      // Скрип колодок при остановке
   Brake254_Channel:          array[0..1] of Cardinal;
   Brake254_Channel_FX:       array[0..1] of Cardinal;
   BeltPool_Channel:          Cardinal;
@@ -1244,10 +1244,13 @@ begin
        try
           BASS_ChannelStop(Brake_Channel[0]); BASS_StreamFree(Brake_Channel[0]);
           BASS_ChannelStop(Brake_Channel[1]); BASS_StreamFree(Brake_Channel[1]);
-          Brake_Channel[0] := BASS_StreamCreateFile(FALSE, BrakeF, 0, 0, BASS_SAMPLE_LOOP {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF}); isPlayBrake:=True;
-          Brake_Channel[1] := BASS_StreamCreateFile(FALSE, PChar('TWS/x_brake_slipp.wav'), 0, 0, BASS_SAMPLE_LOOP {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF}); isPlayBrake:=True;
+          BASS_ChannelStop(Brake_Channel[2]); BASS_StreamFree(Brake_Channel[2]);
+          Brake_Channel[0] := BASS_StreamCreateFile(FALSE, BrakeF, 0, 0, BASS_SAMPLE_LOOP {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF});
+          Brake_Channel[1] := BASS_StreamCreateFile(FALSE, PChar('TWS/x_brake_slipp.wav'), 0, 0, BASS_SAMPLE_LOOP {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF});
+          Brake_Channel[2] := BASS_StreamCreateFile(FALSE, PChar('TWS/x_brake_slipp_wag.wav'), 0, 0, BASS_SAMPLE_LOOP {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF});
           BASS_ChannelSetAttribute(Brake_Channel[0], BASS_ATTRIB_VOL, 0);
           BASS_ChannelSetAttribute(Brake_Channel[1], BASS_ATTRIB_VOL, 0);
+          BASS_ChannelSetAttribute(Brake_Channel[2], BASS_ATTRIB_VOL, 0);
           (*if isCameraInCabin then begin
              if EDTAmperage=0 then
                 BASS_ChannelSetAttribute(Brake_Channel[0], BASS_ATTRIB_VOL, ((BrakeCylinders/36)*(Speed/40))*(trcBarLocoPerestukVol.Position/100))
@@ -1263,6 +1266,8 @@ begin
           end;*)
           BASS_ChannelPlay(Brake_Channel[0], True);
           BASS_ChannelPlay(Brake_Channel[1], True);
+          BASS_ChannelPlay(Brake_Channel[2], True);
+          isPlayBrake:=True;
        except end;
     end;
 
