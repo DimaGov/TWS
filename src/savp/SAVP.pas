@@ -362,7 +362,8 @@ begin
             FileLinesList[I] := StringReplace(StringReplace(FileLinesList[I], #13, '', [rfReplaceAll]), #10, ' ', [rfReplaceAll]);
             ObjectsList := ExtractWord(FileLinesList[I], #9);
             if ObjectsList.Count >= 2 then begin
-               if Pos('overrideRouteEK', ObjectsList[0]) > 0 then begin
+               if (Pos('OverrideRouteEK', ObjectsList[0]) > 0) Or
+                  (Pos('overrideRouteEK', ObjectsList[0]) > 0) then begin
                   if ObjectsList[1] = '0' then scSAVPOverrideRouteEK := False;
                   if ObjectsList[1] = '1' then begin scSAVPOverrideRouteEK := True; clearSAVPBaseData(); end;
                end else begin
@@ -1231,7 +1232,7 @@ begin
 
               // Воспроизводим служебные объявления из карты САВПЭ
               for I:=0 to TotalServiceFiles do begin
-                 if BaseServiceInfoTrack[I]=Track then begin
+                 if (BaseServiceInfoTrack[I]=Track) and (Track <> PrevTrack) then begin
                     BASS_ChannelStop(SAVPE_INFO_Channel); BASS_StreamFree(SAVPE_INFO_Channel);
                     SAVPEInformatorMessages.Clear;
                     SAVPEMessageIndex := 0;

@@ -41,7 +41,9 @@ implementation
       if VR242Allow = True then begin
          if (UnitMain.VR242 > 0) and (PrevVR242 = 0) then begin
             VR242F := StrNew(PChar(soundDir + 'vr242.wav'));
+            XVR242F := StrNew(PChar(soundDir + 'x_vr242.wav'));
             isPlayVR242 := False;
+            isPlayXVR242 := False;
             vol := 0.0; pitch := 0.0;
             destVol := 0.0; destPitch := 0.0;
          end;
@@ -63,8 +65,27 @@ implementation
                if Pitch < -7 then destVol := 0.0;
             end;
 
-            BASS_ChannelSetAttribute(VR242Channel_FX, BASS_ATTRIB_VOL, vol);
+            if Camera = 0 then begin
+               if isCameraInCabin = True then
+                  BASS_ChannelSetAttribute(VR242Channel_FX, BASS_ATTRIB_VOL, vol)
+               else
+                  BASS_ChannelSetAttribute(VR242Channel_FX, BASS_ATTRIB_VOL, vol*0.7);
+
+               BASS_ChannelSetAttribute(XVR242Channel_FX, BASS_ATTRIB_VOL, 0.0);
+            end;
+
+            if Camera = 1 then begin
+               BASS_ChannelSetAttribute(VR242Channel_FX, BASS_ATTRIB_VOL, 0.0);
+               BASS_ChannelSetAttribute(XVR242Channel_FX, BASS_ATTRIB_VOL, 0.0);
+            end;
+
+            if Camera = 2 then begin
+               BASS_ChannelSetAttribute(VR242Channel_FX, BASS_ATTRIB_VOL, 0.0);
+               BASS_ChannelSetAttribute(XVR242Channel_FX, BASS_ATTRIB_VOL, vol);
+            end;
+
             BASS_ChannelSetAttribute(VR242Channel_FX, BASS_ATTRIB_TEMPO_PITCH, pitch);
+            BASS_ChannelSetAttribute(XVR242Channel_FX, BASS_ATTRIB_TEMPO_PITCH, pitch);
          end;
       end;
    end;

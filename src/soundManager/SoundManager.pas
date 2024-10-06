@@ -100,6 +100,8 @@ var
   ReduktorChannel_FX:        Cardinal;
   VR242Channel:              Cardinal;
   VR242Channel_FX:           Cardinal;
+  XVR242Channel:             Cardinal;
+  XVR242Channel_FX:          Cardinal;
   ZhalusiChannel:            Cardinal;
   // »“Œ√Œ ƒŒ–Œ∆≈  ¬ — –»œ“≈: 54
 
@@ -142,6 +144,7 @@ var
   Brake254F:                   PChar;
   CycleBrake254F:              PChar;
   VR242F:                      PChar;
+  XVR242F:                     PChar;
   ZhalusiF:                    PChar;
   ClockF:                      PChar;
   ClockCycleF:                 PChar;
@@ -190,6 +193,7 @@ var
   isPlayBrake254:              Boolean = True;
   isPlayCycleBrake254:         Boolean = True;
   isPlayVR242:                 Boolean = True;
+  isPlayXVR242:                Boolean = True;
   isPlayZhalusi:               Boolean = True;
   PerehodLocoPerestuk:         Boolean;
 
@@ -1326,6 +1330,17 @@ begin
        BASS_ChannelPlay(VR242Channel_FX, False);
        BASS_ChannelSetAttribute(VR242Channel_FX, BASS_ATTRIB_VOL, 0);
        isPlayVR242 := True;
+    end;
+     // === === //
+    if isPlayXVR242 = False then begin
+       BASS_ChannelStop(XVR242Channel); BASS_StreamFree(XVR242Channel);
+       BASS_ChannelStop(XVR242Channel_FX); BASS_StreamFree(XVR242Channel_FX);
+       XVR242Channel := BASS_StreamCreateFile(FALSE, XVR242F, 0, 0, BASS_STREAM_DECODE);
+       XVR242Channel_FX := BASS_FX_TempoCreate(XVR242Channel, BASS_FX_FREESOURCE);
+       //BASS_ChannelFlags(NatureChannel_FX, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
+       BASS_ChannelPlay(XVR242Channel_FX, False);
+       BASS_ChannelSetAttribute(XVR242Channel_FX, BASS_ATTRIB_VOL, 0);
+       isPlayXVR242 := True;
     end;
     // === 3—À2Ï ◊¿—€ === //
     if isPlayClock=False then begin

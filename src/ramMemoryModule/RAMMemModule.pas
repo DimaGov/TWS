@@ -38,7 +38,7 @@ var
 
 implementation
 
-uses UnitMain, Windows, SysUtils, SoundManager, Math, TlHelp32, ExtraUtils;
+uses UnitMain, Windows, SysUtils, SoundManager, Math, TlHelp32, ExtraUtils, Dialogs;
 
 var
    ProcReadDataMemoryAddr: ProcReadDataMemoryType;
@@ -90,12 +90,14 @@ var
    ADDR_CHS8_COMPRESSOR:                    Pointer; // Адрес состояния компрессоров на ЧС8
    ADDR_CHS8_GV_1:                          Pointer;
    ADDR_CHS8_GV_2:                          Pointer;
+   ADDR_CHS8_GV_PAKETNIK_OFFSET:            Pointer; // Адрес состояния пакетника БВ на ЧС8 (Указатель!!)
+   ADDR_CHS8_GV_PAKETNIK:                   PByte;   // Адрес состояния пакетника БВ на ЧС8 (Указатель!!)
    ADDR_CHS4T_VENT:                         Pointer; // Адрес состояния вентиляторов на ЧС4т
    ADDR_CHS4T_COMPRESSOR:                   Pointer;
    ADDR_CHS4T_FTP:                          Pointer;
    ADDR_CHS4T_BTP:                          Pointer;
-   ADDR_CHS4T_GV_PAKETNIK_OFFSET:           Pointer; // Адрес состояния пакетника БВ на ЧС4т (Указатель!!)
-   ADDR_CHS4T_GV_PAKETNIK:                  PByte;   // Адрес состояния пакетника БВ на ЧС4т (Указатель!!)
+   ADDR_CHS4T_GV_PAKETNIK_OFFSET:           Pointer; // Адрес состояния пакетника БВ на ЧС4т, ЧС4, ЧС4квр (Указатель!!)
+   ADDR_CHS4T_GV_PAKETNIK:                  PByte;   // Адрес состояния пакетника БВ на ЧС4т, ЧС4, ЧС4квр (Указатель!!)
    ADDR_CHS4KVR_FTP:                        Pointer;
    ADDR_CHS4KVR_BTP:                        Pointer;
    ADDR_CHS4KVR_REVERSOR:                   Pointer;
@@ -318,6 +320,7 @@ end;
 procedure GetStartSettingParamsFromRAM();
 var
     addr_settings_ini: PByte;
+    St: string;
 begin
      With FormMain do begin
         // Получаем адрес процесса ZDSimulator
@@ -336,6 +339,15 @@ begin
         Winter := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'Winter', 6666));
         Freight := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'Freight', 6666));
         try SceneryName:=ReadKeyFromMemoryString(addr_settings_ini, 'SceneryName', 6666); except SceneryName:='error'; end;
+        try
+            St:=ReadKeyFromMemoryString(addr_settings_ini, 'CompoundPercent', 6666);
+            CompoundPercent := StrToFloat(St);
+        except
+            St:=StringReplace(St, '.', ',', [rfReplaceAll, rfIgnoreCase]);
+            //MessageDLG(St, mterror, mbOKCancel, 0);
+            CompoundPercent := StrToFloat(St);
+        end;
+        //MessageDLG('!'+ReadKeyFromMemoryString(addr_settings_ini, 'CompoundPercent', 6666)+'!', mterror, mbOKCancel, 0);
 
         UnitMain.Log_.DebugWriteErrorToErrorList('settings.ini data: ');
         UnitMain.Log_.DebugWriteErrorToErrorList('Route: ' + Route);
@@ -348,6 +360,7 @@ begin
         UnitMain.Log_.DebugWriteErrorToErrorList('Winter: ' + IntToStr(Winter));
         UnitMain.Log_.DebugWriteErrorToErrorList('SceneryName: ' + SceneryName);
         UnitMain.Log_.DebugWriteErrorToErrorList('MultiPlayer: ' + IntToStr(MP));
+        UnitMain.Log_.DebugWriteErrorToErrorList('CompoundPercent: ' + FloatToStr(CompoundPercent));
 
         try CloseHandle(UnitMain.pHandle); except end;
      end;
@@ -614,6 +627,11 @@ begin
 
     if (CHS8VentVolumePrev = VentSingleVolume) and (CHS8VentTempCounter < 100) then Inc(CHS8VentTempCounter) else CHS8VentTempCounter := 0;
     CHS8VentVolumePrev := VentSingleVolume;
+
+    ADDR_CHS8_GV_PAKETNIK := ReadPointer(ADDR_CHS8_GV_PAKETNIK_OFFSET);
+    Inc(ADDR_CHS8_GV_PAKETNIK, 3303);
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS8_GV_PAKETNIK, @VentUnipulsAvaria, 1, temp);  except end;
+    BV_Paketnik := VentUnipulsAvaria;
 end;
 
 //------------------------------------------------------------------------------//
@@ -841,7 +859,7 @@ begin
           ADDR_2ES5K_BV :=ptr($091D48CC); ADDR_CHS8_UNIPULS_AVARIA:= ptr($091D5024); ADDR_CHS8_GV_1  :=   ptr($09007FB4);
           ADDR_VR242    :=ptr($0911080C); ADDR_PNEVM_SIGNAL   :=     ptr($0538D8D4); ADDR_TEP70_TED  :=   ptr($091D5BD8);
           ADDR_VL82_VENT:=ptr($091D48BC);      ADDR_VL82_COMPRESSOR:=ptr($091D48B8); ADDR_CHS7_BV_PAKETNIK:=ptr($091D5B9C);
-          ADDR_CHS4T_GV_PAKETNIK_OFFSET:=ptr($07D22254);
+          ADDR_CHS4T_GV_PAKETNIK_OFFSET:=ptr($07D22254);ADDR_CHS8_GV_PAKETNIK_OFFSET:=ptr($00803F78);
        end;
        if versionID = 1 then begin
           ADDR_Speed :=   ptr($0072CB38);       ADDR_Track    :=     ptr($0072CBFC); ADDR_KM_POS     :=   ptr($090F3F9C);
