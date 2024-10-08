@@ -1,10 +1,10 @@
-unit TE10U;
+unit TEM18dm;
 
 interface
 
-uses VR242, ExtCtrls;
+uses VR242;
 
-type te10u_ = class (TObject)
+type tem18dm_ = class (TObject)
     private
       soundDir: String;
 
@@ -28,17 +28,17 @@ implementation
    // ----------------------------------------------------
    //
    // ----------------------------------------------------
-   constructor TE10U_.Create;
+   constructor TEM18dm_.Create;
    begin
-      soundDir := 'TWS\2TE10U\';
+      soundDir := 'TWS\TEM18dm\';
 
-      vr242__ := vr242_.Create(True);
+      vr242__ := vr242_.Create(False);
    end;
 
    // ----------------------------------------------------
    //
    // ----------------------------------------------------
-   procedure TE10U_.step();
+   procedure TEM18dm_.step();
    begin
       if FormMain.cbCabinClicks.Checked = True then begin
          vr242__.step();

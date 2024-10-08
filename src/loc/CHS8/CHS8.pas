@@ -2,7 +2,7 @@ unit CHS8;
 
 interface
 
-   uses KR21;
+   uses KR21, VR242;
 
    type chs8_ = class (TObject)
     private
@@ -16,6 +16,8 @@ interface
 
       // Переменные для корректной работы унипульса //
       isLaunchedUnipuls:           Boolean; // Запущен ли унипульс?
+
+      vr242__: vr242_;
 
       kr21__: kr21_;
 
@@ -63,6 +65,8 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils, Math;
       Unipuls2SecWait := True;
       UnipulsTargetPos := -1;
 
+      vr242__ := vr242_.Create(False);
+
       kr21__ := kr21_.Create('TWS\Devices\21KR\');
    end;
 
@@ -78,6 +82,7 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils, Math;
          kr21__.step();
          em_latch_step();
          reversor_step();
+         vr242__.step();
       end;
 
       if FormMain.cbVspomMash.Checked = True then begin

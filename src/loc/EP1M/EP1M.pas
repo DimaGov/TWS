@@ -2,9 +2,13 @@ unit EP1M;
 
 interface
 
+   uses VR242;
+
 type ep1m_ = class (TObject)
     private
       soundDir: String;
+
+      vr242__: vr242_;
 
       procedure mk_step();
       procedure vent_step();
@@ -30,6 +34,8 @@ implementation
    constructor EP1M_.Create;
    begin
       soundDir := 'TWS\EP1M\';
+
+      vr242__ := vr242_.Create(False);
    end;
 
    // ----------------------------------------------------
@@ -40,6 +46,10 @@ implementation
       if FormMain.cbVspomMash.Checked = True then begin
          mk_step();
          //vent_step();
+      end;
+
+      if FormMain.cbCabinClicks.Checked = True then begin
+         vr242__.step();
       end;
    end;
 

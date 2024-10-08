@@ -2,9 +2,13 @@ unit ES5K;
 
 interface
 
+   uses VR242;
+
 type es5k_ = class (TObject)
     private
       soundDir: String;
+
+      vr242__: vr242_;
 
       procedure mk_step();
       procedure vent_step();
@@ -30,6 +34,8 @@ implementation
    constructor ES5K_.Create;
    begin
       soundDir := 'TWS\2ES5K\';
+
+      vr242__ := vr242_.Create(False);
    end;
 
    // ----------------------------------------------------
@@ -40,6 +46,10 @@ implementation
       if FormMain.cbVspomMash.Checked = True then begin
          mk_step();
          //vent_step();
+      end;
+
+      if FormMain.cbCabinClicks.Checked = True then begin
+         vr242__.step();
       end;
    end;
 

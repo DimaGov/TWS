@@ -9,6 +9,8 @@ type vr242_ = class (TObject)
       vol, pitch: single;
       destVol, destPitch: Single;
 
+      VR242InCabin: Boolean;
+
     protected
 
     public
@@ -17,7 +19,7 @@ type vr242_ = class (TObject)
 
     published
 
-    constructor Create;
+    constructor Create(CabinPlay: Boolean);
 
    end;
 
@@ -28,9 +30,11 @@ implementation
    // ----------------------------------------------------
    //
    // ----------------------------------------------------
-   constructor vr242_.Create;
+   constructor vr242_.Create(CabinPlay: Boolean);
    begin
       soundDir := 'TWS\';
+
+      VR242InCabin := CabinPlay;
    end;
 
    // ----------------------------------------------------
@@ -66,10 +70,12 @@ implementation
             end;
 
             if Camera = 0 then begin
-               if isCameraInCabin = True then
-                  BASS_ChannelSetAttribute(VR242Channel_FX, BASS_ATTRIB_VOL, vol)
-               else
-                  BASS_ChannelSetAttribute(VR242Channel_FX, BASS_ATTRIB_VOL, vol*0.7);
+               if VR242InCabin = True then begin
+                  if isCameraInCabin = True then
+                     BASS_ChannelSetAttribute(VR242Channel_FX, BASS_ATTRIB_VOL, vol)
+                  else
+                     BASS_ChannelSetAttribute(VR242Channel_FX, BASS_ATTRIB_VOL, vol*0.7);
+               end;
 
                BASS_ChannelSetAttribute(XVR242Channel_FX, BASS_ATTRIB_VOL, 0.0);
             end;

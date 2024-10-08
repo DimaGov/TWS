@@ -2,7 +2,7 @@ unit CHS7;
 
 interface
 
-uses KR21, ExtCtrls;
+uses KR21, ExtCtrls, VR242;
 
 type TTimerEvents = class
     public
@@ -16,6 +16,8 @@ type chs7_ = class (TObject)
       soundDir: String;
 
       kr21__: kr21_;
+
+      vr242__: vr242_;
 
       ventPtrStarted: Boolean;
 
@@ -60,6 +62,8 @@ implementation
       VentOffDelayTimer.OnTimer := VentOffDelayTimerEvents.OnTimer;
       VentOffDelayTimer.Enabled := False;
 
+      vr242__ := vr242_.Create(False);
+
       kr21__ := kr21_.Create('TWS\Devices\21KR\');
    end;
 
@@ -82,6 +86,7 @@ implementation
          U_relay_step();
          em_latch_step();
          reversor_step();
+         vr242__.step();
       end;
    end;
 

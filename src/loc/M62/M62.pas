@@ -2,11 +2,13 @@ unit M62;
 
 interface
 
-uses ExtCtrls;
+uses ExtCtrls, VR242;
 
 type m62_ = class (TObject)
     private
       soundDir: String;
+
+      vr242__: vr242_;
 
       procedure reversor_step();
     protected
@@ -31,6 +33,8 @@ implementation
    constructor M62_.Create;
    begin
       soundDir := 'TWS\M62\';
+
+      vr242__ := vr242_.Create(False);
    end;
 
    // ----------------------------------------------------
@@ -40,6 +44,7 @@ implementation
    begin
       if FormMain.cbCabinClicks.Checked = True then begin
          reversor_step();
+         vr242__.step();
       end;
    end;
 

@@ -2,9 +2,13 @@ unit VL80T;
 
 interface
 
+   uses VR242;
+
 type vl80t_ = class (TObject)
     private
       soundDir: String;
+
+      vr242__: vr242_;
 
       procedure mk_step();
       procedure vent_step();
@@ -31,6 +35,8 @@ implementation
    constructor VL80T_.Create;
    begin
       soundDir := 'TWS\VL80t\';
+
+      vr242__ := vr242_.Create(False);
    end;
 
    // ----------------------------------------------------
@@ -42,6 +48,10 @@ implementation
          mk_step();
          fr_step();
          vent_step();
+      end;
+
+      if FormMain.cbCabinClicks.Checked = True then begin
+         vr242__.step();
       end;
    end;
 

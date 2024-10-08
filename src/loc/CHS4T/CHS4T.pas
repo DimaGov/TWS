@@ -62,7 +62,7 @@ implementation
       CompressorDifferenceTimer.Enabled := True;
 
       kr21__ := kr21_.Create('TWS\Devices\21KR\');
-      vr242__ := vr242_.Create();
+      vr242__ := vr242_.Create(True);
    end;
 
    // ----------------------------------------------------

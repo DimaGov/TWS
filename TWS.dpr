@@ -36,7 +36,11 @@ uses
   VL82M in 'src\loc\VL82m\VL82M.pas',
   CHS4 in 'src\loc\CHS4\CHS4.pas',
   TE10U in 'src\loc\2TE10U\TE10U.pas',
-  M62 in 'src\loc\M62\M62.pas';
+  M62 in 'src\loc\M62\M62.pas',
+  VL85 in 'src\loc\VL85\VL85.pas',
+  TEM18dm in 'src\loc\TEM18dm\TEM18dm.pas',
+  TEP70 in 'src\loc\TEP70\TEP70.pas',
+  TEP70bs in 'src\loc\TEP70bs\TEP70bs.pas';
 
 {$R *.res}
 

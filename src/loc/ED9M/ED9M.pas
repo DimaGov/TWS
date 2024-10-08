@@ -2,9 +2,13 @@ unit ED9M;
 
 interface
 
+   uses VR242;
+
 type ed9m_ = class (TObject)
     private
       soundDir: String;
+
+      vr242__: vr242_;
 
       PrevKeyKKR:      Byte;
 
@@ -48,6 +52,8 @@ implementation
    constructor ed9m_.Create;
    begin
       soundDir := 'TWS\ED4m\';
+
+      vr242__ := vr242_.Create(False);
    end;
 
    // ----------------------------------------------------
@@ -69,6 +75,7 @@ implementation
          trolleyClick_step();
          combCrane_step();
          reversor_step();
+         vr242__.step();
       end;
 
       if FormMain.cbLocPerestuk.Checked = True then begin

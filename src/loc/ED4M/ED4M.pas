@@ -2,11 +2,15 @@ unit ED4M;
 
 interface
 
+   uses VR242;
+
 type ed4m_ = class (TObject)
     private
       soundDir: String;
 
       PrevKeyKKR:      Byte;
+
+      vr242__: vr242_;
 
       // Тумблера
       procedure bv_step();
@@ -49,6 +53,8 @@ implementation
    constructor ed4m_.Create;
    begin
       soundDir := 'TWS\ED4M\';
+
+      vr242__ := vr242_.Create(False);
    end;
 
    // ----------------------------------------------------
@@ -70,6 +76,7 @@ implementation
          trolleyClick_step();
          combCrane_step();
          reversor_step();
+         vr242__.step();
       end;
 
       if FormMain.cbLocPerestuk.Checked = True then begin

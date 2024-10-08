@@ -2,9 +2,13 @@ unit VL82M;
 
 interface
 
+   uses VR242;
+
 type vl82m_ = class (TObject)
     private
       soundDir: String;
+
+      vr242__: vr242_;
 
       procedure mk_step();
       procedure mv_step();
@@ -30,6 +34,8 @@ implementation
    constructor VL82M_.Create;
    begin
       soundDir := 'TWS\VL82m\';
+
+      vr242__ := vr242_.Create(False);
    end;
 
    // ----------------------------------------------------
@@ -40,6 +46,10 @@ implementation
       if FormMain.cbVspomMash.Checked = True then begin
          mk_step();
          mv_step();
+      end;
+
+      if FormMain.cbCabinClicks.Checked = True then begin
+         vr242__.step();
       end;
    end;
 

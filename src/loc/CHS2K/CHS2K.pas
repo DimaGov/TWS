@@ -39,7 +39,7 @@ implementation
    begin
       soundDir := 'TWS\CHS2K\';
 
-      vr242__ := vr242_.Create();
+      vr242__ := vr242_.Create(True);
    end;
 
    // ----------------------------------------------------

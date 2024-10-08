@@ -64,7 +64,7 @@ implementation
 
       kr21__ := kr21_.Create('TWS\Devices\21KR\');
       kvt254__ := kvt254_.Create();
-      vr242__ := vr242_.Create();
+      vr242__ := vr242_.Create(True);
    end;
 
    // ----------------------------------------------------

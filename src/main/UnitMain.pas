@@ -28,7 +28,8 @@ uses
   ValEdit, jpeg, UnitSAVPEHelp, UnitDebug, Math, UnitUSAVP,
   EncdDecd, SAVP, RAMMemModule, FileManager, ExtraUtils, SoundManager, Debug,
   bass_fx, UnitSOVIHelp, UnitSoundRRS, CHS8, CHS4KVR, CHS7, CHS4T, VL80T,
-  ES5K, EP1M, ED4M, ED9M, CHS2K, sl2m, VL82M, CHS4, TE10U, M62;
+  ES5K, EP1M, ED4M, ED9M, CHS2K, sl2m, VL82M, CHS4, TE10U, M62, VL85,
+  TEM18dm, TEP70, TEP70bs;
 
 type
   TFormMain = class(TForm)
@@ -232,6 +233,10 @@ var
   VL82M__: vl82m_;
   TE10U__: te10u_;
   M62__: m62_;
+  VL85__: vl85_;
+  TEM18dm__: tem18dm_;
+  TEP70__: tep70_;
+  TEP70bs__: tep70bs_;
 
   SL2M__: sl2m_;
 
@@ -681,6 +686,10 @@ begin
   VL82M__ := vl82m_.Create;
   TE10U__ := te10u_.Create;
   M62__ := m62_.Create;
+  VL85__ := vl85_.Create;
+  TEM18dm__ := tem18dm_.Create;
+  TEP70__ := tep70_.Create;
+  TEP70bs__ := tep70bs_.Create;
 
   isGameOnPause := True;
 
@@ -1524,10 +1533,10 @@ try
               //if EDTAmperage=0 then
               if Camera <> 2 then begin
                  BASS_ChannelSetAttribute(Brake_Channel[1], BASS_ATTRIB_VOL, Brake_slipp_Volume); //else
-                 BASS_ChannelSetAttribute(Brake_Channel[2], BASS_ATTRIB_VOL, Brake_slipp_Volume*(CompoundPercent/2)*0.8);
+                 BASS_ChannelSetAttribute(Brake_Channel[2], BASS_ATTRIB_VOL, Brake_slipp_Volume*0.8);
               end;
               if Camera = 2 then begin
-                 BASS_ChannelSetAttribute(Brake_Channel[2], BASS_ATTRIB_VOL, Brake_slipp_Volume*(CompoundPercent/2));
+                 BASS_ChannelSetAttribute(Brake_Channel[2], BASS_ATTRIB_VOL, Brake_slipp_Volume);
                  BASS_ChannelSetAttribute(Brake_Channel[1], BASS_ATTRIB_VOL, 0);
               end;
                  //BASS_ChannelSetAttribute(Brake_Channel[1], BASS_ATTRIB_VOL, (((BrakeCylinders/36)*(Speed/40))*(trcBarLocoPerestukVol.Position/100))/8);
@@ -1761,12 +1770,16 @@ try
     if LocoGlobal = 'CHS4' then chs4__.step();
     if LocoGlobal = 'VL80t' then vl80t__.step();
     if LocoGlobal = 'VL82m' then vl82m__.step();
+    if LocoGlobal = 'VL85' then vl85__.step();
     if LocoGlobal = 'EP1m' then ep1m__.step();
     if LocoGlobal = '2ES5K' then es5k__.step();
     if LocoGlobal = 'ED4M' then ed4m__.step();
     if LocoGlobal = 'ED9M' then ed9m__.step();
     if LocoGlobal = '2TE10U' then te10u__.step();
     if LocoGlobal = 'M62' then m62__.step();
+    if LocoGlobal = 'TEM18dm' then tem18dm__.step();
+    if LocoGlobal = 'TEP70' then tep70__.step();
+    if LocoGlobal = 'TEP70bs' then tep70bs__.step();
 
     SAVPTick();
 
