@@ -45,7 +45,7 @@ implementation
    begin
       if FormMain.cbVspomMash.Checked = True then begin
          mk_step();
-         //vent_step();
+         vent_step();
       end;
 
       if FormMain.cbCabinClicks.Checked = True then begin
@@ -87,7 +87,7 @@ implementation
          if GetAsyncKeyState(70)<>0 then begin Vent := 0; VentVolume:=100;end;
          if GetAsyncKeyState(82)<>0 then begin Vent2:= 0; VentVolume:=50; end;
       end;
-      if (Vent + Vent2 > 0) and (BV = 1) then begin
+      if (Vent + Vent2 > 0) and (BV = 1)then begin
          if ((BASS_ChannelIsActive(Vent_Channel_FX) = 0) And (BASS_ChannelIsActive(VentCycle_Channel_FX) = 0)) Or
             ((Vent = 1) and (Prev_Vent = 0)) Or ((Vent2 = 1) and (Prev_Vent2 = 0)) then begin
                isPlayVent := False; StopVent := False;
@@ -98,21 +98,26 @@ implementation
          end;
       end;
 
+      if (BV = 1) And (Vent+Vent2+Vent3 = -3) then begin
+         Vent := 1; Vent2 := 1; Vent3 := 1;
+      end;
+
       if BV = 0 then begin
-         Vent := 0; Vent2 := 0;
-      end else begin
-         if (Vent + Vent2 = 0) Or (Vent + Vent2 < Prev_Vent + Prev_Vent2) then begin
-            if ((Vent = 0) and (Prev_Vent = 1)) Or
-               ((Vent2 = 0) and (Prev_Vent2 = 1)) Or
-               ((Vent + Vent2 = 0) AND (BASS_ChannelIsActive(VentCycle_Channel_FX) <> 0))
+         Vent := -1; Vent2 := -1;
+      end; //else begin
+         if (Vent + Vent2 <= 0) Or (Vent + Vent2 < Prev_Vent + Prev_Vent2) then begin
+            if ((Vent <= 0) and (Prev_Vent = 1)) Or
+               ((Vent2 <= 0) and (Prev_Vent2 = 1)) Or
+               ((Vent + Vent2 <= 0) AND (BASS_ChannelIsActive(VentCycle_Channel_FX) <> 0))
             then begin
                if Vent2<>Prev_Vent2 then VentVolume:=50;
                if Vent <> Prev_Vent then VentVolume:=100;
-
-               isPlayVent := False; StopVent := True;
+               if BASS_ChannelIsActive(VentCycle_Channel_FX) <> 0 then begin
+                  isPlayVent := False; StopVent := True;
+               end;
             end;
          end;
-      end;
+      //end;
    end;
 
 end.

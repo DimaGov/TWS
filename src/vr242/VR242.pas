@@ -82,7 +82,7 @@ implementation
 
             if Camera = 1 then begin
                BASS_ChannelSetAttribute(VR242Channel_FX, BASS_ATTRIB_VOL, 0.0);
-               BASS_ChannelSetAttribute(XVR242Channel_FX, BASS_ATTRIB_VOL, 0.0);
+               BASS_ChannelSetAttribute(XVR242Channel_FX, BASS_ATTRIB_VOL, vol);
             end;
 
             if Camera = 2 then begin

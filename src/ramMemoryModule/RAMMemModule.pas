@@ -431,6 +431,7 @@ begin
     try ReadProcessMemory(UnitMain.pHandle, ADDR_VL11M_BTP, @BackTP, 1, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_VL11M_COMPRESSOR, @Compressor, 4, temp);  except end;
     try ReadProcessMemory(UnitMain.pHandle, ADDR_VL11m_VENT, @Vent, 1, temp);  except end;
+    try ReadProcessMemory(UnitMain.pHandle, ADDR_CHS7_VOLTAGE, @Voltage, 4, temp);  except end;
 end;
 
 //------------------------------------------------------------------------------//
@@ -1007,11 +1008,11 @@ begin
            LocoWithSndTP       := True;         // Задаем состояние наличия на данном локомотиве звука ТП
            LocoWithExtMVSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МВ
            LocoWithExtMKSound  := True;         // Задаем состояние наличия на данном локомотиве внешних звуков МК
-           LocoWithMVPitch     := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
+           LocoWithMVPitch     := True;         // Задаем состояние наличия на данном локомотиве тонального регулирования МВ
            LocoWithMVTDPitch   := False;        // Задаем состояние наличия на данном локомотиве тонального регулирования МВ ТД
            VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
            VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
-           VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
+           VentPitchIncrementer:= 0.001;        // Задаем значение для инкрементера тональности МВ
            VentStartF          := PChar('TWS/VL11m/MV-start.wav');
            VentCycleF          := PChar('TWS/VL11m/MV-loop.wav');
            VentStopF           := PChar('TWS/VL11m/MV-stop.wav');
@@ -1391,7 +1392,7 @@ begin
         // -/- 2ТЭ10у (2TE10U) -/- //
         if LocoGlobal='2TE10U' then begin
            LocoWorkDir         := 'TWS/2TE10U/';
-           UltimateTEDAmperage := 800;          // Задаем предельный ток нагрузки ТЭД
+           UltimateTEDAmperage := 400;          // Задаем предельный ток нагрузки ТЭД
            LocoSectionsNum     := 2;		// Задаем количество секций для текущего локомотива
            LocoPowerVoltage    := 0;            // Тип электрофикации локомотива [0, -, ~]
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов

@@ -45,7 +45,7 @@ implementation
    begin
       if FormMain.cbVspomMash.Checked = True then begin
          mk_step();
-         //vent_step();
+         vent_step();
       end;
 
       if FormMain.cbCabinClicks.Checked = True then begin
@@ -104,23 +104,29 @@ implementation
          end;
       end;
 
-      if (Voltage < 20) then begin
-         Vent := 0; Vent2 := 0; Vent3 := 0;
-      end else begin
-         if (Vent + Vent2 + Vent3 = 0) Or (Vent + Vent2 + Vent3 < Prev_Vent + Prev_Vent2 + Prev_Vent3) then begin
-            if ((Vent = 0) and (Prev_Vent = 1)) Or
-               ((Vent2 = 0) and (Prev_Vent2 = 1)) Or
-               ((Vent3 = 0) and (Prev_Vent3 = 1)) Or
-               ((Vent + Vent2 + Vent3 = 0) AND (BASS_ChannelIsActive(VentCycle_Channel_FX) <> 0))
+      if (Voltage > 20) And (Vent+Vent2+Vent3 = -3) then begin
+         Vent := 1; Vent2 := 1; Vent3 := 1;
+      end;
+
+      if (Voltage < 20) And (Vent+Vent2+Vent3 > 0) then begin
+         Vent := -1; Vent2 := -1; Vent3 := -1;
+      end; //else begin
+         if (Vent + Vent2 + Vent3 <= 0) Or (Vent + Vent2 + Vent3 < Prev_Vent + Prev_Vent2 + Prev_Vent3) then begin
+            if ((Vent <= 0) and (Prev_Vent = 1)) Or
+               ((Vent2 <= 0) and (Prev_Vent2 = 1)) Or
+               ((Vent3 <= 0) and (Prev_Vent3 = 1)) Or
+               ((Vent + Vent2 + Vent3 <= 0) AND (BASS_ChannelIsActive(VentCycle_Channel_FX) <> 0))
             then begin
                if Vent3<>Prev_Vent3 then VentVolume:=100;
                if Vent2<>Prev_Vent2 then VentVolume:=75;
                if Vent <> Prev_Vent then VentVolume:=60;
 
-               isPlayVent := False; StopVent := True;
+               if BASS_ChannelIsActive(VentCycle_Channel_FX) <> 0 then begin
+                  isPlayVent := False; StopVent := True;
+               end;
             end;
          end;
-      end;
+      //end;
    end;
 
 end.

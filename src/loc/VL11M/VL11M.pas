@@ -46,6 +46,7 @@ implementation
    begin
       if FormMain.cbVspomMash.Checked = True then begin
          mk_step();
+         vent_step();
       end;
 
       if FormMain.cbCabinClicks.Checked = True then begin
@@ -89,7 +90,26 @@ implementation
    // ----------------------------------------------------
    procedure vl11m_.vent_step();
    begin
-      ;
+      VentRemaindTimeCheck();
+
+      if Voltage < 1 then Vent := 0;
+      if Vent = 2 then VentPitchDest := 3 else VentPitchDest := 0;
+
+      if (Vent<>0) and (Prev_Vent=0) then begin
+         if (BASS_ChannelIsActive(Vent_Channel_FX)<>0) and (StopVent = True) then begin
+            BASS_ChannelStop(Vent_Channel_FX); BASS_StreamFree(Vent_Channel_FX);
+            BASS_ChannelStop(XVent_Channel_FX); BASS_StreamFree(XVent_Channel_FX);
+            //isPlayCycleVent := False; isPlayCycleVentX := False;
+         end;
+         if BASS_ChannelIsActive(VentCycle_Channel) = 0 then begin
+            isPlayVent:=False; isPlayVentX:=False;
+         end;
+         StopVent:=False;
+      end;
+      if (Vent=0) and (Prev_Vent<>0) then begin
+         StopVent:=True;
+         isPlayVent:=False; isPlayVentX:=False; VentPitchDest := 0;
+      end;
    end;
 
 end.

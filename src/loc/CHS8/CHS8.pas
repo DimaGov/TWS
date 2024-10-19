@@ -133,11 +133,11 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils, Math;
          else
             LocoPowerEquipmentF := StrNew(PChar(soundDir + 'E2/22NP_op_plus.wav'));
          isPlayLocoPowerEquipment := False;
-         if Prev_KM_OP > 0 then
+         (*if Prev_KM_OP > 0 then
             CabinClicksF := StrNew(PChar(soundDir + '21KR_op+.wav'))
          else
             CabinClicksF := StrNew(PChar(soundDir + '21KR_vvod_op.wav'));
-         isPlayCabinClicks := False;
+         isPlayCabinClicks := False;*)
       end;
       if KM_OP < Prev_KM_OP then begin
          if (LocoNum > 2) And (LocoNum < 33) then
@@ -145,11 +145,11 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils, Math;
          else
             LocoPowerEquipmentF := StrNew(PChar(soundDir + 'E2/22NP_op_minus.wav'));
          isPlayLocoPowerEquipment := False;
-         if KM_OP > 0 then
+         (*if KM_OP > 0 then
             CabinClicksF := StrNew(PChar(soundDir + '21KR_op-.wav'))
          else
             CabinClicksF := StrNew(PChar(soundDir + '21KR_vivod_op.wav'));
-         isPlayCabinClicks := False;
+         isPlayCabinClicks := False;*)
       end;
    end;
 

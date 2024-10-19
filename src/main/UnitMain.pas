@@ -29,7 +29,7 @@ uses
   EncdDecd, SAVP, RAMMemModule, FileManager, ExtraUtils, SoundManager, Debug,
   bass_fx, UnitSOVIHelp, UnitSoundRRS, CHS8, CHS4KVR, CHS7, CHS4T, VL80T,
   ES5K, EP1M, ED4M, ED9M, CHS2K, sl2m, VL82M, CHS4, TE10U, M62, VL85,
-  TEM18dm, TEP70, TEP70bs;
+  TEM18dm, TEP70, TEP70bs, VL11M;
 
 type
   TFormMain = class(TForm)
@@ -226,6 +226,7 @@ var
   CHS4KVR__: chs4kvr_;
   CHS4__: chs4_;
   VL80T__: vl80t_;
+  VL11M__: vl11m_;
   EP1M__: ep1m_;
   ES5K__: es5k_;
   ED4M__: ed4m_;
@@ -679,6 +680,7 @@ begin
   CHS4KVR__ := chs4kvr_.Create;
   CHS4__ := chs4_.Create;
   VL80T__ := vl80t_.Create;
+  VL11M__ := vl11m_.Create;
   EP1M__ := ep1m_.Create;
   ES5K__ := es5k_.Create;
   ED4M__ := ed4m_.Create;
@@ -1482,7 +1484,8 @@ try
   // **************** //
 
   // БЛОК ЗВУКА СКРИПА КОЛОДОК ПРИ ОСТАНОВКЕ //
-  if cbLocPerestuk.Checked = True then begin
+  // Пока убрано...
+  (*if cbLocPerestuk.Checked = True then begin
      if (Speed <= 4) and (BrakeCylinders > 0.0) then begin
         if BASS_ChannelIsActive(BrakeScr_Channel) = 0 then begin
            BrakeScrF  := PChar('TWS/' + Loco + '/brake_scr.wav');
@@ -1508,13 +1511,13 @@ try
         //Brake_scrVolume := 0.0;
         //Brake_scrDestVolume := 0.0;
      end;
-  end;
+  end;*)
 
   // БЛОК ЗВУКА ТРЕНИЯ КОЛОДОК ПРИ ТОРМОЖЕНИИ //
   if cbBrakingSounds.Checked=True then begin
       Single_temp := (trcBarLocoPerestukVol.Position/400) + Speed / 40;
       if Single_temp > 1.0 then Single_temp := 1.0;
-      Brake_slipp_Volume := (BrakeCylinders / 10) * Single_temp;
+      Brake_slipp_Volume := (BrakeCylinders / 20) * Single_temp;
       if Speed = 0 then Brake_slipp_Volume := 0.0;
       if Brake_slipp_Volume > trcBarLocoPerestukVol.Position/100 then Brake_slipp_Volume := trcBarLocoPerestukVol.Position/100;
       if (BrakeCylinders>0) then begin
@@ -1769,6 +1772,7 @@ try
     if LocoGlobal = 'CHS4 KVR' then chs4kvr__.step();
     if LocoGlobal = 'CHS4' then chs4__.step();
     if LocoGlobal = 'VL80t' then vl80t__.step();
+    if LocoGlobal = 'VL11m' then vl11m__.step();
     if LocoGlobal = 'VL82m' then vl82m__.step();
     if LocoGlobal = 'VL85' then vl85__.step();
     if LocoGlobal = 'EP1m' then ep1m__.step();
@@ -2423,7 +2427,7 @@ end;
 // Примечания: нет
 procedure TFormMain.ReadME1Click(Sender: TObject);
 begin
-   ShellExecute(Handle, 'open', PChar(ExtractFilePath(Application.ExeName)+'TWS/ReadME.doc'), nil, nil, SW_SHOWNORMAL);
+   ShellExecute(Handle, 'open', PChar(ExtractFilePath(Application.ExeName)+'TWS/ReadME.docx'), nil, nil, SW_SHOWNORMAL);
 end;
 
 // Метод: сохранение настроек в файл

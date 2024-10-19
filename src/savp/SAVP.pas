@@ -323,9 +323,8 @@ begin
      if FormMain.cbSAVPESounds.Checked = True then begin
         SAVPEFilePrefiks := 'SAVPE_'; isUPU := False;
         if LocoGlobal = 'ED4M' then begin
-           if (LocoNum > 300) and (LocoNum < 400) then SAVPEFilePrefiks := 'UPU_300_399';
-           if (LocoNum >= 400) then SAVPEFilePrefiks := 'UPU_400_~';
-              isUPU := True;
+           if (LocoNum > 300) and (LocoNum < 400) then begin SAVPEFilePrefiks := 'UPU_300_399'; isUPU := True; end;
+           if (LocoNum >= 400) then begin SAVPEFilePrefiks := 'UPU_400_~'; isUPU := True; end;
         end;
         if (LocoGlobal = 'ED9M') and (LocoNum = 222) then SAVPEFilePrefiks := 'SAVPE_0222';
      end;
@@ -1254,7 +1253,7 @@ begin
                        timerDoorCloseDelay.Enabled := True;
                     end;
                  end;
-                 if (Speed <= 4) and (PrevSpeed_Fakt > 4) and (InformIndx = TotalInfoFiles) and (isUPU = False) then begin
+                 if (Speed <= 4) and (PrevSpeed_Fakt > 4) and (InformIndx+1 = TotalInfoFiles) and (isUPU = False) then begin
                     BASS_ChannelStop(SAVPE_INFO_Channel); BASS_StreamFree(SAVPE_INFO_Channel);
                     SAVPEInformatorMessages.Clear;
                     SAVPEMessageIndex := 0;

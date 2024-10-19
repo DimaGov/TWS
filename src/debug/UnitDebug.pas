@@ -334,6 +334,8 @@ begin
            AddNewLineToDebugger('Brake_slipp Volume', Brake_slipp_Volume, 'TWS переменная');
            AddNewLineToDebugger('Пакетник БВ/ГВ (Управление) на ЧС-ах', BV_Paketnik, 'TWS переменная');
            AddNewLineToDebugger('CompoundPercent', CompoundPercent, 'ZDS переменная');
+           AddNewLineToDebugger('IsUPU', isUPU, 'TWS переменная');
+           AddNewLineToDebugger('Номер локомотива', LocoNum, 'ZDS переменная');
         end;
 end;
 
@@ -458,6 +460,8 @@ begin
               101: ListItem.SubItems[3] := FloatToStr(Brake_slipp_Volume);
               102: ListItem.SubItems[3] := IntToStr(BV_Paketnik);
               103: ListItem.SubItems[3] := FloatToStr(CompoundPercent);
+              104: ListItem.SubItems[3] := BoolToStr(isUPU);
+              105: ListItem.SubItems[3] := IntToStr(LocoNum);
            end;
         end;
         end;
