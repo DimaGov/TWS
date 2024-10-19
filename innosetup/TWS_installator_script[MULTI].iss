@@ -37,7 +37,7 @@ Source: "TWS_OtherFiles\e.wav"; DestDir: "{app}\TWS\"; Flags: ignoreversion; Com
 Name: "{commondesktop}\TWS"; Filename: "{app}\TWS.exe"; IconFilename: "{app}\TWS.exe"; Tasks: desktopicon
 
 [InstallDelete]
-// Предварительная зачитска, перед установкой
+// РџСЂРµРґРІР°СЂРёС‚РµР»СЊРЅР°СЏ Р·Р°С‡РёС‚СЃРєР°, РїРµСЂРµРґ СѓСЃС‚Р°РЅРѕРІРєРѕР№
 Type: filesandordirs; Name: "{app}\TWS\*.wav"
 Type: filesandordirs; Name: "{app}\TWS\*.mp3"
 Type: filesandordirs; Name: "{app}\TWS\*.ini"
@@ -72,7 +72,7 @@ Type: filesandordirs; Name: "{app}\TWS\VL11m"
 Type: filesandordirs; Name: "{app}\TWS\VL80t"
 Type: filesandordirs; Name: "{app}\TWS\VL82m"
 Type: filesandordirs; Name: "{app}\TWS\VL85"
-Type: filesandordirs; Name: "{app}\TWS\БАТНИКИ"
+Type: filesandordirs; Name: "{app}\TWS\Р‘РђРўРќРРљР"
 Type: filesandordirs; Name: "{app}\TWS\BAT_FILES"
 Type: filesandordirs; Name: "{app}\TWS_Uninstall.exe"
 Type: filesandordirs; Name: "{app}\TWS_Uninstall.exe"
@@ -85,15 +85,15 @@ Type: filesandordirs; Name: "{app}\TWS_log.txt"
 Filename: "{app}\TWS\TWS_Temp.bat"; Flags: nowait skipifsilent; Components: gg/installtype
 
 [Types]
-Name: "a"; Description: "Стандартная установка"; Languages: rus
+Name: "a"; Description: "РЎС‚Р°РЅРґР°СЂС‚РЅР°СЏ СѓСЃС‚Р°РЅРѕРІРєР°"; Languages: rus
 Name: "a"; Description: "Standard installation"; Languages: en
-Name: "a"; Description: "Стандартна установка"; Languages: ua
-Name: "b"; Description: "Автоматически заглушить стандартные звуки симулятора (полная установка)"; Flags: iscustom; Languages: rus
+Name: "a"; Description: "РЎС‚Р°РЅРґР°СЂС‚РЅР° СѓСЃС‚Р°РЅРѕРІРєР°"; Languages: ua
+Name: "b"; Description: "РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё Р·Р°РіР»СѓС€РёС‚СЊ СЃС‚Р°РЅРґР°СЂС‚РЅС‹Рµ Р·РІСѓРєРё СЃРёРјСѓР»СЏС‚РѕСЂР° (РїРѕР»РЅР°СЏ СѓСЃС‚Р°РЅРѕРІРєР°)"; Flags: iscustom; Languages: rus
 Name: "b"; Description: "Automatically mute the standard simulator sounds (full installation)"; Languages: en
-Name: "b"; Description: "Автоматично заглушити стандартні звуки симулятора (повна установка)"; Languages: ua
+Name: "b"; Description: "РђРІС‚РѕРјР°С‚РёС‡РЅРѕ Р·Р°РіР»СѓС€РёС‚Рё СЃС‚Р°РЅРґР°СЂС‚РЅС– Р·РІСѓРєРё СЃРёРјСѓР»СЏС‚РѕСЂР° (РїРѕРІРЅР° СѓСЃС‚Р°РЅРѕРІРєР°)"; Languages: ua
 
 [Code]
-// Делаем красивую страницу с выбором параметров установки
+// Р”РµР»Р°РµРј РєСЂР°СЃРёРІСѓСЋ СЃС‚СЂР°РЅРёС†Сѓ СЃ РІС‹Р±РѕСЂРѕРј РїР°СЂР°РјРµС‚СЂРѕРІ СѓСЃС‚Р°РЅРѕРІРєРё
 procedure CurPageChanged(CurPageID: Integer);
 begin
    if CurPageID = 7 then begin
@@ -111,27 +111,27 @@ Filename: {cmd}; Parameters: "/C rd /S /Q {app}\sound_backup"; Flags: RunHidden 
 Filename: {cmd}; Parameters: "/C rd /S /Q {app}\TWS"; Flags: RunHidden WaitUntilTerminated
 
 [Components]
-Name: "gg"; Description: "Модификация папки sound"; Flags:disablenouninstallwarning exclusive; Languages: rus
-Name: "gg"; Description: "Модифікація папки sound"; Flags:disablenouninstallwarning exclusive; Languages: ua
+Name: "gg"; Description: "РњРѕРґРёС„РёРєР°С†РёСЏ РїР°РїРєРё sound"; Flags:disablenouninstallwarning exclusive; Languages: rus
+Name: "gg"; Description: "РњРѕРґРёС„С–РєР°С†С–СЏ РїР°РїРєРё sound"; Flags:disablenouninstallwarning exclusive; Languages: ua
 Name: "gg"; Description: "Modificate sound directory"; Flags:disablenouninstallwarning exclusive; Languages: en
-Name: "gg/installtype"; Description: "Глушить автоматически звуки симулятора + бэкап заглушенных звуков"; Flags:disablenouninstallwarning exclusive; Types: a b; Languages: rus
-Name: "gg/installtype"; Description: "Заглушити автоматично звуки симулятора + зробити резервну копію заглушених звуків"; Flags:disablenouninstallwarning exclusive; Types: a b; Languages: ua
+Name: "gg/installtype"; Description: "Р“Р»СѓС€РёС‚СЊ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё Р·РІСѓРєРё СЃРёРјСѓР»СЏС‚РѕСЂР° + Р±СЌРєР°Рї Р·Р°РіР»СѓС€РµРЅРЅС‹С… Р·РІСѓРєРѕРІ"; Flags:disablenouninstallwarning exclusive; Types: a b; Languages: rus
+Name: "gg/installtype"; Description: "Р—Р°РіР»СѓС€РёС‚Рё Р°РІС‚РѕРјР°С‚РёС‡РЅРѕ Р·РІСѓРєРё СЃРёРјСѓР»СЏС‚РѕСЂР° + Р·СЂРѕР±РёС‚Рё СЂРµР·РµСЂРІРЅСѓ РєРѕРїС–СЋ Р·Р°РіР»СѓС€РµРЅРёС… Р·РІСѓРєС–РІ"; Flags:disablenouninstallwarning exclusive; Types: a b; Languages: ua
 Name: "gg/installtype"; Description: "Deactivate the sounds of the simulator automatically + make backup the deactivated sounds"; Flags:disablenouninstallwarning exclusive; Types: a b; Languages: en
 
 [Messages]
-rus.BeveledLabel=Русский
-ua.BeveledLabel=Українська
+rus.BeveledLabel=Р СѓСЃСЃРєРёР№
+ua.BeveledLabel=РЈРєСЂР°С—РЅСЃСЊРєР°
 en.BeveledLabel=English
-rus.WelcomeLabel1=Вас приветствует мастер установки дополнений для ZDSimulator
-rus.WelcomeLabel2=Программа установит звуковой скрипт TWS (версия 2.8)
-rus.SelectDirBrowseLabel=Укажите путь к ZDSimulator. Если установщик не определил путь автоматически, Вы можете сделать это самостоятельно, нажав «Обзор».
-rus.FinishedHeadingLabel=Завершение установки
-rus.FinishedLabelNoIcons=Звуковой скрипт TWS успешно установлен.
-ua.WelcomeLabel1=Вас вітає майстер встановлення додатків для ZDSimulator
-ua.WelcomeLabel2=Програма встановить звуковий скрипт TWS (версія 2.8)
-ua.SelectDirBrowseLabel=Вкажіть шлях до ZDSimulator. Якщо інсталятор не визначив шлях автоматично, Ви можете це зробити самостійно, натиснувши «Огляд».
-ua.FinishedHeadingLabel=Завершення встановлення
-ua.FinishedLabelNoIcons=Звуковий скрипт TWS успішно встановлений.
+rus.WelcomeLabel1=Р’Р°СЃ РїСЂРёРІРµС‚СЃС‚РІСѓРµС‚ РјР°СЃС‚РµСЂ СѓСЃС‚Р°РЅРѕРІРєРё РґРѕРїРѕР»РЅРµРЅРёР№ РґР»СЏ ZDSimulator
+rus.WelcomeLabel2=РџСЂРѕРіСЂР°РјРјР° СѓСЃС‚Р°РЅРѕРІРёС‚ Р·РІСѓРєРѕРІРѕР№ СЃРєСЂРёРїС‚ TWS (РІРµСЂСЃРёСЏ 2.8)
+rus.SelectDirBrowseLabel=РЈРєР°Р¶РёС‚Рµ РїСѓС‚СЊ Рє ZDSimulator. Р•СЃР»Рё СѓСЃС‚Р°РЅРѕРІС‰РёРє РЅРµ РѕРїСЂРµРґРµР»РёР» РїСѓС‚СЊ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё, Р’С‹ РјРѕР¶РµС‚Рµ СЃРґРµР»Р°С‚СЊ СЌС‚Рѕ СЃР°РјРѕСЃС‚РѕСЏС‚РµР»СЊРЅРѕ, РЅР°Р¶Р°РІ В«РћР±Р·РѕСЂВ».
+rus.FinishedHeadingLabel=Р—Р°РІРµСЂС€РµРЅРёРµ СѓСЃС‚Р°РЅРѕРІРєРё
+rus.FinishedLabelNoIcons=Р—РІСѓРєРѕРІРѕР№ СЃРєСЂРёРїС‚ TWS СѓСЃРїРµС€РЅРѕ СѓСЃС‚Р°РЅРѕРІР»РµРЅ.
+ua.WelcomeLabel1=Р’Р°СЃ РІС–С‚Р°С” РјР°Р№СЃС‚РµСЂ РІСЃС‚Р°РЅРѕРІР»РµРЅРЅСЏ РґРѕРґР°С‚РєС–РІ РґР»СЏ ZDSimulator
+ua.WelcomeLabel2=РџСЂРѕРіСЂР°РјР° РІСЃС‚Р°РЅРѕРІРёС‚СЊ Р·РІСѓРєРѕРІРёР№ СЃРєСЂРёРїС‚ TWS (РІРµСЂСЃС–СЏ 2.8)
+ua.SelectDirBrowseLabel=Р’РєР°Р¶С–С‚СЊ С€Р»СЏС… РґРѕ ZDSimulator. РЇРєС‰Рѕ С–РЅСЃС‚Р°Р»СЏС‚РѕСЂ РЅРµ РІРёР·РЅР°С‡РёРІ С€Р»СЏС… Р°РІС‚РѕРјР°С‚РёС‡РЅРѕ, Р’Рё РјРѕР¶РµС‚Рµ С†Рµ Р·СЂРѕР±РёС‚Рё СЃР°РјРѕСЃС‚С–Р№РЅРѕ, РЅР°С‚РёСЃРЅСѓРІС€Рё В«РћРіР»СЏРґВ».
+ua.FinishedHeadingLabel=Р—Р°РІРµСЂС€РµРЅРЅСЏ РІСЃС‚Р°РЅРѕРІР»РµРЅРЅСЏ
+ua.FinishedLabelNoIcons=Р—РІСѓРєРѕРІРёР№ СЃРєСЂРёРїС‚ TWS СѓСЃРїС–С€РЅРѕ РІСЃС‚Р°РЅРѕРІР»РµРЅРёР№.
 en.WelcomeLabel1=Welcome to the Add-ons Wizard for ZDSimulator
 en.WelcomeLabel2=The program will install the sound script TWS (version 2.8)
 en.SelectDirBrowseLabel=Specify the path to ZDSimulator. If the installer has not defined the path automatically, you can do it yourself by clicking on "Browse".
