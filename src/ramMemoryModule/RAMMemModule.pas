@@ -35,6 +35,8 @@ interface
    procedure ReadDataMemoryED9M();
 var
    ADDR_ZDS_EXE_LABEL:                      PByte;
+   ADDR_WAGS_NUM:                           Pointer;
+   ADDR_CAMERA_LAST_WAGON_OFFSET:           Pointer;
 
 implementation
 
@@ -329,7 +331,7 @@ begin
 
         addr_settings_ini := ReadPointer(ADDR_SETTINGS_INI_POINTER);
 
-        WagsNum := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'WagonsAmount', 6666));
+        //WagsNum := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'WagonsAmount', 6666));
         LocoGlobal := ReadKeyFromMemoryString(addr_settings_ini, 'LocomotiveType',6666);
         naprav:= ReadKeyFromMemoryString(addr_settings_ini, 'Route', 6666);
         try Route := ReadKeyFromMemoryString(addr_settings_ini, 'RoutePath', 6666); except Route:='error'; end;
@@ -353,7 +355,7 @@ begin
         UnitMain.Log_.DebugWriteErrorToErrorList('Route: ' + Route);
         UnitMain.Log_.DebugWriteErrorToErrorList('RoutePath: ' + Naprav);
         UnitMain.Log_.DebugWriteErrorToErrorList('Loco: ' + LocoGlobal);
-        UnitMain.Log_.DebugWriteErrorToErrorList('WagonsAmount: ' + IntToStr(WagsNum));
+        //UnitMain.Log_.DebugWriteErrorToErrorList('WagonsAmount: ' + IntToStr(WagsNum));
         UnitMain.Log_.DebugWriteErrorToErrorList('LocoNum: ' + IntToStr(LocoNum));
         UnitMain.Log_.DebugWriteErrorToErrorList('Freight: ' + IntToStr(Freight));
         UnitMain.Log_.DebugWriteErrorToErrorList('WagsName: ' + ConName);
@@ -707,6 +709,7 @@ var
      wPos_1:         Single;
      wVstrSpeed:     Single; // [ì/c]
      addr_waglength: PDouble;
+     addr_wagCell:   PByte;
      I:              Integer;
 begin
    With FormMain do begin
@@ -762,6 +765,13 @@ begin
      try ReadProcessMemory(UnitMain.pHandle, ADDR_ORDINATA, @Ordinata, 8, temp); except end;
      try ReadProcessMemory(UnitMain.pHandle, ADDR_OUTSIDE_LOCO_STATUS, @OutsideLocoStatus, 2, temp); except end;
      try ReadProcessMemory(UnitMain.pHandle, ADDR_VR242, @VR242, 4, temp); except end;
+     //try ReadProcessMemory(UnitMain.pHandle, ADDR_CAMERA_LAST_WAGON_OFFSET, @CameraLastWagonOffset, 8, temp); except end;
+     try ReadProcessMemory(UnitMain.pHandle, ADDR_WAGS_NUM, @WagsNum, 4, temp); except end;
+
+     (*addr_wagCell := ADDR_CAMERA_LAST_WAGON_OFFSET;
+     I:=144*WagsNum-144;
+     Inc(addr_wagCell, I);
+     try ReadProcessMemory(UnitMain.pHandle, addr_wagCell, @CameraLastWagonOffset, 8, temp); except end;*)
 
      if SimpleHorn = True then begin
         if GetAsyncKeyState(32) <> 0 then Svistok := 1 else Svistok := 0;
@@ -861,6 +871,7 @@ begin
           ADDR_VR242    :=ptr($0911080C); ADDR_PNEVM_SIGNAL   :=     ptr($0538D8D4); ADDR_TEP70_TED  :=   ptr($091D5BD8);
           ADDR_VL82_VENT:=ptr($091D48BC);      ADDR_VL82_COMPRESSOR:=ptr($091D48B8); ADDR_CHS7_BV_PAKETNIK:=ptr($091D5B9C);
           ADDR_CHS4T_GV_PAKETNIK_OFFSET:=ptr($07D22254);ADDR_CHS8_GV_PAKETNIK_OFFSET:=ptr($00803F78);
+          ADDR_CAMERA_LAST_WAGON_OFFSET:=ptr($0910CE48); ADDR_WAGS_NUM:=ptr($00749990);
        end;
        if versionID = 1 then begin
           ADDR_Speed :=   ptr($0072CB38);       ADDR_Track    :=     ptr($0072CBFC); ADDR_KM_POS     :=   ptr($090F3F9C);

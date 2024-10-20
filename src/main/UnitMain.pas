@@ -29,7 +29,7 @@ uses
   EncdDecd, SAVP, RAMMemModule, FileManager, ExtraUtils, SoundManager, Debug,
   bass_fx, UnitSOVIHelp, UnitSoundRRS, CHS8, CHS4KVR, CHS7, CHS4T, VL80T,
   ES5K, EP1M, ED4M, ED9M, CHS2K, sl2m, VL82M, CHS4, TE10U, M62, VL85,
-  TEM18dm, TEP70, TEP70bs, VL11M;
+  TEM18dm, TEP70, TEP70bs, VL11M, Camera;
 
 type
   TFormMain = class(TForm)
@@ -219,6 +219,8 @@ var
   Log_: log;				   // Лог программы
   RRS_: soundrrs;                          // Звуки RRS (РАБОТАЮТ 1.0.4)
 
+  Camera__: Camera_;
+
   CHS7__: chs7_;
   CHS8__: chs8_; 			   // Экземпляр ЧС8
   CHS4T__: chs4t_;
@@ -249,13 +251,15 @@ var
   MP:                          Byte;       // Переменная для того чтобы понять одинчка или МП
   Winter:                      Byte;	   // Переменная-флаг зима в игре, или нет [0, 1]
   ConsistLength:               Single;     // Длинна нашего состава в метрах
-  WagsNum:                     Byte;       // Кол-во вагонов в нашем составе
+  WagsNum, PrevWagsNum:        Byte;       // Кол-во вагонов в нашем составе
   ConName:                     String;     // Имя файла состава, или имя используемых вагонов
   TrackLength:                 Single;     // Длина одного трэка в метрах
   SceneryName:                 String;     // Имя текущего сценария
   LocoNum:                     Integer;    // Номер перекраски локомотива
   LocoPowerVoltage:            Integer;    // -3/~25kV
   // ----------------------------------------------------- //
+
+  CameraLastWagonOffset:       Double;
 
   // Границы станций из файла start_kilometers.dat //
   StationTrack1:               array[0..75] Of Integer; // 1-ая граница станции
@@ -693,6 +697,8 @@ begin
   TEP70__ := tep70_.Create;
   TEP70bs__ := tep70bs_.Create;
 
+  Camera__ := Camera_.Create;
+
   isGameOnPause := True;
 
   MainCycleFreq := ClockMain.Interval;
@@ -824,6 +830,8 @@ try
       // Блок обновления стартовых данных (один раз, или при смене маршрута/локомотива) //
       if isRefreshLocalData = True then begin
          isSpeedLimitRouteLoad := False;
+
+         Camera__.Initialized := False;
 
          // Чтение данных файла settings.ini из ОЗУ симулятора
          try
@@ -1785,6 +1793,8 @@ try
     if LocoGlobal = 'TEP70' then tep70__.step();
     if LocoGlobal = 'TEP70bs' then tep70bs__.step();
 
+   if Pos('.con', ConName)>0 then Camera__.step();
+
     SAVPTick();
 
     SoundManagerTick();
@@ -1856,6 +1866,7 @@ try
     PrevVR242 := VR242;
     PrevisCameraInCabin := isCameraInCabin;
     PrevBV_Paketnik := BV_Paketnik;
+    PrevWagsNum := WagsNum;
 end;	// Конец блока если игра не на паузе!!!!!
 
 PrevConMem:=isConnectedMemory;

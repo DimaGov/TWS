@@ -336,6 +336,10 @@ begin
            AddNewLineToDebugger('CompoundPercent', CompoundPercent, 'ZDS переменная');
            AddNewLineToDebugger('IsUPU', isUPU, 'TWS переменная');
            AddNewLineToDebugger('Номер локомотива', LocoNum, 'ZDS переменная');
+           AddNewLineToDebugger('CameraLastWagonOffset', CameraLastWagonOffset, 'ZDS переменная');
+           AddNewLineToDebugger('Количество вагонов', WagsNum, 'ZDS переменная');
+           AddNewLineToDebugger('CameraSelectedWagon', Camera__.SelectedWagon, 'TWS переменная');
+           AddNewLineToDebugger('Camera.isCon', Camera__.isCon, 'TWS переменная');
         end;
 end;
 
@@ -462,6 +466,10 @@ begin
               103: ListItem.SubItems[3] := FloatToStr(CompoundPercent);
               104: ListItem.SubItems[3] := BoolToStr(isUPU);
               105: ListItem.SubItems[3] := IntToStr(LocoNum);
+              106: ListItem.SubItems[3] := FloatToStr(CameraLastWagonOffset);
+              107: ListItem.SubItems[3] := IntToStr(WagsNum);
+              108: ListItem.SubItems[3] := IntToStr(Camera__.SelectedWagon);
+              109: ListItem.SubItems[3] := BoolToStr(Camera__.isCon);
            end;
         end;
         end;

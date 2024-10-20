@@ -40,7 +40,8 @@ uses
   VL85 in 'src\loc\VL85\VL85.pas',
   TEM18dm in 'src\loc\TEM18dm\TEM18dm.pas',
   TEP70 in 'src\loc\TEP70\TEP70.pas',
-  TEP70bs in 'src\loc\TEP70bs\TEP70bs.pas';
+  TEP70bs in 'src\loc\TEP70bs\TEP70bs.pas',
+  Camera in 'src\camera\Camera.pas';
 
 {$R *.res}
 
