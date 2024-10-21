@@ -331,7 +331,7 @@ begin
 
         addr_settings_ini := ReadPointer(ADDR_SETTINGS_INI_POINTER);
 
-        //WagsNum := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'WagonsAmount', 6666));
+        WagonsAmount := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'WagonsAmount', 6666));
         LocoGlobal := ReadKeyFromMemoryString(addr_settings_ini, 'LocomotiveType',6666);
         naprav:= ReadKeyFromMemoryString(addr_settings_ini, 'Route', 6666);
         try Route := ReadKeyFromMemoryString(addr_settings_ini, 'RoutePath', 6666); except Route:='error'; end;
@@ -355,7 +355,7 @@ begin
         UnitMain.Log_.DebugWriteErrorToErrorList('Route: ' + Route);
         UnitMain.Log_.DebugWriteErrorToErrorList('RoutePath: ' + Naprav);
         UnitMain.Log_.DebugWriteErrorToErrorList('Loco: ' + LocoGlobal);
-        //UnitMain.Log_.DebugWriteErrorToErrorList('WagonsAmount: ' + IntToStr(WagsNum));
+        UnitMain.Log_.DebugWriteErrorToErrorList('WagonsAmount: ' + IntToStr(WagonsAmount));
         UnitMain.Log_.DebugWriteErrorToErrorList('LocoNum: ' + IntToStr(LocoNum));
         UnitMain.Log_.DebugWriteErrorToErrorList('Freight: ' + IntToStr(Freight));
         UnitMain.Log_.DebugWriteErrorToErrorList('WagsName: ' + ConName);
@@ -869,9 +869,11 @@ begin
           ADDR_OUTSIDE_LOCO_STATUS:=ptr($00749865);ADDR_CHS8_VENT_VOLUME:=ptr($091D48BC); ADDR_CHS8_VENT_VOLUME_INCREMENTER:=ptr($091D48CC);
           ADDR_2ES5K_BV :=ptr($091D48CC); ADDR_CHS8_UNIPULS_AVARIA:= ptr($091D5024); ADDR_CHS8_GV_1  :=   ptr($09007FB4);
           ADDR_VR242    :=ptr($0911080C); ADDR_PNEVM_SIGNAL   :=     ptr($0538D8D4); ADDR_TEP70_TED  :=   ptr($091D5BD8);
-          ADDR_VL82_VENT:=ptr($091D48BC);      ADDR_VL82_COMPRESSOR:=ptr($091D48B8); ADDR_CHS7_BV_PAKETNIK:=ptr($091D5B9C);
-          ADDR_CHS4T_GV_PAKETNIK_OFFSET:=ptr($07D22254);ADDR_CHS8_GV_PAKETNIK_OFFSET:=ptr($00803F78);
-          ADDR_CAMERA_LAST_WAGON_OFFSET:=ptr($0910CE48); ADDR_WAGS_NUM:=ptr($00749990);
+          ADDR_VL82_VENT:=ptr($091D48BC);      ADDR_VL82_COMPRESSOR:=ptr($091D48B8); ADDR_WAGS_NUM   :=   ptr($00749990);
+          ADDR_CAMERA_LAST_WAGON_OFFSET:=ptr($0910CE48);
+          // Звуки ЭМ защелки при включении пакетника управление на ЧС-ах, кроме ЧС2к (ЭКСКЛЮЗИВ версии 5.5.008)
+          ADDR_CHS7_BV_PAKETNIK:=ptr($091D5B9C);ADDR_CHS4T_GV_PAKETNIK_OFFSET:=ptr($07D22254);
+          ADDR_CHS8_GV_PAKETNIK_OFFSET:=ptr($00803F78);
        end;
        if versionID = 1 then begin
           ADDR_Speed :=   ptr($0072CB38);       ADDR_Track    :=     ptr($0072CBFC); ADDR_KM_POS     :=   ptr($090F3F9C);
@@ -913,6 +915,7 @@ begin
           ADDR_ED9M_KONTROLLER:=ptr($091B92BD);ADDR_CHS8_VENT_VOLUME:=ptr($091B8114);ADDR_CHS8_VENT_VOLUME_INCREMENTER:=ptr($091B8124);
           ADDR_2ES5K_BV :=ptr($091B8124); ADDR_CHS8_UNIPULS_AVARIA:= ptr($091B8818);ADDR_PNEVM_SIGNAL:=   ptr($0537114C);
           ADDR_TEP70_TED:=ptr($091B9384);      ADDR_VL82_COMPRESSOR:=ptr($091B8110);    ADDR_VL82_VENT := ptr($091B8114);
+          ADDR_CAMERA_LAST_WAGON_OFFSET:=ptr($090F06C0);ADDR_WAGS_NUM:=ptr($0072CB80);
        end;
 
         // -/- ВЛ80т (VL80t) -/- //

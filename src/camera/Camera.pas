@@ -63,6 +63,13 @@ implementation
       UnitMain.tHandle := GetWindowThreadProcessId(wHandle, @ProcessID);
       UnitMain.pHandle := OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessID);
 
+      if (isCon = False) And (WagsNum = WagonsAmount) then begin
+         // Если вагоны в составе не *.con - то делаем фикционный последний вагон
+         // Если количество вагонов из ОЗУ = количеству вагонов из settings.ini
+         Inc(WagsNum);
+         WriteProcessMemory(UnitMain.pHandle, ADDR_WAGS_NUM, @WagsNum, 4, temp);
+      end;
+
       // Проверка последний вагон настоящий или фикционный?
       addr_wagCell := ADDR_CAMERA_LAST_WAGON_OFFSET;
       I:=144*WagsNum-135;
@@ -79,15 +86,6 @@ implementation
          // Если последний вагон фикционный
          // То можно работать
          WagsLenghtForm(); // Получаем длину КАЖОГО вагона из ОЗУ
-
-         addr_wagCell := ADDR_CAMERA_LAST_WAGON_OFFSET;
-         I:=144*WagsNum-56;
-         Inc(addr_wagCell, I);
-         //try ReadProcessMemory(UnitMain.pHandle, addr_wagCell, @LenSt, 1, temp); except end;
-
-         //Inc(addr_wagCell, 79);
-         LenSt := 50;
-         WriteProcessMemory(UnitMain.pHandle, addr_wagCell, @LenSt, 1, temp);
 
          // Задаем длину "фикционного" вагона - длинной настоящего
          // последнего вагона со знаком минус

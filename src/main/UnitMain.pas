@@ -251,12 +251,12 @@ var
   MP:                          Byte;       // Переменная для того чтобы понять одинчка или МП
   Winter:                      Byte;	   // Переменная-флаг зима в игре, или нет [0, 1]
   ConsistLength:               Single;     // Длинна нашего состава в метрах
-  WagsNum, PrevWagsNum:        Byte;       // Кол-во вагонов в нашем составе
   ConName:                     String;     // Имя файла состава, или имя используемых вагонов
   TrackLength:                 Single;     // Длина одного трэка в метрах
   SceneryName:                 String;     // Имя текущего сценария
   LocoNum:                     Integer;    // Номер перекраски локомотива
   LocoPowerVoltage:            Integer;    // -3/~25kV
+  WagonsAmount:                Byte;       // Количество вагонов из файла settings.ini
   // ----------------------------------------------------- //
 
   CameraLastWagonOffset:       Double;
@@ -387,6 +387,7 @@ var
   GR,                PrevGR:          Double;
   TC,                PrevTC:          Double;
   VR242,             PrevVR242:       Single;
+  WagsNum,           PrevWagsNum:     Byte;       // Кол-во вагонов в нашем составе (из ОЗУ) WagonsAmount - из settings.ini
 
   DebugFile: TextFile;
 
@@ -1793,7 +1794,7 @@ try
     if LocoGlobal = 'TEP70' then tep70__.step();
     if LocoGlobal = 'TEP70bs' then tep70bs__.step();
 
-   if Pos('.con', ConName)>0 then Camera__.step();
+    Camera__.step();
 
     SAVPTick();
 

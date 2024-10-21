@@ -338,6 +338,7 @@ begin
            AddNewLineToDebugger('Ќомер локомотива', LocoNum, 'ZDS переменна€');
            AddNewLineToDebugger('CameraLastWagonOffset', CameraLastWagonOffset, 'ZDS переменна€');
            AddNewLineToDebugger(' оличество вагонов', WagsNum, 'ZDS переменна€');
+           AddNewLineToDebugger(' оличество вагонов (settings.ini)', WagonsAmount, 'ZDS переменна€');
            AddNewLineToDebugger('CameraSelectedWagon', Camera__.SelectedWagon, 'TWS переменна€');
            AddNewLineToDebugger('Camera.isCon', Camera__.isCon, 'TWS переменна€');
         end;
@@ -468,8 +469,9 @@ begin
               105: ListItem.SubItems[3] := IntToStr(LocoNum);
               106: ListItem.SubItems[3] := FloatToStr(CameraLastWagonOffset);
               107: ListItem.SubItems[3] := IntToStr(WagsNum);
-              108: ListItem.SubItems[3] := IntToStr(Camera__.SelectedWagon);
-              109: ListItem.SubItems[3] := BoolToStr(Camera__.isCon);
+              108: ListItem.SubItems[3] := IntToStr(WagonsAmount);
+              109: ListItem.SubItems[3] := IntToStr(Camera__.SelectedWagon);
+              110: ListItem.SubItems[3] := BoolToStr(Camera__.isCon);
            end;
         end;
         end;
