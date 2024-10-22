@@ -5,9 +5,12 @@ interface
 type camera_ = class (TObject)
     private
       WagsLenght: array[0..100] of Double;
+      lastWagShadowOff: array[0..5] of Byte;
+      ExtraCodeZDS: array[0..16] of Byte;
 
       procedure checkButtons();
       procedure writeMemory();
+      procedure reset();
       procedure Initialize();
       procedure WagsLenghtForm();
 
@@ -41,6 +44,34 @@ implementation
       Initialized := False;
       pressed := False;
       SelectedWagon := WagsNum;
+
+      lastWagShadowOff[0] := 233;
+      lastWagShadowOff[1] := 201;
+      lastWagShadowOff[2] := 156;
+      lastWagShadowOff[3] := 247;
+      lastWagShadowOff[4] := 255;
+      lastWagShadowOff[5] := 144;
+
+      // jb 0048A6CA
+      ExtraCodeZDS[0] := 15;
+      ExtraCodeZDS[1] := 130;
+      ExtraCodeZDS[2] := 56;
+      ExtraCodeZDS[3] := 99;
+      ExtraCodeZDS[4] := 8;
+      ExtraCodeZDS[5] := 0;
+      // fsub dword ptr[0048A818]
+      ExtraCodeZDS[6] := 216;
+      ExtraCodeZDS[7] := 37;
+      ExtraCodeZDS[8] := 24;
+      ExtraCodeZDS[9] := 168;
+      ExtraCodeZDS[10] := 72;
+      ExtraCodeZDS[11] := 0;
+      // jmp 0048A6C3
+      ExtraCodeZDS[12] := 233;
+      ExtraCodeZDS[13] := 38;
+      ExtraCodeZDS[14] := 99;
+      ExtraCodeZDS[15] := 8;
+      ExtraCodeZDS[16] := 0;
    end;
 
    // ----------------------------------------------------
@@ -49,6 +80,7 @@ implementation
    procedure Camera_.Initialize();
    var
      addr_wagCell: PByte;
+     addr_lastWag: PByte;
      I: Integer;
      LenSt: Byte;
    begin
@@ -83,9 +115,16 @@ implementation
          Inc(WagsNum);
          WriteProcessMemory(UnitMain.pHandle, ADDR_WAGS_NUM, @WagsNum, 4, temp);
       end else begin
+         WriteProcessMemory(UnitMain.pHandle, ADDR_EXTRA_CODE_ZDS1, @ExtraCodeZDS, sizeof(ExtraCodeZDS), temp);
+         WriteProcessMemory(UnitMain.pHandle, ADDR_LAST_WAGON_SHADOW_OFF, @lastWagShadowOff, sizeof(lastWagShadowOff), temp);
+
          // Если последний вагон фикционный
          // То можно работать
-         WagsLenghtForm(); // Получаем длину КАЖОГО вагона из ОЗУ
+         try
+            WagsLenghtForm(); // Получаем длину КАЖОГО вагона из ОЗУ
+         except
+            UnitMain.Log_.DebugWriteErrorToErrorList('Camera.Initialization procedure WagsLenghtForm() - fatal error');
+         end;
 
          // Задаем длину "фикционного" вагона - длинной настоящего
          // последнего вагона со знаком минус
@@ -95,6 +134,13 @@ implementation
          writeMemory();
          
          SelectedWagon := WagsNum-1; // Выбранный вагон - последний
+
+         //addr_lastWag := ADDR_LAST_WAGON_SHADOW_OFF;
+         //for I := 0 to 5 do begin
+
+            //Inc(addr_lastWag, 1);
+         //end;
+
          Initialized := True; // Инициализация завершена
       end;
 
@@ -109,16 +155,25 @@ implementation
      addr_wagCell: PByte;
      I: Integer;
      db: double;
+     startIndex: Integer;
    begin
+      startIndex := 0;
+
       // Получаем адрес процесса ZDSimulator
       UnitMain.tHandle := GetWindowThreadProcessId(wHandle, @ProcessID);
       UnitMain.pHandle := OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessID);
 
       addr_wagCell := ADDR_CAMERA_LAST_WAGON_OFFSET;
 
-      for I := 0 to WagsNum-1 do begin
+      if LocoSectionsNum = 2 then begin
+         WagsLenght[0] := UnitMain.LocoLength; // Вторая секция локомотива
+         startIndex := 1;
+      end;
+      
+      for I := startIndex to WagsNum-1 do begin
          try ReadProcessMemory(UnitMain.pHandle, addr_wagCell, @db, 8, temp); except end;
          WagsLenght[I] := db;
+         UnitMain.Log_.DebugWriteErrorToErrorList('Camera.Initialization procedure WagsLenghtForm() - wag #' + IntToStr(I+1) + ' len - ' + FloatToStr(db) + 'm');
          // Шаг каждого вагона в ОЗУ x0090[hex]
          // 0144 [dec]
          Inc(addr_wagCell, 144);
@@ -138,6 +193,8 @@ implementation
          end else begin
             if UnitMain.Camera = 2 then begin
                checkButtons();
+            end else begin
+               reset();
             end;
          end;
       end;
@@ -148,17 +205,17 @@ implementation
    // ----------------------------------------------------
    procedure Camera_.checkButtons();
    begin
+      writeMemory();
       // Клавиша CTRL
       if (GetAsyncKeyState(17) <> 0) then begin
          // Клавиша - курсор влево
          if (GetAsyncKeyState(37) <> 0) And (Pressed = False) then begin
             Dec(SelectedWagon); // Выбранный вагон минус (-) 1
-            if SelectedWagon < 1 then SelectedWagon := 1;
+            if SelectedWagon < -(LocoSectionsNum)+2 then SelectedWagon := -(LocoSectionsNum)+2;
 
             // Здесь собственно смещение камеры влево
             if SelectedWagon <> PrevSelectedWagon then
-               CameraLastWagonOffset := CameraLastWagonOffset - WagsLenght[SelectedWagon]*2;
-            writeMemory();
+               CameraLastWagonOffset := CameraLastWagonOffset - (WagsLenght[SelectedWagon]+WagsLenght[SelectedWagon+1]);
             pressed := True;
          end;
 
@@ -168,8 +225,7 @@ implementation
             if SelectedWagon > WagsNum-1 then SelectedWagon := WagsNum-1;
 
             if SelectedWagon <> PrevSelectedWagon then
-               CameraLastWagonOffset := CameraLastWagonOffset + WagsLenght[SelectedWagon-1]*2;
-            writeMemory();
+               CameraLastWagonOffset := CameraLastWagonOffset + (WagsLenght[SelectedWagon-1]+WagsLenght[SelectedWagon]);
             Pressed := True;
          end;
       end;
@@ -198,6 +254,30 @@ implementation
       Inc(addr_wagCell, I);
 
       WriteProcessMemory(UnitMain.pHandle, addr_wagCell, @CameraLastWagonOffset, 8, temp);
+
+      try CloseHandle(UnitMain.pHandle); except end;
+   end;
+
+   // ----------------------------------------------------
+   //
+   // ----------------------------------------------------
+   procedure Camera_.reset();
+   var
+     addr_wagCell: PByte;
+     I: Integer;
+     db: Double;
+   begin
+      // Получаем адрес процесса ZDSimulator
+      UnitMain.tHandle := GetWindowThreadProcessId(wHandle, @ProcessID);
+      UnitMain.pHandle := OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessID);
+
+      addr_wagCell := ADDR_CAMERA_LAST_WAGON_OFFSET;
+      I:=144*WagsNum-144;
+      Inc(addr_wagCell, I);
+
+      db := 0;
+
+      WriteProcessMemory(UnitMain.pHandle, addr_wagCell, @db, 8, temp);
 
       try CloseHandle(UnitMain.pHandle); except end;
    end;

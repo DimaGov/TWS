@@ -260,6 +260,7 @@ var
   // ----------------------------------------------------- //
 
   CameraLastWagonOffset:       Double;
+  LocoLength:                  Double;
 
   // Границы станций из файла start_kilometers.dat //
   StationTrack1:               array[0..75] Of Integer; // 1-ая граница станции
