@@ -13,6 +13,7 @@ type camera_ = class (TObject)
       procedure reset();
       procedure Initialize();
       procedure WagsLenghtForm();
+      procedure isUncoupled();
 
     protected
 
@@ -188,16 +189,40 @@ implementation
    procedure Camera_.step();
    begin
       if track > 1 then begin // Проверка полностью запустиля ZDSimulator???
-         if Initialized = False then begin
-            Initialize(); // Если не было инициализации - делаем ее
-         end else begin
-            if UnitMain.Camera = 2 then begin
-               checkButtons();
+         if CoupleStat <> 0 then begin
+            if Initialized = False then begin
+               Initialize(); // Если не было инициализации - делаем ее
             end else begin
-               reset();
+               if UnitMain.Camera = 2 then begin
+                  checkButtons();
+               end else begin
+                  reset();
+               end;
             end;
+         end else begin
+            isUncoupled();
          end;
       end;
+   end;
+
+   // ----------------------------------------------------
+   //
+   // ----------------------------------------------------
+   procedure Camera_.isUncoupled();
+   begin
+      // Получаем адрес процесса ZDSimulator
+      UnitMain.tHandle := GetWindowThreadProcessId(wHandle, @ProcessID);
+      UnitMain.pHandle := OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessID);
+
+      if (Initialized = True) then begin
+         Dec(WagsNum);
+
+         WriteProcessMemory(UnitMain.pHandle, ADDR_WAGS_NUM, @WagsNum, 4, temp);
+
+         Initialized := False;
+      end;
+
+      try CloseHandle(UnitMain.pHandle); except end;
    end;
 
    // ----------------------------------------------------
@@ -207,9 +232,9 @@ implementation
    begin
       writeMemory();
       // Клавиша CTRL
-      if (GetAsyncKeyState(17) <> 0) then begin
-         // Клавиша - курсор влево
-         if (GetAsyncKeyState(37) <> 0) And (Pressed = False) then begin
+      //if (GetAsyncKeyState(17) <> 0) then begin
+         // Клавиша - курсор влево PgDwn
+         if (GetAsyncKeyState(33) <> 0) And (Pressed = False) then begin
             Dec(SelectedWagon); // Выбранный вагон минус (-) 1
             if SelectedWagon < -(LocoSectionsNum)+2 then SelectedWagon := -(LocoSectionsNum)+2;
 
@@ -219,8 +244,8 @@ implementation
             pressed := True;
          end;
 
-         // Клавиша - курсор вправо
-         if (GetAsyncKeyState(39) <> 0) And (Pressed = False) then begin
+         // Клавиша - курсор вправо PgUp
+         if (GetAsyncKeyState(34) <> 0) And (Pressed = False) then begin
             Inc(SelectedWagon);
             if SelectedWagon > WagsNum-1 then SelectedWagon := WagsNum-1;
 
@@ -228,9 +253,9 @@ implementation
                CameraLastWagonOffset := CameraLastWagonOffset + (WagsLenght[SelectedWagon-1]+WagsLenght[SelectedWagon]);
             Pressed := True;
          end;
-      end;
+      //end;
 
-      if (GetAsyncKeyState(37) = 0) And (GetAsyncKeyState(39) = 0) then begin
+      if (GetAsyncKeyState(33) = 0) And (GetAsyncKeyState(34) = 0) then begin
          pressed := False;
       end;
 
