@@ -27,7 +27,7 @@ var
 
 implementation
 
-uses UnitMain, SysUtils, Math, Windows, Bass, inifiles, UnitDebug, ExtraUtils, SoundManager, Dialogs, Debug, bass_fx;
+uses UnitMain, SysUtils, Math, Windows, Bass, inifiles, UnitDebug, ExtraUtils, SoundManager, Dialogs, Debug, bass_fx, SoundRes;
 
 var
      AutoInformIndx:              Byte;	     // Текущая дорожка авто-информатора

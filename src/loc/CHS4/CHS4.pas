@@ -54,7 +54,7 @@ implementation
    // ----------------------------------------------------
    constructor CHS4_.Create;
    begin
-      soundDir := 'TWS\CHS4KVR\';
+      soundDir := 'TWS\CHS4\';
 
       // Создаем таймер для проверки разницы показаний давления ГР в промежутке времени
       CompressorDifferenceTimer := TTimer.Create(UnitMain.FormMain);
@@ -195,10 +195,10 @@ implementation
          VentTDVol := FormMain.trcBarVspomMahVol.Position / 100;
 
          if Vent=62 then begin
-            VentTDF       := StrNew(PChar(soundDir + 'ventTD-start.wav'));
-            VentCycleTDF  := StrNew(PChar(soundDir + 'ventTD.wav'));
-            XVentTDF      := StrNew(PChar(soundDir + 'x_ventTD-start.wav'));
-            XVentCycleTDF := StrNew(PChar(soundDir + 'x_ventTD.wav'));
+            VentTDF       := StrNew(PChar('TWS\CHS4KVR\ventTD-start.wav'));
+            VentCycleTDF  := StrNew(PChar('TWS\CHS4KVR\ventTD.wav'));
+            XVentTDF      := StrNew(PChar('TWS\CHS4KVR\x_ventTD-start.wav'));
+            XVentCycleTDF := StrNew(PChar('TWS\CHS4KVR\x_ventTD.wav'));
             isPlayVentTD:=False;
             isPlayVentTDX:=False;
             StopVent:=False; isPlayVent:=False; isPlayVentX:=False;
@@ -215,9 +215,9 @@ implementation
                StopVent:=True; isPlayVent:=False; isPlayVentX:=False; VentPitchDest:=0;
             end;
             if (BASS_ChannelIsActive(VentTD_Channel)<>0) or (BASS_ChannelIsActive(VentCycleTD_Channel)<>0) then begin
-               VentTDF  := StrNew(PChar(soundDir + 'ventTD-stop.wav'));
+               VentTDF  := StrNew(PChar('TWS\CHS4KVR\ventTD-stop.wav'));
                VentCycleTDF:=PChar(''); isPlayVentTD:=False;
-               XVentTDF := StrNew(PChar(soundDir + 'x_ventTD-stop.wav'));
+               XVentTDF := StrNew(PChar('TWS\CHS4KVR\x_ventTD-stop.wav'));
                XVentCycleTDF:=PChar(''); isPlayVentTDX:=False; end;
          end;
       end;
@@ -230,9 +230,9 @@ implementation
    begin
       if ReversorPos <> PrevReversorPos then begin
          if ReversorPos = 1 then
-            CabinClicksF := StrNew(PChar(soundDir + 'revers_0-1.wav'));
+            CabinClicksF := StrNew(PChar('TWS\CHS4KVR\revers_0-1.wav'));
          if ReversorPos = 0 then
-            CabinClicksF := StrNew(PChar(soundDir + 'revers_1-0.wav'));
+            CabinClicksF := StrNew(PChar('TWS\CHS4KVR\revers_1-0.wav'));
             
          isPlayCabinClicks:=False;
       end;

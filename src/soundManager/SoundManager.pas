@@ -8,7 +8,7 @@ unit SoundManager;
 
 interface
 
-uses Classes;
+uses Classes, SoundRes;
 
    procedure SoundManagerTick();
    procedure TWS_MVPitchRegulation();
@@ -18,12 +18,12 @@ uses Classes;
    procedure TWS_PlayRDOOR(FileName: PChar);
    procedure TWS_PlayUnipuls(FileName: PChar; Loop: Boolean);
    procedure VolumeMaster_RefreshVolume;
-   procedure DecodeResAndPlay(FileName: String;
+   (*procedure DecodeResAndPlay(FileName: String;
                            var FlagName: Boolean;
                            var PCharName: PChar;
                            var ChannelName: Cardinal;
                            var ResPotok: TMemoryStream;
-                           var PlayResFlag: Boolean); external 'dg2020.dll';
+                           var PlayResFlag: Boolean); external 'dg2020.dll';*)
    function GetChannelRemaindPlayTime2Sec(var chan: Cardinal) : double;
    procedure ComprRemaindTimeCheck();
    procedure VentRemaindTimeCheck();

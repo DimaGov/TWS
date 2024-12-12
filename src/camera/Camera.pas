@@ -13,12 +13,13 @@ type camera_ = class (TObject)
       procedure reset();
       procedure Initialize();
       procedure WagsLenghtForm();
-      procedure isUncoupled();
+      procedure TurnStatusWagCamera(status: Boolean);
 
     protected
 
     public
       Initialized: Boolean;
+      WagCameraStatus: Boolean;
       SelectedWagon: Integer;
       PrevSelectedWagon: Integer;
       isCon: Boolean;
@@ -44,6 +45,7 @@ implementation
    begin
       Initialized := False;
       pressed := False;
+      WagCameraStatus := False;
       SelectedWagon := WagsNum;
 
       lastWagShadowOff[0] := 233;
@@ -101,6 +103,7 @@ implementation
          // Если количество вагонов из ОЗУ = количеству вагонов из settings.ini
          Inc(WagsNum);
          WriteProcessMemory(UnitMain.pHandle, ADDR_WAGS_NUM, @WagsNum, 4, temp);
+         WagCameraStatus := True;
       end;
 
       // Проверка последний вагон настоящий или фикционный?
@@ -115,6 +118,7 @@ implementation
          // То делаем "фикционный" вагон
          Inc(WagsNum);
          WriteProcessMemory(UnitMain.pHandle, ADDR_WAGS_NUM, @WagsNum, 4, temp);
+         WagCameraStatus := True;
       end else begin
          WriteProcessMemory(UnitMain.pHandle, ADDR_EXTRA_CODE_ZDS1, @ExtraCodeZDS, sizeof(ExtraCodeZDS), temp);
          WriteProcessMemory(UnitMain.pHandle, ADDR_LAST_WAGON_SHADOW_OFF, @lastWagShadowOff, sizeof(lastWagShadowOff), temp);
@@ -135,12 +139,6 @@ implementation
          writeMemory();
          
          SelectedWagon := WagsNum-1; // Выбранный вагон - последний
-
-         //addr_lastWag := ADDR_LAST_WAGON_SHADOW_OFF;
-         //for I := 0 to 5 do begin
-
-            //Inc(addr_lastWag, 1);
-         //end;
 
          Initialized := True; // Инициализация завершена
       end;
@@ -189,18 +187,26 @@ implementation
    procedure Camera_.step();
    begin
       if track > 1 then begin // Проверка полностью запустиля ZDSimulator???
-         if CoupleStat <> 0 then begin
-            if Initialized = False then begin
+         if Initialized = False then begin
+            try
                Initialize(); // Если не было инициализации - делаем ее
-            end else begin
-               if UnitMain.Camera = 2 then begin
-                  checkButtons();
-               end else begin
-                  reset();
-               end;
-            end;
+            except UnitMain.Log_.DebugWriteErrorToErrorList('Camera.step() Error in Camera.Initialize()'); end;
          end else begin
-            isUncoupled();
+            if UnitMain.Camera = 2 then begin
+               try
+               checkButtons();
+               except UnitMain.Log_.DebugWriteErrorToErrorList('Camera.step() Error in Camera.checkButtons()'); end;
+            end else begin
+               try
+               reset();
+               except UnitMain.Log_.DebugWriteErrorToErrorList('Camera.step() Camera.step Error in Camera.Reset()'); end;
+            end;
+
+            try
+            if (UnitMain.Camera = 0) And (Initialized = True) then begin
+               TurnStatusWagCamera(False);
+            end else TurnStatusWagCamera(True);
+            except UnitMain.Log_.DebugWriteErrorToErrorList('Camera.step() Error in Camera.TurnStatusWagCamera()'); end;
          end;
       end;
    end;
@@ -208,52 +214,58 @@ implementation
    // ----------------------------------------------------
    //
    // ----------------------------------------------------
-   procedure Camera_.isUncoupled();
+   procedure Camera_.TurnStatusWagCamera(status: Boolean);
    begin
-      // Получаем адрес процесса ZDSimulator
-      UnitMain.tHandle := GetWindowThreadProcessId(wHandle, @ProcessID);
-      UnitMain.pHandle := OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessID);
+      if (WagCameraStatus = Not(status)) then begin
+         // Получаем адрес процесса ZDSimulator
+         UnitMain.tHandle := GetWindowThreadProcessId(wHandle, @ProcessID);
+         UnitMain.pHandle := OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessID);
 
-      if (Initialized = True) then begin
-         Dec(WagsNum);
+         if status = False then Dec(WagsNum)
+                           else Inc(WagsNum);
 
          WriteProcessMemory(UnitMain.pHandle, ADDR_WAGS_NUM, @WagsNum, 4, temp);
 
-         Initialized := False;
-      end;
+         WagCameraStatus := Not(WagCameraStatus);
 
-      try CloseHandle(UnitMain.pHandle); except end;
+         try CloseHandle(UnitMain.pHandle); except end;
+      end;
    end;
 
    // ----------------------------------------------------
    //  CTRL + влево/вправо
    // ----------------------------------------------------
    procedure Camera_.checkButtons();
+   var
+      sum1: double;
    begin
       writeMemory();
-      // Клавиша CTRL
-      //if (GetAsyncKeyState(17) <> 0) then begin
-         // Клавиша - курсор влево PgDwn
+         // Клавиша - курсор влево PgUp
          if (GetAsyncKeyState(33) <> 0) And (Pressed = False) then begin
             Dec(SelectedWagon); // Выбранный вагон минус (-) 1
             if SelectedWagon < -(LocoSectionsNum)+2 then SelectedWagon := -(LocoSectionsNum)+2;
 
             // Здесь собственно смещение камеры влево
-            if SelectedWagon <> PrevSelectedWagon then
-               CameraLastWagonOffset := CameraLastWagonOffset - (WagsLenght[SelectedWagon]+WagsLenght[SelectedWagon+1]);
+            if SelectedWagon <> PrevSelectedWagon then begin
+               if (SelectedWagon = WagsNum-2) And (LocoSectionsNum = 1) then sum1 := WagsLenght[SelectedWagon] * 2
+                                                                        else sum1 := (WagsLenght[SelectedWagon]+WagsLenght[SelectedWagon+1]);
+               CameraLastWagonOffset := CameraLastWagonOffset - sum1;
+            end;
             pressed := True;
          end;
 
-         // Клавиша - курсор вправо PgUp
+         // Клавиша - курсор вправо PgDown
          if (GetAsyncKeyState(34) <> 0) And (Pressed = False) then begin
             Inc(SelectedWagon);
             if SelectedWagon > WagsNum-1 then SelectedWagon := WagsNum-1;
 
-            if SelectedWagon <> PrevSelectedWagon then
-               CameraLastWagonOffset := CameraLastWagonOffset + (WagsLenght[SelectedWagon-1]+WagsLenght[SelectedWagon]);
+            if SelectedWagon <> PrevSelectedWagon then begin
+               if (SelectedWagon = WagsNum-1) And (LocoSectionsNum = 1) then sum1 := WagsLenght[SelectedWagon-1] * 2
+                                                                        else sum1 := (WagsLenght[SelectedWagon-1]+WagsLenght[SelectedWagon]);
+               CameraLastWagonOffset := CameraLastWagonOffset + sum1;
+            end;
             Pressed := True;
          end;
-      //end;
 
       if (GetAsyncKeyState(33) = 0) And (GetAsyncKeyState(34) = 0) then begin
          pressed := False;

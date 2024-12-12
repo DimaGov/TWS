@@ -29,7 +29,7 @@ uses
   EncdDecd, SAVP, RAMMemModule, FileManager, ExtraUtils, SoundManager, Debug,
   bass_fx, UnitSOVIHelp, UnitSoundRRS, CHS8, CHS4KVR, CHS7, CHS4T, VL80T,
   ES5K, EP1M, ED4M, ED9M, CHS2K, sl2m, VL82M, CHS4, TE10U, M62, VL85,
-  TEM18dm, TEP70, TEP70bs, VL11M, Camera;
+  TEM18dm, TEP70, TEP70bs, VL11M, SoundRes, Camera;
 
 type
   TFormMain = class(TForm)
@@ -452,6 +452,7 @@ var
   Prev_KME:                    Integer;
   PerestukBase: Array[0..100] of Integer;
   PerestukBaseNumElem:         Integer;
+  PerestukBaseMinSpeed:        Integer = 10000;
   TEDBase: Array[0..600] of    Integer;
   TEDBaseNumElem:              Integer;
   VIPBase: Array[0..600] of    Integer; // Данные о границах дорожек для ВИП (ЭП1м и 2ЭС5к)
@@ -1372,52 +1373,6 @@ try
   // ********************* //
   // БЛОК ВСПОМ-МАШИН //
   if cbVspomMash.Checked=True then begin
-      // Остаток времени для запуска вентиляторов ВУ
-      (*if StopVent = False then begin
-         if BASS_ChannelIsActive(Vent_Channel_FX) <> 0 then begin
-            VentTimeLeft := BASS_ChannelBytes2Seconds(Vent_Channel_FX, BASS_ChannelGetLength(Vent_Channel_FX, BASS_POS_BYTE) - BASS_ChannelGetPosition(Vent_Channel_FX, BASS_POS_BYTE));
-            if (VentTimeLeft <= 0.2) and (BASS_ChannelIsActive(VentCycle_Channel_FX)=0) then isPlayCycleVent:=False;
-         end;
-         if BASS_ChannelIsActive(XVent_Channel_FX) <> 0 then begin
-            XVentTimeLeft := BASS_ChannelBytes2Seconds(XVent_Channel_FX, BASS_ChannelGetLength(XVent_Channel_FX, BASS_POS_BYTE) - BASS_ChannelGetPosition(XVent_Channel_FX, BASS_POS_BYTE));
-            if (XVentTimeLeft <= 0.2) and (BASS_ChannelIsActive(XVentCycle_Channel_FX)=0) then isPlayCycleVentX:=False;
-         end;
-      end;*)
-
-      // -=- Остановка цикла работы вентиляторов при полной остановке работы вентиляторов -=- //
-      (*if (StopVent=True)AND(LocoGlobal<>'VL80t')AND(LocoGlobal<>'EP1m')AND(LocoGlobal<>'2ES5K') then begin
-         if BASS_ChannelIsActive(VentCycle_Channel_FX)<>0 then begin
-            VentTimeLeft := BASS_ChannelBytes2Seconds(Vent_Channel_FX, BASS_ChannelGetPosition(Vent_Channel_FX, BASS_POS_BYTE));
-            if (VentTimeLeft >= 0.3) and (BASS_ChannelIsActive(VentCycle_Channel_FX)<>0) then begin BASS_ChannelStop(VentCycle_Channel_FX); BASS_StreamFree(VentCycle_Channel_FX); end;
-         end;
-         if BASS_ChannelIsActive(XVentCycle_Channel_FX)<>0 then begin
-            XVentTimeLeft := BASS_ChannelBytes2Seconds(XVent_Channel_FX, BASS_ChannelGetPosition(XVent_Channel_FX, BASS_POS_BYTE));
-            if (XVentTimeLeft >= 0.3) and (BASS_ChannelIsActive(XVentCycle_Channel_FX)<>0) then begin BASS_ChannelStop(XVentCycle_Channel_FX); BASS_StreamFree(XVentCycle_Channel_FX); end;
-         end;
-      end;*)
-      // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
-
-      // Остаток времени для запуска вентиляторов ТД
-      (*if AnsiCompareText(VentCycleTDF, '')<>0 then begin
-          try VentTDTimeLeft := BASS_ChannelBytes2Seconds(VentTD_Channel_FX, BASS_ChannelGetLength(VentTD_Channel_FX, BASS_POS_BYTE) - BASS_ChannelGetPosition(VentTD_Channel_FX, BASS_POS_BYTE)); except end;
-          if (VentTDTimeLeft <= 0.8) and (BASS_ChannelIsActive(VentCycleTD_Channel_FX)=0) then isPlayCycleVentTD:=False;
-      end;
-      if AnsiCompareText(XVentCycleTDF, '')<>0 then begin
-          try XVentTDTimeLeft := BASS_ChannelBytes2Seconds(XVentTD_Channel_FX, BASS_ChannelGetLength(XVentTD_Channel_FX, BASS_POS_BYTE) - BASS_ChannelGetPosition(XVentTD_Channel_FX, BASS_POS_BYTE)); except end;
-          if (XVentTDTimeLeft <= 0.8) and (BASS_ChannelIsActive(XVentCycleTD_Channel_FX)=0) then isPlayCycleVentTDX:=False;
-      end;
-
-      // -=- Остановка цикла работы вентиляторов при полной остановке работы вентиляторов -=- //
-      if (AnsiCompareText(VentCycleTDF, '')=0) and (LocoGlobal<>'VL80t') then begin
-          try VentTDTimeLeft := BASS_ChannelBytes2Seconds(VentTD_Channel_FX, BASS_ChannelGetPosition(VentTD_Channel_FX, BASS_POS_BYTE)); except end;
-          if (VentTDTimeLeft >= 0.3) and (BASS_ChannelIsActive(VentCycleTD_Channel_FX)<>0) then begin BASS_ChannelStop(VentCycleTD_Channel_FX); BASS_StreamFree(VentCycleTD_Channel_FX); end;
-      end;
-      if (AnsiCompareText(XVentCycleTDF, '')=0) and (LocoGlobal<>'VL80t') then begin
-          try XVentTDTimeLeft := BASS_ChannelBytes2Seconds(XVentTD_Channel_FX, BASS_ChannelGetPosition(XVentTD_Channel_FX, BASS_POS_BYTE)); except end;
-          if (XVentTDTimeLeft >= 0.3) and (BASS_ChannelIsActive(XVentCycleTD_Channel_FX)<>0) then begin BASS_ChannelStop(XVentCycleTD_Channel_FX); BASS_StreamFree(XVentCycleTD_Channel_FX); end;
-      end;*)
-      // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
-
       if (LocoGlobal='CHS7') Or (LocoGlobal='CHS8') Or (LocoGlobal='CHS4t') then begin
          // Вентиляторы ПТР на ЧС7
          if VentTDVol > trcBarVspomMahVol.Position / 100 then VentTDVol := trcBarVspomMahVol.Position / 100;
@@ -1435,58 +1390,7 @@ try
             BASS_ChannelSetAttribute(XVentCycleTD_Channel, BASS_ATTRIB_VOL, VentTDVol);
          end;
       end;
-      //if AnsiCompareStr(CompressorCycleF, '') <> 0 then begin
-      //    try CompTimeLeft := BASS_ChannelBytes2Seconds(Compressor_Channel, BASS_ChannelGetLength(Compressor_Channel, BASS_POS_BYTE) - BASS_ChannelGetPosition(Compressor_Channel, BASS_POS_BYTE)); except end;
-      //    if (CompTimeLeft<=0.8) and (BASS_ChannelIsActive(CompressorCycleChannel)=0) then isPlayCompressorCycle:=False;
-      //end;
-      //if AnsiCompareStr(XCompressorCycleF, '')<> 0 then begin
-      //    try XCompTimeLeft := BASS_ChannelBytes2Seconds(XCompressor_Channel, BASS_ChannelGetLength(XCompressor_Channel, BASS_POS_BYTE) - BASS_ChannelGetPosition(XCompressor_Channel, BASS_POS_BYTE)); except end;
-       //   if (XCompTimeLeft<=0.8) and (BASS_ChannelIsActive(XCompressorCycleChannel)=0) then isPlayXCompressorCycle:=False;
-      //end;
-      // Звуки запуска компрессора
-      (*if Compressor<>Prev_Compressor then begin
-         if Compressor<>0 then begin
-            if LocoGlobal='VL11m' then begin
-               CompressorF:=PChar('TWS/VL11m/MK-start.wav'); CompressorCycleF:=PChar('TWS/VL11m/MK-loop.wav');
-               XCompressorF:=PChar('TWS/VL11m/x_MK-start.wav'); XCompressorCycleF:=PChar('TWS/VL11m/x_MK-loop.wav');
-            end;
-            isPlayCompressor:=False; isPlayXCompressor:=False;
-         end;
-         // Звуки остановки компрессора
-         if Compressor=0 then begin
-            if LocoGlobal='VL11m' then begin
-               CompressorF:=PChar('TWS/VL11m/MK-stop.wav');
-               XCompressorF:=PChar('TWS/VL11m/x_MK-stop.wav');
-            end;
-            CompressorCycleF:=PChar(''); XCompressorCycleF:=PChar('');
-            isPlayCompressor:=False; isPlayXCompressor:=False;
-         end;
-      end;*)
-      // **************** //
-      // БЛОК ВЕНТИЛЯТОРОВ //
-      // ВЕНТИЛЯТОРЫ ДЛЯ ВСЕХ ЭЛ-ВОЗОВ, КРОМЕ ЧС4, ВЛ80т, ЭП1м И 2ЭС5К
-      (*if (LocoGlobal<>'CHS4 KVR') and (LocoGlobal<>'VL80t') and (LocoGlobal<>'EP1m') and (LocoGlobal<>'2ES5K') then begin
-         if (Vent<>0) and (Prev_Vent=0) then begin
-             if (LocoGlobal='CHS7') Or (LocoGlobal='CHS2K') then begin
-                if (BASS_ChannelIsActive(Vent_Channel_FX)<>0) and (StopVent = True) then begin
-                    BASS_ChannelStop(Vent_Channel_FX); BASS_StreamFree(Vent_Channel_FX);
-                    BASS_ChannelStop(XVent_Channel_FX); BASS_StreamFree(XVent_Channel_FX);
-                    isPlayCycleVent := False; isPlayCycleVentX := False;
-                end;
-                if Vent = 255 then VentPitchDest := 5 else VentPitchDest := 0;
-             end;
-             StopVent:=False;
-             isPlayVent:=False; isPlayVentX:=False;
-         end;
-         if ((Vent=0) and (Prev_Vent<>0) and (LocoGlobal<>'CHS4 KVR')) then begin
-             StopVent:=True;
-             isPlayVent:=False; isPlayVentX:=False;
-         end;
-      end;
-      if (LocoGlobal <> 'EP1m') and (LocoGlobal <> 'VL80t') then begin
-         VentVolume:=100;
-         CycleVentVolume:=100;
-      end;*)
+
       // Перерегулирование тональности вентиляторов
       TWS_MVPitchRegulation();
       // ********************* //
@@ -1576,6 +1480,7 @@ try
      I:=0; PerestukBaseNumElem:=0;
      //if LocoWithDNoisePitch = False then begin
        //Memo3.Lines.Clear;
+     UnitMain.Log_.DebugWriteErrorToErrorList('PerestukBase array data:');
      if FindFirst('TWS/'+Loco+'/*.wav',faAnyFile,SR) = 0 then
         repeat
            try
@@ -1585,11 +1490,16 @@ try
               if Station1='~' then Station1:='10000';
               PerestukBase[I]:=StrToInt(St);
               PerestukBase[I+1]:=StrToInt(Station1);
+              if PerestukBase[I] < PerestukBaseMinSpeed then PerestukBaseMinSpeed:=PerestukBase[I];
+              UnitMain.Log_.DebugWriteErrorToErrorList(IntToStr(I) + ': ' + IntToStr(PerestukBase[I])+
+                                                       ', ' + IntToStr(I+1) + ': ' + IntToStr(PerestukBase[I+1]));
               //Memo3.Lines.Add(IntToStr(PerestukBase[I]));
               Inc(I,2); Inc(PerestukBaseNumElem);
            except end;
      until FindNext(SR) <> 0;
      FindClose(SR);
+     UnitMain.Log_.DebugWriteErrorToErrorList('PerestukBase NumElem: ' + IntToStr(PerestukBaseNumElem));
+     UnitMain.Log_.DebugWriteErrorToErrorList('PerestukBase Minimal Speed: ' + IntToStr(PerestukBaseMinSpeed));
      //end;
 
      // (2) Загружаем данные по сэмплам ТЭД-ов (2) //
@@ -1631,7 +1541,7 @@ try
         end;
      RefreshSnd:=False;
      end;
-     if Speed = 0 then begin
+     if (Speed = 0) Or (Speed < PerestukBaseMinSpeed) then begin
          BASS_ChannelStop(LocoChannel[0]); BASS_StreamFree(LocoChannel[0]);
          BASS_ChannelStop(LocoChannel_FX[0]); BASS_StreamFree(LocoChannel_FX[0]);
          BASS_ChannelStop(LocoChannel[1]); BASS_StreamFree(LocoChannel[1]);
@@ -2133,6 +2043,7 @@ begin
            SL2M__ := sl2m_.Create('TWS/Devices/3SL2m/');
         end else begin
            BASS_ChannelStop(ClockChannel); BASS_StreamFree(ClockChannel);
+           BASS_ChannelStop(ClockCycleChannel); BASS_StreamFree(ClockCycleChannel);
            SL2M__.Destroy();
         end;
 end;

@@ -75,7 +75,7 @@ implementation
    procedure CHS2K_.ept_step();
    begin
       if EPT <> PrevEPT then begin
-         LocoPowerEquipmentF := PChar('sound/chs7/tumbler.wav');
+         LocoPowerEquipmentF := PChar(soundDir + 'tumbler.wav');
          isPlayLocoPowerEquipment := False;
       end;
    end;
@@ -86,7 +86,7 @@ implementation
    procedure CHS2K_.hLights_step();
    begin
       if Highlights<>PrevHighLights then begin
-         LocoPowerEquipmentF := PChar('sound/chs7/tumbler.wav');
+         LocoPowerEquipmentF := PChar(soundDir + 'tumbler.wav');
          isPlayLocoPowerEquipment := False;
       end;
    end;

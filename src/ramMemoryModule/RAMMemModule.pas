@@ -1145,7 +1145,7 @@ begin
         end;
         // -/- ЧС4 (CHS4) -/- //
         if LocoGlobal='CHS4' then begin
-           LocoWorkDir         := 'TWS/CHS4KVR/';
+           LocoWorkDir         := 'TWS/CHS4/';
            UltimateTEDAmperage := 1500;         // Задаем предельный ток нагрузки ТЭД
            LocoSectionsNum     := 1;		// Задаем количество секций для текущего локомотива
            LocoPowerVoltage    := 25;           // Тип электрофикации локомотива [0, -, ~]
@@ -1162,9 +1162,9 @@ begin
            VentStartF          := PChar('TWS/CHS4KVR/ventVU-start.wav');
            VentCycleF          := PChar('TWS/CHS4KVR/ventVU.wav');
            VentStopF           := PChar('TWS/CHS4KVR/ventVU-stop.wav');
-           XVentStartF         := PChar('TWS/CHS4KVR/x_ventVU-start.wav');
-           XVentCycleF         := PChar('TWS/CHS4KVR/x_ventVU.wav');
-           XVentStopF          := PChar('TWS/CHS4KVR/x_ventVU-stop.wav');
+           XVentStartF         := PChar('TWS/CHS4/x_ventVU-start.wav');
+           XVentCycleF         := PChar('TWS/CHS4/x_ventVU.wav');
+           XVentStopF          := PChar('TWS/CHS4/x_ventVU-stop.wav');
            VentTDPitchIncrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
            VentTDPitchDecrementer:=0;           // Задаем значение для инкрементера тональности МВ ТД
            VentPitchIncrementer:= 0;            // Задаем значение для инкрементера тональности МВ
