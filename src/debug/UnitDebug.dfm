@@ -1114,6 +1114,15 @@ object FormDebug: TFormDebug
       'Memo3')
     TabOrder = 6
   end
+  object btnShowWagonsLenghts: TButton
+    Left = 128
+    Top = 752
+    Width = 193
+    Height = 25
+    Caption = #1055#1086#1082#1072#1079#1072#1090#1100' '#1076#1083#1080#1085#1099' '#1074#1072#1075#1086#1085#1086#1074' '#1089#1086#1089#1090#1072#1074#1072
+    TabOrder = 7
+    OnClick = btnShowWagonsLenghtsClick
+  end
   object Timer1: TTimer
     Enabled = False
     Interval = 20

@@ -792,7 +792,7 @@ end;
 procedure TFormMain.ClockMainTimer(Sender: TObject);
 var
   St: String;
-  sl: TStringList;
+  sl, sl2: TStringList;
   I, J: Integer;
   Station1, Station2: String;
   SR: TSearchRec;
@@ -873,6 +873,9 @@ try
                Log_.DebugWriteErrorToErrorList(ConName + ' data:');
                Memo1.Lines.LoadFromFile('data\consists\'+ConName);
                sl := TStringList.Create;
+
+               WagonsAmount := 0;
+
                for I:=0 to Memo1.Lines.Count-1 do begin
                   log_.DebugWriteErrorToErrorList(Memo1.Lines[I]);
                   try
@@ -880,6 +883,7 @@ try
                      if St[1]<>';' then begin
                         ExtractStrings([#9], [' '], PChar(St), sl);
                         ConsistLength := ConsistLength + StrToFloat(sl[2]);
+                        Inc(WagonsAmount, StrToInt(sl[0]));
                      end;
                   except
                      Log_.DebugWriteErrorToErrorList('Fatal error 0x05 (extract data error I=)' + IntToStr(I) + 'string: (' + Memo1.Lines[I] + ')');

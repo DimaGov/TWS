@@ -337,7 +337,15 @@ begin
         LocoGlobal := ReadKeyFromMemoryString(addr_settings_ini, 'LocomotiveType',6666);
         naprav:= ReadKeyFromMemoryString(addr_settings_ini, 'Route', 6666);
         try Route := ReadKeyFromMemoryString(addr_settings_ini, 'RoutePath', 6666); except Route:='error'; end;
-        try LocoNum := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'LocNum', 6666)); except LocoNum:=-1; end;
+        // Получение номера локомотива
+        try
+           St := ReadKeyFromMemoryString(addr_settings_ini, 'LocNum', 6666);
+
+           // !!! Фикс для номеров типа 33_006 или 1155_0976 !!! //
+           if Pos('_', St)>0 then St := GetStrToSep(St, '_');
+
+           LocoNum := StrToInt(St);
+        except LocoNum:=-1; end;
         MP := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'MultiPlayer', 6666));
         try ConName := ReadKeyFromMemoryString(addr_settings_ini, 'WagsName', 6666); except ConName:='error'; end;
         Winter := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'Winter', 6666));
@@ -711,7 +719,6 @@ var
      wPos_1:         Single;
      wVstrSpeed:     Single; // [м/c]
      addr_waglength: PDouble;
-     addr_wagCell:   PByte;
      I:              Integer;
 begin
    With FormMain do begin

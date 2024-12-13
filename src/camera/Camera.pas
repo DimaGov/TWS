@@ -2,9 +2,11 @@ unit Camera;
 
 interface
 
+const MAXWAGS = 100;  
+
 type camera_ = class (TObject)
     private
-      WagsLenght: array[0..100] of Double;
+
       lastWagShadowOff: array[0..5] of Byte;
       ExtraCodeZDS: array[0..16] of Byte;
 
@@ -23,6 +25,7 @@ type camera_ = class (TObject)
       SelectedWagon: Integer;
       PrevSelectedWagon: Integer;
       isCon: Boolean;
+      WagsLenght: array[0..MAXWAGS] of Double;
 
       procedure step();
 
@@ -92,7 +95,7 @@ implementation
          WagsLenght[I] := 0.0;
       end;
 
-      if Pos('.con', ConName) > 0 then isCon := True else isCon := False;
+      if Pos('.con', ConName)>0 then isCon := True else isCon := False;
 
       // Получаем адрес процесса ZDSimulator
       UnitMain.tHandle := GetWindowThreadProcessId(wHandle, @ProcessID);
@@ -103,7 +106,6 @@ implementation
          // Если количество вагонов из ОЗУ = количеству вагонов из settings.ini
          Inc(WagsNum);
          WriteProcessMemory(UnitMain.pHandle, ADDR_WAGS_NUM, @WagsNum, 4, temp);
-         WagCameraStatus := True;
       end;
 
       // Проверка последний вагон настоящий или фикционный?
@@ -113,12 +115,12 @@ implementation
       try ReadProcessMemory(UnitMain.pHandle, addr_wagCell, @LenSt, 1, temp); except end;
 
 
-      if LenSt > 1 then begin
+      if ((LenSt > 1) And (isCon = True)) then begin
          // Если последний вагон настоящий
          // То делаем "фикционный" вагон
          Inc(WagsNum);
          WriteProcessMemory(UnitMain.pHandle, ADDR_WAGS_NUM, @WagsNum, 4, temp);
-         WagCameraStatus := True;
+         WagCameraStatus := False;
       end else begin
          WriteProcessMemory(UnitMain.pHandle, ADDR_EXTRA_CODE_ZDS1, @ExtraCodeZDS, sizeof(ExtraCodeZDS), temp);
          WriteProcessMemory(UnitMain.pHandle, ADDR_LAST_WAGON_SHADOW_OFF, @lastWagShadowOff, sizeof(lastWagShadowOff), temp);
@@ -198,7 +200,7 @@ implementation
                except UnitMain.Log_.DebugWriteErrorToErrorList('Camera.step() Error in Camera.checkButtons()'); end;
             end else begin
                try
-               reset();
+               //reset();
                except UnitMain.Log_.DebugWriteErrorToErrorList('Camera.step() Camera.step Error in Camera.Reset()'); end;
             end;
 
@@ -221,8 +223,8 @@ implementation
          UnitMain.tHandle := GetWindowThreadProcessId(wHandle, @ProcessID);
          UnitMain.pHandle := OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessID);
 
-         if status = False then Dec(WagsNum)
-                           else Inc(WagsNum);
+         if status = False then WagsNum := WagonsAmount
+                           else WagsNum := WagonsAmount + 1;
 
          WriteProcessMemory(UnitMain.pHandle, ADDR_WAGS_NUM, @WagsNum, 4, temp);
 
@@ -247,8 +249,9 @@ implementation
 
             // Здесь собственно смещение камеры влево
             if SelectedWagon <> PrevSelectedWagon then begin
-               if (SelectedWagon = WagsNum-2) And (LocoSectionsNum = 1) then sum1 := WagsLenght[SelectedWagon] * 2
-                                                                        else sum1 := (WagsLenght[SelectedWagon]+WagsLenght[SelectedWagon+1]);
+               if LocoSectionsNum = 1 then sum1 := (WagsLenght[SelectedWagon-1]+WagsLenght[SelectedWagon])
+                                      else sum1 := (WagsLenght[SelectedWagon]+WagsLenght[SelectedWagon+1]);
+
                CameraLastWagonOffset := CameraLastWagonOffset - sum1;
             end;
             pressed := True;
@@ -260,8 +263,8 @@ implementation
             if SelectedWagon > WagsNum-1 then SelectedWagon := WagsNum-1;
 
             if SelectedWagon <> PrevSelectedWagon then begin
-               if (SelectedWagon = WagsNum-1) And (LocoSectionsNum = 1) then sum1 := WagsLenght[SelectedWagon-1] * 2
-                                                                        else sum1 := (WagsLenght[SelectedWagon-1]+WagsLenght[SelectedWagon]);
+               if LocoSectionsNum = 1 then sum1 := (WagsLenght[SelectedWagon-2]+WagsLenght[SelectedWagon-1])
+                                      else sum1 := (WagsLenght[SelectedWagon-1]+WagsLenght[SelectedWagon]);
                CameraLastWagonOffset := CameraLastWagonOffset + sum1;
             end;
             Pressed := True;

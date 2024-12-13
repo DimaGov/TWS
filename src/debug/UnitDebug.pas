@@ -159,11 +159,13 @@ type
     Label93: TLabel;
     Memo3: TMemo;
     Label94: TLabel;
+    btnShowWagonsLenghts: TButton;
     procedure Timer1Timer(Sender: TObject);
     procedure ListView1ColumnClick(Sender: TObject; Column: TListColumn);
     procedure FormCreate(Sender: TObject);
     procedure btnStationsBorderClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure btnShowWagonsLenghtsClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -597,6 +599,25 @@ end;
 procedure TFormDebug.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
 	Timer1.Enabled := False;
+end;
+
+procedure TFormDebug.btnShowWagonsLenghtsClick(Sender: TObject);
+var
+   _size: Integer;
+   I: Integer;
+   OutStr: String;
+begin
+   //_size := Trunc(SizeOf(Camera__.WagsLenght) / 8);
+   _size := Length(Camera__.WagsLenght);
+   OutStr := 'sizeof array: ' + IntToStr(_size) + ' pcs.' + #12 + #13 + #12 + #13;
+
+   for I := 0 to _size do begin
+      if Camera__.WagsLenght[I] = 0 then Break;
+
+      OutStr := OutStr + 'index NO' + IntToStr(I) + ' length: ' + FloatToStr(Camera__.WagsLenght[I]) + 'm.' + #12 + #13;
+   end;
+
+   ShowMessage(OutStr);
 end;
 
 end.
