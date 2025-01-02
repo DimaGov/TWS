@@ -75,7 +75,7 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils, Math;
    // ----------------------------------------------------
    procedure CHS8_.step();
    begin
-      if (LocoNum > 0) And (LocoNum < 33) then unipulsDir := soundDir + 'E1/Unipuls/';
+      if LocoNum < 33 then unipulsDir := soundDir + 'E1/Unipuls/';
       if LocoNum >= 33 then unipulsDir := soundDir + 'E2/Unipuls/';
 
       if FormMain.cbCabinClicks.Checked = True then begin

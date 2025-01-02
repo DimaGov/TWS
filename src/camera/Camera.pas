@@ -12,7 +12,6 @@ type camera_ = class (TObject)
 
       procedure checkButtons();
       procedure writeMemory();
-      procedure reset();
       procedure Initialize();
       procedure WagsLenghtForm();
       procedure TurnStatusWagCamera(status: Boolean);
@@ -86,7 +85,6 @@ implementation
    procedure Camera_.Initialize();
    var
      addr_wagCell: PByte;
-     addr_lastWag: PByte;
      I: Integer;
      LenSt: Byte;
    begin
@@ -294,30 +292,6 @@ implementation
       Inc(addr_wagCell, I);
 
       WriteProcessMemory(UnitMain.pHandle, addr_wagCell, @CameraLastWagonOffset, 8, temp);
-
-      try CloseHandle(UnitMain.pHandle); except end;
-   end;
-
-   // ----------------------------------------------------
-   //
-   // ----------------------------------------------------
-   procedure Camera_.reset();
-   var
-     addr_wagCell: PByte;
-     I: Integer;
-     db: Double;
-   begin
-      // Получаем адрес процесса ZDSimulator
-      UnitMain.tHandle := GetWindowThreadProcessId(wHandle, @ProcessID);
-      UnitMain.pHandle := OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessID);
-
-      addr_wagCell := ADDR_CAMERA_LAST_WAGON_OFFSET;
-      I:=144*WagsNum-144;
-      Inc(addr_wagCell, I);
-
-      db := 0;
-
-      WriteProcessMemory(UnitMain.pHandle, addr_wagCell, @db, 8, temp);
 
       try CloseHandle(UnitMain.pHandle); except end;
    end;

@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------//
 //                                                                              //
 //      Модуль для работы с ОЗУ                                                 //
-//      (c) DimaGVRH, Dnepr city, 2019                                          //
+//      (c) DimaGVRH, Dnepr city, 2019 - 2025                                   //
 //                                                                              //
 //------------------------------------------------------------------------------//
 unit RAMMemModule;
@@ -784,15 +784,15 @@ begin
      if Ordinata<>PrevOrdinata then OrdinataEstimate := Ordinata;
 
      try
-        if VersionID>=1 then begin
+        (*if VersionID>=1 then begin
            try
-              KM_Pos_1 := Trunc(wPos_1);
+              //KM_Pos_1 := Trunc(wPos_1);
            except end;
-        end else begin
+        end else begin*)
            if (LocoGlobal<>'M62') and (LocoGlobal<>'TEP70bs') then
               wPos_1 := wPos_1 + 0.25;
               KM_Pos_1 := Trunc(wPos_1);
-        end;
+        //end;
       except end;
 
      // --- Вычисляем длину встречного поеда в метрах ---- //
@@ -920,7 +920,7 @@ begin
           ADDR_ED9M_KONTROLLER:=ptr($091B92BD);ADDR_CHS8_VENT_VOLUME:=ptr($091B8114);ADDR_CHS8_VENT_VOLUME_INCREMENTER:=ptr($091B8124);
           ADDR_2ES5K_BV :=ptr($091B8124); ADDR_CHS8_UNIPULS_AVARIA:= ptr($091B8818);ADDR_PNEVM_SIGNAL:=   ptr($0537114C);
           ADDR_TEP70_TED:=ptr($091B9384);      ADDR_VL82_COMPRESSOR:=ptr($091B8110);    ADDR_VL82_VENT := ptr($091B8114);
-          ADDR_CAMERA_LAST_WAGON_OFFSET:=ptr($090F06C0);ADDR_WAGS_NUM:=ptr($0072CB80);
+          ADDR_CAMERA_LAST_WAGON_OFFSET:=ptr($090F06C0);ADDR_WAGS_NUM:=ptr($0072CB80); ADDR_CHS8_GV_1  :=   ptr($08FEB82C);
        end;
 
         // -/- ВЛ80т (VL80t) -/- //

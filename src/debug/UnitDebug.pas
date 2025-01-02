@@ -341,8 +341,8 @@ begin
            AddNewLineToDebugger('CameraLastWagonOffset', CameraLastWagonOffset, 'ZDS переменная');
            AddNewLineToDebugger('Количество вагонов', WagsNum, 'ZDS переменная');
            AddNewLineToDebugger('Количество вагонов (settings.ini)', WagonsAmount, 'ZDS переменная');
-           AddNewLineToDebugger('CameraSelectedWagon', Camera__.SelectedWagon, 'TWS переменная');
-           AddNewLineToDebugger('Camera.isCon', Camera__.isCon, 'TWS переменная');
+           //AddNewLineToDebugger('CameraSelectedWagon', Camera__.SelectedWagon, 'TWS переменная');
+           //AddNewLineToDebugger('Camera.isCon', Camera__.isCon, 'TWS переменная');
         end;
 end;
 
@@ -472,8 +472,8 @@ begin
               106: ListItem.SubItems[3] := FloatToStr(CameraLastWagonOffset);
               107: ListItem.SubItems[3] := IntToStr(WagsNum);
               108: ListItem.SubItems[3] := IntToStr(WagonsAmount);
-              109: ListItem.SubItems[3] := IntToStr(Camera__.SelectedWagon);
-              110: ListItem.SubItems[3] := BoolToStr(Camera__.isCon);
+              //109: ListItem.SubItems[3] := IntToStr(Camera__.SelectedWagon);
+              //110: ListItem.SubItems[3] := BoolToStr(Camera__.isCon);
            end;
         end;
         end;
@@ -608,7 +608,7 @@ var
    OutStr: String;
 begin
    //_size := Trunc(SizeOf(Camera__.WagsLenght) / 8);
-   _size := Length(Camera__.WagsLenght);
+   (*_size := Length(Camera__.WagsLenght);
    OutStr := 'sizeof array: ' + IntToStr(_size) + ' pcs.' + #12 + #13 + #12 + #13;
 
    for I := 0 to _size do begin
@@ -617,7 +617,7 @@ begin
       OutStr := OutStr + 'index NO' + IntToStr(I) + ' length: ' + FloatToStr(Camera__.WagsLenght[I]) + 'm.' + #12 + #13;
    end;
 
-   ShowMessage(OutStr);
+   ShowMessage(OutStr);*)
 end;
 
 end.
