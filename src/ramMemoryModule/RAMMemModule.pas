@@ -287,14 +287,14 @@ begin
          if wHandle<>0 then begin
             isGameOnPause        := True;
             isConnectedMemory    := True;
-            FormMain.Label5.Caption       := GameWindowName;
+            FormMain.lblSimulatorLaunchStatus.Caption       := GameWindowName;
             Break;
          end else begin
             wHandle := FindWindow(nil, PChar(GameWindowName));
                  if wHandle=0 then begin
                     isGameOnPause     := True;
                     isConnectedMemory := False;
-                    FormMain.Label5.Caption    := 'Симулятор не запущен';
+                    FormMain.lblSimulatorLaunchStatus.Caption := 'Симулятор не запущен';
                  end else begin
                     UnitMain.tHandle := GetWindowThreadProcessId(wHandle, @ProcessID);
                     UnitMain.pHandle := OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessID);
@@ -303,16 +303,21 @@ begin
                     isGameOnPause     := False;
                     CloseHandle(UnitMain.pHandle);
                     isConnectedMemory := True;
-                    FormMain.Label5.Caption    := GameWindowName;
+                    FormMain.lblSimulatorLaunchStatus.Caption    := GameWindowName;
                     Break;
                  end;
               end;
               CloseHandle(wHandle);
   	   end;
-        end else isGameOnPause := True;
-        if I <> VersionID then begin
-           InitializeStartParams(I);
-        end;
+   end else begin
+      isGameOnPause := True;
+      if (isConnectedMemory = False) And (PrevConMem = True) then begin
+         FormMain.lblSimulatorLaunchStatus.Caption:='Симулятор был закрыт';
+      end;
+   end;
+   if I <> VersionID then begin
+      InitializeStartParams(I);
+   end;
 
 	RefreshSnd:=True;
         VersionID := I;

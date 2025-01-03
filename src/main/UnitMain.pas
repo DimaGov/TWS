@@ -86,7 +86,7 @@ type
     cbSignalsSounds: TCheckBox;
     cbHeadTrainSound: TCheckBox;
     cbSAVPE_Marketing: TCheckBox;
-    Label5: TLabel;
+    lblSimulatorLaunchStatus: TLabel;
     Label46: TLabel;
     Label50: TLabel;
     Label95: TLabel;
@@ -2113,7 +2113,7 @@ begin
       groupBoxSAVPCheckboxes.Left:=groupBoxSAVPCheckboxes.Left+groupBoxSOVIDescription.Width;
       groupBoxPRSCheckboxes.Left:=groupBoxPRSCheckboxes.Left+groupBoxSOVIDescription.Width;
       lblSimulatorVersionLaunched.Left:=lblSimulatorVersionLaunched.Left+groupBoxSOVIDescription.Width;
-      Label5.Left:=Label5.Left+groupBoxSOVIDescription.Width;
+      lblSimulatorLaunchStatus.Left:=lblSimulatorLaunchStatus.Left+groupBoxSOVIDescription.Width;
       panelPasswagSounds.Left:=panelPasswagSounds.Left+groupBoxSOVIDescription.Width;
       groupBoxSOVIDescription.Visible:=True;
       FormMain.ClientWidth:=FormMain.ClientWidth+groupBoxSOVIDescription.Width;
@@ -2136,7 +2136,7 @@ begin
       groupBoxSAVPCheckboxes.Left:=groupBoxSAVPCheckboxes.Left-groupBoxSOVIDescription.Width;
       groupBoxPRSCheckboxes.Left:=groupBoxPRSCheckboxes.Left-groupBoxSOVIDescription.Width;
       lblSimulatorVersionLaunched.Left:=lblSimulatorVersionLaunched.Left-groupBoxSOVIDescription.Width;
-      Label5.Left:=Label5.Left-groupBoxSOVIDescription.Width;
+      lblSimulatorLaunchStatus.Left:=lblSimulatorLaunchStatus.Left-groupBoxSOVIDescription.Width;
       panelPasswagSounds.Left:=panelPasswagSounds.Left-groupBoxSOVIDescription.Width;
       groupBoxSOVIDescription.Visible:=False;
       FormMain.ClientWidth:=FormMain.ClientWidth-groupBoxSOVIDescription.Width;
@@ -2170,7 +2170,7 @@ begin
           groupBoxSAVPCheckboxes.Left:=groupBoxSAVPCheckboxes.Left+groupBoxSAVPEbox.Width;
           groupBoxPRSCheckboxes.Left:=groupBoxPRSCheckboxes.Left+groupBoxSAVPEbox.Width;
           lblSimulatorVersionLaunched.Left:=lblSimulatorVersionLaunched.Left+groupBoxSAVPEbox.Width;
-          Label5.Left:=Label5.Left+groupBoxSAVPEbox.Width;
+          lblSimulatorLaunchStatus.Left:=lblSimulatorLaunchStatus.Left+groupBoxSAVPEbox.Width;
           panelPasswagSounds.Left:=panelPasswagSounds.Left+groupBoxSAVPEbox.Width;
           groupBoxSAVPEbox.Visible := True;
           FormMain.ClientWidth:=FormMain.ClientWidth+groupBoxSAVPEbox.Width;
@@ -2200,7 +2200,7 @@ begin
           groupBoxSAVPCheckboxes.Left:=groupBoxSAVPCheckboxes.Left-groupBoxSAVPEbox.Width;
           groupBoxPRSCheckboxes.Left:=groupBoxPRSCheckboxes.Left-groupBoxSAVPEbox.Width;
           lblSimulatorVersionLaunched.Left:=lblSimulatorVersionLaunched.Left-groupBoxSAVPEbox.Width;
-          Label5.Left:=Label5.Left-groupBoxSAVPEbox.Width;
+          lblSimulatorLaunchStatus.Left:=lblSimulatorLaunchStatus.Left-groupBoxSAVPEbox.Width;
           panelPasswagSounds.Left:=panelPasswagSounds.Left-groupBoxSAVPEbox.Width;
           FormMain.ClientWidth:=FormMain.ClientWidth-groupBoxSAVPEbox.Width;
           UpdateInfoName;

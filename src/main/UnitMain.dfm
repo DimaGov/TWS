@@ -167,7 +167,7 @@ object FormMain: TFormMain
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Label5: TLabel
+  object lblSimulatorLaunchStatus: TLabel
     Left = 8
     Top = 456
     Width = 305
