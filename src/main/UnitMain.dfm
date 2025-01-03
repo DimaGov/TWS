@@ -735,6 +735,21 @@ object FormMain: TFormMain
       Height = 13
       Caption = #1043#1088#1086#1084#1082#1086#1089#1090#1100' '#1089#1074#1080#1089#1090'. '#1090#1080#1092#1086#1085'.'
     end
+    object lblCameraActive: TLabel
+      Left = 5
+      Top = 280
+      Width = 161
+      Height = 17
+      Caption = #1050#1072#1084#1077#1088#1072' '#1074#1072#1075#1086#1085#1086#1074' '#1072#1082#1090#1080#1074#1085#1072'!'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clRed
+      Font.Height = -14
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      Visible = False
+      WordWrap = True
+    end
     object cbWagPerestuk: TCheckBox
       Left = 11
       Top = 30

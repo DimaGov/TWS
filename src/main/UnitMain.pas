@@ -29,7 +29,7 @@ uses
   EncdDecd, SAVP, RAMMemModule, FileManager, ExtraUtils, SoundManager, Debug,
   bass_fx, UnitSOVIHelp, UnitSoundRRS, CHS8, CHS4KVR, CHS7, CHS4T, VL80T,
   ES5K, EP1M, ED4M, ED9M, CHS2K, sl2m, VL82M, CHS4, TE10U, M62, VL85,
-  TEM18dm, TEP70, TEP70bs, VL11M, SoundRes;
+  TEM18dm, TEP70, TEP70bs, VL11M, SoundRes, Camera;
 
 type
   TFormMain = class(TForm)
@@ -140,6 +140,7 @@ type
     N10: TMenuItem;
     ReadME1: TMenuItem;
     timerDoorCloseZvonok: TTimer;
+    lblCameraActive: TLabel;
     
     procedure ChangeVolume(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -507,6 +508,12 @@ var
   ReduktorVolume:              Single;
   ReduktorVolumeDest:          Single;
 
+  // Если запустить TWS с параметром "-camera",
+  // то эта переменная будет иметь статус True
+  // и будет работать камера вагонов кл.: PgUp и PgDown
+  CameraStartParam:            Boolean = False;
+  Camera__: Camera_;
+
 implementation
 
 uses StrUtils, Variants, UnitSettings;
@@ -667,6 +674,8 @@ end;
 //                       Подпрограмма Открытие программы                        //
 //------------------------------------------------------------------------------//
 procedure TFormMain.FormCreate(Sender: TObject);
+var
+   I: Integer;
 begin
   //if CheckInstallation=False then Application.Terminate; // Проверка правильно-ли установлена программа
 
@@ -718,6 +727,22 @@ begin
 
   Log_.DebugLogStart(Self);
   Log_.DebugWriteErrorToErrorList('TWS started');
+
+  // Получение параметров запуска приложения
+  Log_.DebugWriteErrorToErrorList('TWS start parameters');
+  if ParamCount <> 0 then begin
+     for I := 1 to ParamCount do begin
+        Log_.DebugWriteErrorToErrorList(ParamStr(I));
+        if ParamStr(I) = '-camera' then CameraStartParam := True;
+     end;
+  end;
+
+  if CameraStartParam = True then begin
+     Camera__ := Camera_.Create;
+     Log_.DebugWriteErrorToErrorList('Wagon camera is activated');
+     lblCameraActive.Visible := True;
+     FormMain.Caption := FormMain.Caption + ' -camera';
+  end;
 
   PerehodDIZStep:=0.01;
 end;
@@ -829,6 +854,8 @@ try
       // Блок обновления стартовых данных (один раз, или при смене маршрута/локомотива) //
       if isRefreshLocalData = True then begin
          isSpeedLimitRouteLoad := False;
+         
+         if CameraStartParam = True then Camera__.Initialized := False;
 
          // Чтение данных файла settings.ini из ОЗУ симулятора
          try
@@ -1702,6 +1729,8 @@ try
     if LocoGlobal = 'TEM18dm' then tem18dm__.step();
     if LocoGlobal = 'TEP70' then tep70__.step();
     if LocoGlobal = 'TEP70bs' then tep70bs__.step();
+
+    if CameraStartParam = True then Camera__.step();
 
     SAVPTick();
 

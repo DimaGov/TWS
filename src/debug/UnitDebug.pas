@@ -608,7 +608,7 @@ var
    OutStr: String;
 begin
    //_size := Trunc(SizeOf(Camera__.WagsLenght) / 8);
-   (*_size := Length(Camera__.WagsLenght);
+   _size := Length(Camera__.WagsLenght);
    OutStr := 'sizeof array: ' + IntToStr(_size) + ' pcs.' + #12 + #13 + #12 + #13;
 
    for I := 0 to _size do begin
@@ -617,7 +617,7 @@ begin
       OutStr := OutStr + 'index NO' + IntToStr(I) + ' length: ' + FloatToStr(Camera__.WagsLenght[I]) + 'm.' + #12 + #13;
    end;
 
-   ShowMessage(OutStr);*)
+   ShowMessage(OutStr);
 end;
 
 end.
