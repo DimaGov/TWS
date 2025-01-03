@@ -187,26 +187,30 @@ implementation
    procedure Camera_.step();
    begin
       if track > 1 then begin // Проверка полностью запустиля ZDSimulator???
-         if Initialized = False then begin
-            try
-               Initialize(); // Если не было инициализации - делаем ее
-            except UnitMain.Log_.DebugWriteErrorToErrorList('Camera.step() Error in Camera.Initialize()'); end;
-         end else begin
-            if UnitMain.Camera = 2 then begin
+         if (CoupleStat <> 0) then begin
+            if (Initialized = False) then begin
                try
-               checkButtons();
-               except UnitMain.Log_.DebugWriteErrorToErrorList('Camera.step() Error in Camera.checkButtons()'); end;
+                  Initialize(); // Если не было инициализации - делаем ее
+               except UnitMain.Log_.DebugWriteErrorToErrorList('Camera.step() Error in Camera.Initialize()'); end;
             end else begin
-               try
-               //reset();
-               except UnitMain.Log_.DebugWriteErrorToErrorList('Camera.step() Camera.step Error in Camera.Reset()'); end;
-            end;
+               if UnitMain.Camera = 2 then begin
+                  try
+                  checkButtons();
+                  except UnitMain.Log_.DebugWriteErrorToErrorList('Camera.step() Error in Camera.checkButtons()'); end;
+               end else begin
+                  try
+                  //reset();
+                  except UnitMain.Log_.DebugWriteErrorToErrorList('Camera.step() Camera.step Error in Camera.Reset()'); end;
+               end;
 
-            try
-            if (UnitMain.Camera = 0) And (Initialized = True) then begin
-               TurnStatusWagCamera(False);
-            end else TurnStatusWagCamera(True);
-            except UnitMain.Log_.DebugWriteErrorToErrorList('Camera.step() Error in Camera.TurnStatusWagCamera()'); end;
+               try
+               if (UnitMain.Camera = 0) And (Initialized = True) then begin
+                  TurnStatusWagCamera(False);
+               end else TurnStatusWagCamera(True);
+               except UnitMain.Log_.DebugWriteErrorToErrorList('Camera.step() Error in Camera.TurnStatusWagCamera()'); end;
+            end;
+         end else begin
+            if Initialized = True then TurnStatusWagCamera(False);
          end;
       end;
    end;
