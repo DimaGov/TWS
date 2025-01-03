@@ -813,14 +813,14 @@ begin
        Randomize;
        if (cbPRS_RZD.Checked = True) and (cbPRS_UZ.Checked = False) then begin
           repeat
-             NumPRS    := Random(43);
+             NumPRS    := Random(PRSRZDSamplesCount);
           until (NumPRS<>PrevPrs) and (NumPRS<>0);
           PRSF := PChar('TWS/PRS/RU_'+IntToStr(NumPRS)+'.mp3'); PrevPRS := NumPRS;
        end;
 
        if (cbPRS_UZ.Checked = True) and (cbPRS_RZD.Checked = False) then begin
           repeat
-    	     NumPRS    := Random(5);
+    	     NumPRS    := Random(PRSUzSamplesCount);
     	  until (NumPRS<>PrevPrs) and (NumPRS<>0);
     	  PRSF := PChar('TWS/PRS/UA_'+IntToStr(NumPRS)+'.mp3'); PrevPRS := NumPRS;
        end;
@@ -833,13 +833,13 @@ begin
           if Country = 1 then begin
              Randomize;
              repeat
-                NumPRS    := Random(43);
+                NumPRS    := Random(PRSRZDSamplesCount);
              until (NumPRS<>PrevPrs) and (NumPRS<>0);
              PRSF := PChar('TWS/PRS/RU_'+IntToStr(NumPRS)+'.mp3'); PrevPRS := NumPRS;
           end else begin
              Randomize;
              repeat
-                NumPRS    := Random(5);
+                NumPRS    := Random(PRSUzSamplesCount);
              until (NumPRS<>PrevPrs) and (NumPRS<>0);
              PRSF := PChar('TWS/PRS/UA_'+IntToStr(NumPRS)+'.mp3'); PrevPRS := NumPRS;
           end;

@@ -10,7 +10,7 @@
  |    Copyright:  Dmitry Govorukha a.k.a DimaGVRH                    |     |
  |    Author:     Dmitry Govorukha a.k.a DimaGVRH                    |     |
  |                                                                   |     +
- |    UKRAINE, DNEPR CITY, 2017-2024 (C)                             |    /
+ |    UKRAINE, DNEPR CITY, 2017-2025 (C)                             |    /
  |                                                                   |   /
  |                                                                   |  /
  |                                                                   | /
@@ -374,6 +374,8 @@ var
   NextOgrSpeed,      PrevNextOgrSpeed:Byte;         // Следующее ограничение скорости (желтая точка на КЛУБ-е)
   NextOgrPeekStatus:                  Byte;	    // Статус для пиканья про снижение ограничения [0-нет снижения 1-в процессе]
   PrevPRS:                            Integer;
+  PRSUzSamplesCount:                  Integer;      // Кол-во сэмплов .mp3 в папке PRS (УЗ)
+  PRSRZDSamplesCount:                 Integer;      // Кол-во сэмплов .mp3 в папке PRS (РЖД)
   BrakeCylinders,    PrevBrkCyl:      Single;       // Давление в тормозных цилиндрах
   Svistok,           PrevSvistok:     Byte;         // Данные про работу свистка
   Tifon,             PrevTifon:       Byte;         // Данные про работу тифона
@@ -922,6 +924,23 @@ try
             Log_.DebugWriteErrorToErrorList('Consist length: ' + FloatToStr(ConsistLength) + 'm.');
          except
             Log_.DebugWriteErrorToErrorList('Fatal error 0x06 (error in calculating player train length in mainTimer)');
+         end;
+
+         // Подсчёт сэмплов .mp3 в папке PRS
+         try
+            PRSUzSamplesCount  := 0;
+            PRSRZDSamplesCount := 0;
+            if FindFirst('TWS/PRS/*.mp3',faAnyFile,SR) = 0 then repeat
+               try
+                  if Pos('RU_', SR.Name) <> 0 then Inc(PRSRZDSamplesCount);
+                  if Pos('UA_', SR.Name) <> 0 then Inc(PRSUzSamplesCount);
+               except end;
+            until FindNext(SR) <> 0;
+            FindClose(SR);
+            Log_.DebugWriteErrorToErrorList('PRS UZ Samples Count: ' + IntToStr(PRSUzSamplesCount));
+            Log_.DebugWriteErrorToErrorList('PRS RZD Samples Count: ' + IntToStr(PRSRZDSamplesCount));
+         except
+            Log_.DebugWriteErrorToErrorList('Error in calculating .mp3 samples in PRS directory');
          end;
 
          // Автовыбор типа вагонов для их перестука
