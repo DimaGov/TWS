@@ -8,6 +8,7 @@ type camera_ = class (TObject)
     private
 
       lastWagShadowOff: array[0..5] of Byte;
+      lastWagShadowOn: array[0..5] of Byte;
       ExtraCodeZDS: array[0..16] of Byte;
 
       procedure checkButtons();
@@ -56,6 +57,13 @@ implementation
       lastWagShadowOff[3] := 247;
       lastWagShadowOff[4] := 255;
       lastWagShadowOff[5] := 144;
+
+      lastWagShadowOn[0] := 216;
+      lastWagShadowOn[1] := 37;
+      lastWagShadowOn[2] := 24;
+      lastWagShadowOn[3] := 168;
+      lastWagShadowOn[4] := 72;
+      lastWagShadowOn[5] := 0;
 
       // jb 0048A6CA
       ExtraCodeZDS[0] := 15;
@@ -190,7 +198,7 @@ implementation
          if (CoupleStat <> 0) then begin
             if (Initialized = False) then begin
                try
-                  Initialize(); // ≈сли не было инициализации - делаем ее
+                  if UnitMain.Camera <> 0 then Initialize(); // ≈сли не было инициализации - делаем ее
                except UnitMain.Log_.DebugWriteErrorToErrorList('Camera.step() Error in Camera.Initialize()'); end;
             end else begin
                if UnitMain.Camera = 2 then begin
@@ -204,13 +212,16 @@ implementation
                end;
 
                try
-               if (UnitMain.Camera = 0) And (Initialized = True) then begin
+               if (UnitMain.Camera = 0) then begin
+                  if (WagsNum<>WagonsAmount) And (WagCameraStatus = False) then WagCameraStatus := True; 
                   TurnStatusWagCamera(False);
                end else TurnStatusWagCamera(True);
                except UnitMain.Log_.DebugWriteErrorToErrorList('Camera.step() Error in Camera.TurnStatusWagCamera()'); end;
             end;
          end else begin
-            if Initialized = True then TurnStatusWagCamera(False);
+            //if Initialized = True then begin
+            TurnStatusWagCamera(False);
+            //end;
          end;
       end;
    end;
@@ -229,6 +240,9 @@ implementation
                            else WagsNum := WagonsAmount + 1;
 
          WriteProcessMemory(UnitMain.pHandle, ADDR_WAGS_NUM, @WagsNum, 4, temp);
+
+         if status = False then WriteProcessMemory(UnitMain.pHandle, ADDR_LAST_WAGON_SHADOW_OFF, @lastWagShadowOn, sizeof(lastWagShadowOn), temp);
+         if status = True  then WriteProcessMemory(UnitMain.pHandle, ADDR_LAST_WAGON_SHADOW_OFF, @lastWagShadowOff, sizeof(lastWagShadowOff), temp);
 
          WagCameraStatus := Not(WagCameraStatus);
 

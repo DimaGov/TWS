@@ -8,149 +8,7 @@ uses
 
 type
   TFormDebug = class(TForm)
-    Panel3: TPanel;
-    Label23: TLabel;
-    Label_Speed: TLabel;
-    Label_Track: TLabel;
-    Label3: TLabel;
-    Label15: TLabel;
-    Label25: TLabel;
-    Label27: TLabel;
-    Label28: TLabel;
-    Label29: TLabel;
-    Label30: TLabel;
-    Label_KM1: TLabel;
-    Label_OP: TLabel;
-    Label_Route: TLabel;
-    Label_Loco: TLabel;
-    Label_395: TLabel;
-    Label_254: TLabel;
-    Label8: TLabel;
-    Label_Svetofor: TLabel;
-    Label17: TLabel;
-    Label21: TLabel;
-    Label22: TLabel;
-    Label_Reversor: TLabel;
-    Label_TrVstr: TLabel;
-    Label_KlKLUB: TLabel;
-    Label31: TLabel;
-    Label_Acceleration: TLabel;
-    Label36: TLabel;
-    Label37: TLabel;
-    Label6: TLabel;
-    Label10: TLabel;
-    Label32: TLabel;
-    Label33: TLabel;
-    Label_FTP: TLabel;
-    Label_BTP: TLabel;
-    Label38: TLabel;
-    Label40: TLabel;
-    Label34: TLabel;
-    Label_Fazan: TLabel;
-    Label51: TLabel;
-    Label52: TLabel;
-    Label53: TLabel;
-    Label54: TLabel;
-    Label57: TLabel;
-    Label58: TLabel;
-    Label59: TLabel;
-    Label60: TLabel;
-    Label18: TLabel;
-    Label_Op_Deg: TLabel;
-    Label26: TLabel;
-    Label42: TLabel;
-    Label69: TLabel;
-    Label70: TLabel;
-    Label71: TLabel;
-    Label72: TLabel;
-    Label64: TLabel;
-    Label74: TLabel;
-    Label55: TLabel;
-    Label61: TLabel;
-    Label84: TLabel;
-    Label85: TLabel;
-    Label86: TLabel;
-    Label118: TLabel;
-    Label119: TLabel;
-    Label127: TLabel;
-    Panel2: TPanel;
-    Label73: TLabel;
-    Label45: TLabel;
-    Label63: TLabel;
-    Label_Freight: TLabel;
-    Label13: TLabel;
-    Label35: TLabel;
-    Label24: TLabel;
-    Label41: TLabel;
-    Label39: TLabel;
-    Label_BV: TLabel;
-    Label9: TLabel;
-    Label56: TLabel;
-    Label44: TLabel;
-    Label62: TLabel;
-    Label75: TLabel;
-    Label76: TLabel;
-    Label49: TLabel;
-    Label48: TLabel;
-    Label47: TLabel;
-    Label65: TLabel;
-    Label66: TLabel;
-    Label67: TLabel;
-    Label68: TLabel;
-    Label77: TLabel;
-    Label82: TLabel;
-    Label83: TLabel;
-    Label91: TLabel;
-    Label92: TLabel;
-    Label78: TLabel;
-    Label79: TLabel;
-    Label80: TLabel;
-    Label81: TLabel;
-    Label97: TLabel;
-    Label98: TLabel;
-    Label99: TLabel;
-    Label100: TLabel;
-    Label101: TLabel;
-    Label102: TLabel;
-    Label103: TLabel;
-    Label104: TLabel;
-    Label105: TLabel;
-    Label106: TLabel;
-    Label107: TLabel;
-    Label108: TLabel;
-    Label109: TLabel;
-    Label110: TLabel;
-    Label111: TLabel;
-    Label112: TLabel;
-    Label113: TLabel;
-    Label114: TLabel;
-    Label115: TLabel;
-    Label116: TLabel;
-    Label117: TLabel;
-    Label120: TLabel;
-    Label121: TLabel;
-    Label125: TLabel;
-    Label126: TLabel;
-    Label128: TLabel;
-    Timer1: TTimer;
-    Label1: TLabel;
-    Label2: TLabel;
-    Label_TrackTail: TLabel;
-    Label4: TLabel;
-    Label5: TLabel;
-    Label7: TLabel;
-    Label11: TLabel;
-    Label14: TLabel;
-    Label16: TLabel;
-    Label19: TLabel;
-    Label20: TLabel;
-    Label12: TLabel;
-    Label43: TLabel;
-    Label46: TLabel;
-    Label50: TLabel;
-    Label87: TLabel;
-    Label88: TLabel;
-    Label89: TLabel;
+    tmrRefreshDebugData: TTimer;
     ListView1: TListView;
     btnStationsBorder: TButton;
     Memo1: TMemo;
@@ -158,13 +16,11 @@ type
     Memo2: TMemo;
     Label93: TLabel;
     Memo3: TMemo;
-    Label94: TLabel;
     btnShowWagonsLenghts: TButton;
-    procedure Timer1Timer(Sender: TObject);
+    procedure tmrRefreshDebugDataTimer(Sender: TObject);
     procedure ListView1ColumnClick(Sender: TObject; Column: TListColumn);
     procedure FormCreate(Sender: TObject);
     procedure btnStationsBorderClick(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnShowWagonsLenghtsClick(Sender: TObject);
   private
     { Private declarations }
@@ -284,11 +140,7 @@ begin
            AddNewLineToDebugger('Зарядка АБ №2', AB_ZB_2, 'ZDS переменная');
            AddNewLineToDebugger('Прожектора', Highlights, 'ZDS переменная');
            AddNewLineToDebugger('Перестук на станции', Highlights, 'TWS переменная');
-           //AddNewLineToDebugger('Кол-во дорожек САВП', SAVPBaseObjectsCount, 'TWS переменная');
            AddNewLineToDebugger('Файл сценария', SceneryName, 'ZDS переменная');
-           //AddNewLineToDebugger('Кол-во дорожек лок. ЭК сценария', scBaseInfoCount, 'TWS переменная');
-           //AddNewLineToDebugger('УСАВП Enable', USAVPEnabled, 'TWS переменная');
-           //AddNewLineToDebugger('SAVPE File Prefix', SAVPEFilePrefiks, 'TWS переменная');
            AddNewLineToDebugger('scSAVPOverrideRouteEK', scSAVPOverrideRouteEK, 'TWS переменная');
            AddNewLineToDebugger('headTrainEndOfTrain', HeadTrainEndOfTrain, 'TWS переменная');
            AddNewLineToDebugger('isConnectedMemory', isConnectedMemory, 'TWS переменная'); (*ID=60*)
@@ -341,24 +193,20 @@ begin
            AddNewLineToDebugger('CameraLastWagonOffset', CameraLastWagonOffset, 'ZDS переменная');
            AddNewLineToDebugger('Количество вагонов', WagsNum, 'ZDS переменная');
            AddNewLineToDebugger('Количество вагонов (settings.ini)', WagonsAmount, 'ZDS переменная');
-           //AddNewLineToDebugger('CameraSelectedWagon', Camera__.SelectedWagon, 'TWS переменная');
-           //AddNewLineToDebugger('Camera.isCon', Camera__.isCon, 'TWS переменная');
+           AddNewLineToDebugger('Vent2SecWait', CHS8__.Vent2SecWait, 'TWS переменная');
         end;
 end;
 
-procedure TFormDebug.Timer1Timer(Sender: TObject);
+procedure TFormDebug.tmrRefreshDebugDataTimer(Sender: TObject);
 var
 	I, J: Integer;
         ListItem: TListItem;
 begin
 	try
-        Label94.Caption := floatToStr(Abs(TC - PrevTC) * 4000);
         With FormMain do begin
         for I:=0 to ListView1.Items.Count do begin
            ListItem := ListView1.Items[I];
            J := StrToInt(ListView1.Items[I].Caption);
-           //BASS_ChannelGetAttribute(VentTD_Channel, BASS_ATTRIB_FREQ, VentPTRFreq);
-           //BASS_ChannelGetAttribute(VentTD_Channel, BASS_ATTRIB_VOL, VentPTRVol);
            Case J Of
               1: ListItem.SubItems[3] := IntToStr(UnitMain.Speed);
               2: ListItem.SubItems[3] := FloatToStr(Acceleretion);
@@ -415,11 +263,7 @@ begin
               53: ListItem.SubItems[3] := IntToStr(AB_ZB_2);
               54: ListItem.SubItems[3] := IntToStr(Highlights);
               55: ListItem.SubItems[3] := BoolToStr(isPlayPerestuk_OnStation);
-              //56: ListItem.SubItems[3] := IntToStr(SAVP_l.SAVPBaseObjectsCount);
               56: ListItem.SubItems[3] := SceneryName;
-              //57: ListItem.SubItems[3] := IntToStr(SAVP_l.scBaseInfoCount);
-              //57: ListItem.SubItems[3] := BoolToStr(USAVPEnabled);
-              //58: ListItem.SubItems[3] := SAVP_l.SAVPEFilePrefiks;
               57: ListItem.SubItems[3] := BoolToStr(scSAVPOverrideRouteEK);
               58: ListItem.SubItems[3] := BoolToStr(HeadTrainEndOfTrain);
               59: ListItem.SubItems[3] := BoolToStr(isConnectedMemory);
@@ -472,62 +316,10 @@ begin
               106: ListItem.SubItems[3] := FloatToStr(CameraLastWagonOffset);
               107: ListItem.SubItems[3] := IntToStr(WagsNum);
               108: ListItem.SubItems[3] := IntToStr(WagonsAmount);
-              //109: ListItem.SubItems[3] := IntToStr(Camera__.SelectedWagon);
-              //110: ListItem.SubItems[3] := BoolToStr(Camera__.isCon);
+              109: ListItem.SubItems[3] := BoolToStr(CHS8__.Vent2SecWait);
            end;
         end;
         end;
-	// ***** БЛОК ОБНОВЛЕНИЯ ДАННЫХ ***** //
-        Label_Route.Caption        := UnitMain.Route + ' | ' +  UnitMain.naprav;
-        Label_Loco.Caption         := UnitMain.LocoGlobal + ' | ' + UnitMain.Loco;
-        Label19.Caption            := IntToStr(UnitMain.Svistok);
-        Label20.Caption            := IntToStr(UnitMain.Tifon);
-        Label_Freight.Caption := IntToStr(UnitMain.Freight);
-        //Label_Op_Deg.Caption := IntToStr(UnitMain.KM_OP_Deg);
-        if isPlayPerestuk_OnStation=True then Label41.Caption:='1' else Label41.Caption:='0';
-        Label45.Caption := FloatToStr(UnitMain.TEDVlm);
-        Label49.Caption := IntToStr(FormMain.timerPRSswitcher.Interval);
-        Label48.Caption := IntToStr(FormMain.TimerPlayPerestuk.Interval);
-        Label56.Caption := IntToStr(UnitMain.KME_ED);
-        Label35.Caption := IntToStr(UnitMain.MP);
-        Label43.Caption := IntToStr(UnitMain.WagsNum);
-        Label83.Caption := IntToStr(UnitMain.TedNow);
-        Label91.Caption := IntToStr(UnitMain.CHS8__.UnipulsFaktPos);
-        Label92.Caption := IntToStr(UnitMain.CHS8__.UnipulsTargetPos);
-        //Label87.Caption := IntToStr(UnitMain.PrevVersionID);
-        if FormMain.TimerPlayPerestuk.Enabled = True then
-           Label89.Caption := 'True'
-        else
-           Label89.Caption := 'False';
-        if UnitMain.isVstrechDrive = True then
-           Label50.Caption := 'TRUE'
-        else
-           Label50.Caption := 'FALSE';
-        Label121.Caption:= IntToStr(UnitMain.UltimateTEDAmperage);
-        UnitMain.Voltage:=0; BASS_ChannelGetAttribute(DizChannel, BASS_ATTRIB_VOL, UnitMain.Voltage);
-        Label80.Caption := FloatToStr(UnitMain.Voltage);
-        Label92.Caption := IntToStr(UnitMain.CHS8__.UnipulsTargetPos);
-        UnitMain.Voltage:=0; BASS_ChannelGetAttribute(DizChannel2, BASS_ATTRIB_VOL, UnitMain.Voltage);
-        Label81.Caption := FloatToStr(UnitMain.Voltage);
-        UnitMain.Voltage:=0; BASS_ChannelGetAttribute(TEDChannel, BASS_ATTRIB_VOL, UnitMain.Voltage);
-        Label101.Caption := FloatToStr(UnitMain.Voltage);
-        UnitMain.Voltage:=0; BASS_ChannelGetAttribute(TEDChannel2, BASS_ATTRIB_VOL, UnitMain.Voltage);
-        Label102.Caption := FloatToStr(UnitMain.Voltage);
-        UnitMain.Voltage:=0; BASS_ChannelGetAttribute(LocoChannel[0], BASS_ATTRIB_VOL, UnitMain.Voltage);
-        Label105.Caption := FloatToStr(UnitMain.Voltage);
-        UnitMain.Voltage:=0; BASS_ChannelGetAttribute(LocoChannel[1], BASS_ATTRIB_VOL, UnitMain.Voltage);
-        Label107.Caption := FloatToStr(UnitMain.Voltage);
-        UnitMain.Voltage:=0; BASS_ChannelGetAttribute(Vent_Channel, BASS_ATTRIB_VOL, UnitMain.Voltage);
-        Label114.Caption := FloatToStr(UnitMain.Voltage);
-        UnitMain.Voltage:=0; BASS_ChannelGetAttribute(VentCycle_Channel, BASS_ATTRIB_VOL, UnitMain.Voltage);
-        Label115.Caption := FloatToStr(UnitMain.Voltage);
-        UnitMain.Voltage:=0; BASS_ChannelGetAttribute(XVent_Channel, BASS_ATTRIB_VOL, UnitMain.Voltage);
-        Label116.Caption := FloatToStr(UnitMain.Voltage);
-        UnitMain.Voltage:=0; BASS_ChannelGetAttribute(XVentCycle_Channel, BASS_ATTRIB_VOL, UnitMain.Voltage);
-        Label117.Caption := FloatToStr(UnitMain.Voltage);
-        if UnitMain.isConnectedMemory=True then Label67.Caption := 'True' else Label67.Caption := 'False';
-        if UnitMain.PerehodTED = True then Label77.Caption := 'True' else Label77.Caption := 'False';
-        label109.Caption := IntToStr(UnitMain.LocoNum);
         except end;
   // ********************************** //
 end;
@@ -580,7 +372,7 @@ end;
 
 procedure TFormDebug.FormCreate(Sender: TObject);
 begin
-	Timer1.Enabled := True;
+	tmrRefreshDebugData.Enabled := True;
 	RefreshDebugger();
 end;
 
@@ -594,11 +386,6 @@ begin
            	  IntToStr(UnitMain.StationTrack2[I]) + #12 + #13;
         end;
         ShowMessage(Str);
-end;
-
-procedure TFormDebug.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-	Timer1.Enabled := False;
 end;
 
 procedure TFormDebug.btnShowWagonsLenghtsClick(Sender: TObject);

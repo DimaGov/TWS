@@ -223,7 +223,9 @@ uses UnitMain, SoundManager, Windows, Bass, SysUtils, Math;
    procedure CHS8_.vent_step();
    begin
       VentTDRemaindTimeCheck();
-      
+
+      if isConnectedMemory<>PrevConMem then VentStarted := False;
+
       if VentStarted = False then begin
          VentTDF := StrNew(PChar(soundDir + 'vent.wav')); VentCycleTDF := StrNew(PChar(soundDir + 'vent.wav'));
          XVentTDF := StrNew(PChar(soundDir + 'x_vent.wav'));XVentCycleTDF:=StrNew(PChar(soundDir + 'x_vent.wav'));
