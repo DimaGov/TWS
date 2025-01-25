@@ -13,6 +13,7 @@ type chs2k_ = class (TObject)
       procedure bv_step();
       procedure mk_step();
       procedure ept_step();
+      procedure ps_step();
       procedure vent_step();
       procedure hLights_step();
       procedure reversor_step();
@@ -57,6 +58,7 @@ implementation
       if FormMain.cbVspomMash.Checked = True then begin
          bv_step();
          mk_step();
+         ps_step();
          vent_step();
       end;
    end;
@@ -76,6 +78,29 @@ implementation
    begin
       if EPT <> PrevEPT then begin
          LocoPowerEquipmentF := PChar(soundDir + 'tumbler.wav');
+         isPlayLocoPowerEquipment := False;
+      end;
+   end;
+
+   // ----------------------------------------------------
+   //
+   // ----------------------------------------------------
+   procedure CHS2K_.ps_step();
+   begin
+      if (KM_Pos_1 = 0) and (Prev_KMAbs > 0) then begin
+         LocoPowerEquipmentF := StrNew(PChar(soundDir + 'sbros-0.wav'));
+         isPlayLocoPowerEquipment := False;
+      end;
+      if (KM_Pos_1 > 0) and (Prev_KMAbs = 0) then begin
+         LocoPowerEquipmentF := StrNew(PChar(soundDir + 'nabor-1.wav'));
+         isPlayLocoPowerEquipment := False;
+      end;
+      if (KM_Pos_1 <> Prev_KMAbs) and (Prev_KMAbs <> 0) and (KM_Pos_1 <> 0) then begin
+         LocoPowerEquipmentF := StrNew(PChar(soundDir + 'nabor-sbros.wav'));
+         isPlayLocoPowerEquipment := False;
+      end;
+      if (KM_OP <> Prev_KM_OP) then begin
+         LocoPowerEquipmentF := StrNew(PChar(soundDir + 'nabor-sbros.wav'));
          isPlayLocoPowerEquipment := False;
       end;
    end;

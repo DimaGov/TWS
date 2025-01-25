@@ -789,15 +789,9 @@ begin
      if Ordinata<>PrevOrdinata then OrdinataEstimate := Ordinata;
 
      try
-        (*if VersionID>=1 then begin
-           try
-              //KM_Pos_1 := Trunc(wPos_1);
-           except end;
-        end else begin*)
-           if (LocoGlobal<>'M62') and (LocoGlobal<>'TEP70bs') then
-              wPos_1 := wPos_1 + 0.25;
-              KM_Pos_1 := Trunc(wPos_1);
-        //end;
+           //if (LocoGlobal<>'M62') and (LocoGlobal<>'TEP70bs') then
+           //   wPos_1 := wPos_1 + 0.25;
+           KM_Pos_1 := Round(wPos_1)
       except end;
 
      // --- ¬ычисл€ем длину встречного поеда в метрах ---- //
