@@ -42,7 +42,7 @@ var
 
 implementation
 
-uses UnitMain, Windows, SysUtils, SoundManager, Math, TlHelp32, ExtraUtils, Dialogs;
+uses UnitMain, Windows, SysUtils, SoundManager, Math, TlHelp32, ExtraUtils, Dialogs, IniFiles;
 
 var
    ProcReadDataMemoryAddr: ProcReadDataMemoryType;
@@ -269,8 +269,11 @@ begin
          isConnectedMemory := FindTask('L-55-008.exe');
          if isConnectedMemory = False then begin
             isConnectedMemory := FindTask('L-55-009.exe');
-            if isConnectedMemory = False then
+            if isConnectedMemory = False then begin
                isConnectedMemory := FindTask('ZLauncher.exe');
+               if isConnectedMemory = False then
+                  isConnectedMemory := FindTask('ZDLauncher.exe');
+            end;
          end;
       end;
    end;
@@ -280,7 +283,8 @@ begin
       for I := 0 to 3 do begin
          if I = 0 then GameWindowName := 'ZDSimulator55.008' else
             if I = 1 then GameWindowName := 'ZDSimulator54.006' else
-               if I = 2 then GameWindowName := 'ZDSimulator55.009';
+               if I = 2 then GameWindowName := 'ZDSimulator55.009' else
+                  if I = 3 then GameWindowName := 'ZDSimulator v56.2';
 
          wHandle := FindWindow(nil, PChar(GameWindowName+' [Paused]'));
 
@@ -831,6 +835,8 @@ end;
 //   Подпрограмма для задания начальных адресов в ОЗУ и параметров локомотива   //
 //------------------------------------------------------------------------------//
 procedure InitializeStartParams(VersionID: Integer);
+var
+   Ini: TIniFile;
 begin
     With FormMain do begin
        if versionID = 0 then begin
@@ -920,6 +926,13 @@ begin
           ADDR_2ES5K_BV :=ptr($091B8124); ADDR_CHS8_UNIPULS_AVARIA:= ptr($091B8818);ADDR_PNEVM_SIGNAL:=   ptr($0537114C);
           ADDR_TEP70_TED:=ptr($091B9384);      ADDR_VL82_COMPRESSOR:=ptr($091B8110);    ADDR_VL82_VENT := ptr($091B8114);
           ADDR_CAMERA_LAST_WAGON_OFFSET:=ptr($090F06C0);ADDR_WAGS_NUM:=ptr($0072CB80); ADDR_CHS8_GV_1  :=   ptr($08FEB82C);
+       end;
+
+       // Версия 5.6
+       if VersionID = 3 then begin
+          Ini:=TiniFile.Create(extractfilepath(ParamStr(0))+'tws.ini');
+          ADDR_SVISTOK := ptr(strToInt('$' + Ini.ReadString('global', 'Svistok', '-1')));
+          Ini.Free;
        end;
 
         // -/- ВЛ80т (VL80t) -/- //

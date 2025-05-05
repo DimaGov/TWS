@@ -295,7 +295,7 @@ implementation
       end;
 
       if Speed>0 then begin
-         if KM_Pos_1 >= 2 then begin
+         if (KM_Pos_1 >= 2) or (KM_Pos_1 < 0) then begin
 
             TEDVlmDest := SimpleRoundTo(abs(Acceleretion)*1.5, -2);
 

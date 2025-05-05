@@ -51,6 +51,7 @@ var
   KLUB_BEEP:                 Cardinal;     // Канал для пиканья КЛУБ-а при смене показаний светофора
   Ogr_Speed_KLUB:            Cardinal;     // Канал для пиканья КЛУБ-а при приближении к ограничениею
   LocoPowerEquipment:        Cardinal;     // Канал для звука силового оборудования локомотива(БВ, ФР, Жалюзи)
+  LocoPowerEquipment_FX:     Cardinal;     // Канал для звука силового оборудования локомотива(БВ, ФР, Жалюзи)
   FrontTP_Channel,BackTP_Channel:Cardinal; // Каналы для звуков поднятия (опускания) токоприёмника
   Rain_Channel:              Cardinal;     // Канал для проигрывания дорожки звука дождя
   Vigilance_Check_Channel:   Cardinal;     // Канал для писка проверки бдительности
@@ -1425,11 +1426,16 @@ begin
     end;
     // === СИЛОВОЕ ОБОРУДОВАНИЕ ЛОКОМОТИВА(БВ, ФР) === //
     if isPlayLocoPowerEquipment=False then begin
-       try
-          BASS_ChannelStop(LocoPowerEquipment); BASS_StreamFree(LocoPowerEquipment); isPlayLocoPowerEquipment:=True;
-          LocoPowerEquipment := BASS_StreamCreateFile(FALSE, LocoPowerEquipmentF, 0, 0, 0 {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF});
-          BASS_ChannelPlay(LocoPowerEquipment, True); BASS_ChannelSetAttribute(LocoPowerEquipment, BASS_ATTRIB_VOL, trcBarVspomMahVol.Position/100);
-       except end;
+       //try
+          BASS_ChannelStop(LocoPowerEquipment); BASS_StreamFree(LocoPowerEquipment);
+          BASS_ChannelStop(LocoPowerEquipment_FX); BASS_StreamFree(LocoPowerEquipment_FX);
+          LocoPowerEquipment := BASS_StreamCreateFile(FALSE, LocoPowerEquipmentF, 0, 0, BASS_STREAM_DECODE);
+          LocoPowerEquipment_FX := BASS_FX_TempoCreate(LocoPowerEquipment, BASS_FX_FREESOURCE);
+          BASS_ChannelSetAttribute(LocoPowerEquipment_FX, BASS_ATTRIB_VOL, trcBarVspomMahVol.Position/100);
+          BASS_ChannelSetAttribute(LocoPowerEquipment_FX, BASS_ATTRIB_TEMPO_PITCH, randomizeFloat(-0.5, 0.5));
+          BASS_ChannelPlay(LocoPowerEquipment_FX, False);
+          isPlayLocoPowerEquipment:=True;
+       //except end;
     end;
     // Функция проигрывания дорожки "САУТ выключен"
     if (SAUTOff=True) and (BASS_IsStarted = True) then begin

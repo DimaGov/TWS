@@ -679,6 +679,7 @@ procedure TFormMain.FormCreate(Sender: TObject);
 var
    I: Integer;
 begin
+
   //if CheckInstallation=False then Application.Terminate; // Проверка правильно-ли установлена программа
 
   if not OneInstance then begin
@@ -905,11 +906,18 @@ try
                      St := Memo1.Lines[I];
                      if St[1]<>';' then begin
                         ExtractStrings([#9], [' '], PChar(St), sl);
-                        ConsistLength := ConsistLength + StrToFloat(sl[2]);
-                        Inc(WagonsAmount, StrToInt(sl[0]));
+                        try
+                           ConsistLength := ConsistLength + StrToFloat(sl[2]);
+                        except
+                           if Pos('.0', sl[2]) > 0 then begin
+                              sl[2]  := StringReplace(sl[2], '.0', '', [rfReplaceAll, rfIgnoreCase]);
+                              ConsistLength := ConsistLength + StrToFloat(sl[2]);
+                           end;
+                        end;
+                        try Inc(WagonsAmount, StrToInt(sl[0])); except end;
                      end;
                   except
-                     Log_.DebugWriteErrorToErrorList('Fatal error 0x05 (extract data error I=)' + IntToStr(I) + 'string: (' + Memo1.Lines[I] + ')');
+                     Log_.DebugWriteErrorToErrorList('Fatal error 0x05 (extract data error I=' + IntToStr(I) + ') string: (' + Memo1.Lines[I] + ')');
                   end;
                end;
                sl.Free;
@@ -922,6 +930,7 @@ try
                end;
             end;
             Log_.DebugWriteErrorToErrorList('Consist length: ' + FloatToStr(ConsistLength) + 'm.');
+            Log_.DebugWriteErrorToErrorList('Consist wagons amount: ' + IntToStr(WagonsAmount) + 'pcs.');
          except
             Log_.DebugWriteErrorToErrorList('Fatal error 0x06 (error in calculating player train length in mainTimer)');
          end;

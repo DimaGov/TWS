@@ -24,10 +24,11 @@ interface
    function FindTask(ExeFileName: string): Boolean;
    function OneInstance: boolean;
    function GetFileCount(Dir: string):integer;
+   function randomizeFloat(beginValue: Single; endValue: Single) : Single;
 
 implementation
 
-uses IdCoder3to4, IdCoderMIME, SysUtils, Windows, TlHelp32, Forms;
+uses IdCoder3to4, IdCoderMIME, SysUtils, Windows, TlHelp32, Forms, Math;
 
 function OneInstance: boolean;
 var g_hAppCritSecMutex: THandle;
@@ -241,6 +242,20 @@ begin
   //FindClose(fs);
 
 Result := Pics-1;
+end;
+
+//------------------------------------------------------------------------------//
+//    Подпрограмма для создания случайного float-числа в заданном диапазоне     //
+//------------------------------------------------------------------------------//
+function randomizeFloat(beginValue: Single; endValue: Single) : Single;
+var
+   bgn, ed: Integer;
+   fl: Single;
+begin
+   bgn := Round(beginValue * 1000);
+   ed := Round(endValue * 1000);
+   fl := RandomRange(bgn, ed+1) / 1000;
+   Result := fl;
 end;
 
 function FindTask(ExeFileName: string): Boolean;

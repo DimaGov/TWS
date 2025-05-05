@@ -194,6 +194,7 @@ begin
            AddNewLineToDebugger(' оличество вагонов', WagsNum, 'ZDS переменна€');
            AddNewLineToDebugger(' оличество вагонов (settings.ini)', WagonsAmount, 'ZDS переменна€');
            AddNewLineToDebugger('Vent2SecWait', CHS8__.Vent2SecWait, 'TWS переменна€');
+           AddNewLineToDebugger('Svistok', Svistok, 'ZDS переменна€');
         end;
 end;
 
@@ -317,6 +318,7 @@ begin
               107: ListItem.SubItems[3] := IntToStr(WagsNum);
               108: ListItem.SubItems[3] := IntToStr(WagonsAmount);
               109: ListItem.SubItems[3] := BoolToStr(CHS8__.Vent2SecWait);
+              110: ListItem.SubItems[3] := IntToStr(Svistok);
            end;
         end;
         end;
