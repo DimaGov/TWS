@@ -42,7 +42,7 @@ var
 
 implementation
 
-uses UnitMain, Windows, SysUtils, SoundManager, Math, TlHelp32, ExtraUtils, Dialogs, IniFiles;
+uses UnitMain, Windows, SysUtils, SoundManager, Math, TlHelp32, ExtraUtils, Dialogs, IniFiles, Classes;
 
 var
    ProcReadDataMemoryAddr: ProcReadDataMemoryType;
@@ -163,6 +163,16 @@ var
    ADDR_PNEVM:                              PByte;
    ADDR_VR242:                              Pointer;
 
+   // STEAM
+   ADDR_LOCOMOTIVE_TYPE:                    Pointer;
+   ADDR_LOC_NUMBER_POINTER:                 Pointer;
+   ADDR_LOC_NUMBER:                         PByte;
+   ADDR_ROUTE:                              Pointer;
+   ADDR_ROUTE_PATH_POINTER:                 Pointer;
+   ADDR_ROUTE_PATH:                         PByte;
+   ADDR_WAGONS_AMOUNT:                      Pointer;
+   ADDR_FREIGHT:                            Pointer;
+
    CHS8VentVolumePrev:                      Single;
    CHS8VentTempCounter:                     Byte;
 
@@ -198,6 +208,26 @@ var
 begin
    for I := 0 to Len do begin
       ReadProcessMemory(UnitMain.pHandle, readAddr, @readByte, 1, temp);
+      SetString(str, PChar(@readByte), 1);
+      resStr := resStr + str;
+      Inc(readAddr);
+   end;
+   Result := resStr;
+end;
+
+//------------------------------------------------------------------------------//
+//          Подпрограмма для чтения из ОЗУ строки фиксированной длинны          //
+//------------------------------------------------------------------------------//
+function ReadStringFromMemoryToZero(readAddr: PByte) : String;
+var
+   I: Byte;
+   readByte: Byte;
+   resStr: String;
+   str: String;
+begin
+   while 1 = 1 do begin
+      ReadProcessMemory(UnitMain.pHandle, readAddr, @readByte, 1, temp);
+      if readByte = 0 then Break;
       SetString(str, PChar(@readByte), 1);
       resStr := resStr + str;
       Inc(readAddr);
@@ -272,7 +302,7 @@ begin
             if isConnectedMemory = False then begin
                isConnectedMemory := FindTask('ZLauncher.exe');
                if isConnectedMemory = False then
-                  isConnectedMemory := FindTask('ZDLauncher.exe');
+                  isConnectedMemory := FindTask('zdsimulator.exe');
             end;
          end;
       end;
@@ -319,9 +349,16 @@ begin
          FormMain.lblSimulatorLaunchStatus.Caption:='Симулятор был закрыт';
       end;
    end;
-   if I <> VersionID then begin
+   //if I <> VersionID then begin
+      if I = 3 then begin
+         ZDSimSteamVersion := True;
+         UnitMain.Log_.DebugWriteErrorToErrorList('STEAM version');
+      end else begin
+         ZDSimSteamVersion := False;
+         UnitMain.Log_.DebugWriteErrorToErrorList('NOT STEAM version');
+      end;
       InitializeStartParams(I);
-   end;
+   //end;
 
 	RefreshSnd:=True;
         VersionID := I;
@@ -333,57 +370,134 @@ end;
 procedure GetStartSettingParamsFromRAM();
 var
     addr_settings_ini: PByte;
+    TF: TextFile;
+    _pByte: PByte;
+    _int: Integer;
+    _Byte: Byte;
     St: string;
+    TSt: TStringList;
 begin
      With FormMain do begin
-        // Получаем адрес процесса ZDSimulator
-        UnitMain.tHandle := GetWindowThreadProcessId(wHandle, @ProcessID);
-        UnitMain.pHandle := OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessID);
+        if ZDSimSteamVersion = False then begin
+           // Получаем адрес процесса ZDSimulator
+           UnitMain.tHandle := GetWindowThreadProcessId(wHandle, @ProcessID);
+           UnitMain.pHandle := OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessID);
 
-        addr_settings_ini := ReadPointer(ADDR_SETTINGS_INI_POINTER);
+           addr_settings_ini := ReadPointer(ADDR_SETTINGS_INI_POINTER);
 
-        WagonsAmount := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'WagonsAmount', 6666));
-        LocoGlobal := ReadKeyFromMemoryString(addr_settings_ini, 'LocomotiveType',6666);
-        naprav:= ReadKeyFromMemoryString(addr_settings_ini, 'Route', 6666);
-        try Route := ReadKeyFromMemoryString(addr_settings_ini, 'RoutePath', 6666); except Route:='error'; end;
-        // Получение номера локомотива
-        try
-           St := ReadKeyFromMemoryString(addr_settings_ini, 'LocNum', 6666);
+           WagonsAmount := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'WagonsAmount', 6666));
+           LocoGlobal := ReadKeyFromMemoryString(addr_settings_ini, 'LocomotiveType',6666);
+           naprav:= ReadKeyFromMemoryString(addr_settings_ini, 'Route', 6666);
+           try Route := ReadKeyFromMemoryString(addr_settings_ini, 'RoutePath', 6666); except Route:='error'; end;
+           // Получение номера локомотива
+           try
+              St := ReadKeyFromMemoryString(addr_settings_ini, 'LocNum', 6666);
 
-           // !!! Фикс для номеров типа 33_006 или 1155_0976 !!! //
-           if Pos('_', St)>0 then St := GetStrToSep(St, '_');
+              // !!! Фикс для номеров типа 33_006 или 1155_0976 !!! //
+              if Pos('_', St)>0 then St := GetStrToSep(St, '_');
 
-           LocoNum := StrToInt(St);
-        except LocoNum:=-1; end;
-        MP := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'MultiPlayer', 6666));
-        try ConName := ReadKeyFromMemoryString(addr_settings_ini, 'WagsName', 6666); except ConName:='error'; end;
-        Winter := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'Winter', 6666));
-        Freight := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'Freight', 6666));
-        try SceneryName:=ReadKeyFromMemoryString(addr_settings_ini, 'SceneryName', 6666); except SceneryName:='error'; end;
-        try
-            St:=ReadKeyFromMemoryString(addr_settings_ini, 'CompoundPercent', 6666);
-            CompoundPercent := StrToFloat(St);
-        except
-            St:=StringReplace(St, '.', ',', [rfReplaceAll, rfIgnoreCase]);
-            //MessageDLG(St, mterror, mbOKCancel, 0);
-            CompoundPercent := StrToFloat(St);
+              LocoNum := StrToInt(St);
+           except LocoNum:=-1; end;
+           MP := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'MultiPlayer', 6666));
+           try ConName := ReadKeyFromMemoryString(addr_settings_ini, 'WagsName', 6666); except ConName:='error'; end;
+           Winter := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'Winter', 6666));
+           Freight := StrToInt(ReadKeyFromMemoryString(addr_settings_ini, 'Freight', 6666));
+           try SceneryName:=ReadKeyFromMemoryString(addr_settings_ini, 'SceneryName', 6666); except SceneryName:='error'; end;
+           try
+              St:=ReadKeyFromMemoryString(addr_settings_ini, 'CompoundPercent', 6666);
+              CompoundPercent := StrToFloat(St);
+           except
+              St:=StringReplace(St, '.', ',', [rfReplaceAll, rfIgnoreCase]);
+              //MessageDLG(St, mterror, mbOKCancel, 0);
+              CompoundPercent := StrToFloat(St);
+           end;
+           //MessageDLG('!'+ReadKeyFromMemoryString(addr_settings_ini, 'CompoundPercent', 6666)+'!', mterror, mbOKCancel, 0);
+
+           UnitMain.Log_.DebugWriteErrorToErrorList('settings.ini data: ');
+           UnitMain.Log_.DebugWriteErrorToErrorList('Route: ' + Route);
+           UnitMain.Log_.DebugWriteErrorToErrorList('RoutePath: ' + Naprav);
+           UnitMain.Log_.DebugWriteErrorToErrorList('Loco: ' + LocoGlobal);
+           UnitMain.Log_.DebugWriteErrorToErrorList('WagonsAmount: ' + IntToStr(WagonsAmount));
+           UnitMain.Log_.DebugWriteErrorToErrorList('LocoNum: ' + IntToStr(LocoNum));
+           UnitMain.Log_.DebugWriteErrorToErrorList('Freight: ' + IntToStr(Freight));
+           UnitMain.Log_.DebugWriteErrorToErrorList('WagsName: ' + ConName);
+           UnitMain.Log_.DebugWriteErrorToErrorList('Winter: ' + IntToStr(Winter));
+           UnitMain.Log_.DebugWriteErrorToErrorList('SceneryName: ' + SceneryName);
+           UnitMain.Log_.DebugWriteErrorToErrorList('MultiPlayer: ' + IntToStr(MP));
+           UnitMain.Log_.DebugWriteErrorToErrorList('CompoundPercent: ' + FloatToStr(CompoundPercent));
+
+           try CloseHandle(UnitMain.pHandle); except end;
+        end else begin
+           // STEAM
+           // Получаем адрес процесса ZDSimulator
+           try
+              UnitMain.tHandle := GetWindowThreadProcessId(wHandle, @ProcessID);
+              UnitMain.pHandle := OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessID);
+           except
+              UnitMain.Log_.DebugWriteErrorToErrorList('Error opening pHandle in read settings.ini');
+           end;
+
+           // Тип Локомотива
+           ReadProcessMemory(UnitMain.pHandle, ADDR_LOCOMOTIVE_TYPE, @_int, 4, temp);
+           LocoGlobal := IntToStr(_int);
+           // Имя маршрута
+           ADDR_ROUTE_PATH := ReadPointer(ADDR_ROUTE_PATH_POINTER);
+           Route := ReadStringFromMemoryToZero(ADDR_ROUTE_PATH);
+           //_pByte := ADDR_ROUTE_PATH; Inc(_pByte, 1);
+           //ReadProcessMemory(UnitMain.pHandle, ADDR_ROUTE_PATH, @_Byte, 1, temp);
+           //ReadProcessMemory(UnitMain.pHandle, _pByte, @Route, _Byte, temp);
+           // Направление движения по маршруту
+           ReadProcessMemory(UnitMain.pHandle, ADDR_ROUTE, @_Byte, 1, temp);
+           Naprav := IntToStr(_Byte);
+           // Количество вагонов
+           ReadProcessMemory(UnitMain.pHandle, ADDR_WAGONS_AMOUNT, @WagonsAmount, 1, temp);
+           // Номер локомотива
+           try
+              ADDR_LOC_NUMBER := ReadPointer(ADDR_LOC_NUMBER_POINTER);
+              LocoNum := StrToInt(ReadStringFromMemoryToZero(ADDR_LOC_NUMBER));
+           except
+              UnitMain.Log_.DebugWriteErrorToErrorList('Error read LocoNum in read settings.ini');
+           end;
+           // Тип поезда (пассажирский/грузовой)
+           ReadProcessMemory(UnitMain.pHandle, ADDR_FREIGHT, @Freight, 1, temp);
+
+           AssignFile(TF, extractfilepath(ParamStr(0))+'settings.ini');
+           Reset(TF);
+           while Not EoF(TF) do begin
+              Readln(TF, St);
+              if (st<>'') AND (st[1]<>';') then begin
+                 try TSt := ExtractWord(St, '='); except end;
+
+                 //try if TSt[0] = 'LocomotiveType' then LocoGlobal := TSt[1]; except end;
+                 //try if TSt[0] = 'RoutePath' then Route := TSt[1]; except end;
+                 //try if TSt[0] = 'Route' then Naprav := TSt[1]; except end;
+                 //try if TSt[0] = 'WagonsAmount' then WagonsAmount := StrToInt(TSt[1]); except end;
+                 //try if TSt[0] = 'LocNum' then LocoNum := StrToInt(TSt[1]); except end;
+                 //try if TSt[0] = 'Freight' then Freight := StrToInt(TSt[1]); except end;
+                 try if TSt[0] = 'WagsName' then ConName := TSt[1]; except end;
+                 try if TSt[0] = 'Winter' then Winter := StrToInt(TSt[1]); except end;
+                 try if TSt[0] = 'SceneryName' then SceneryName := TSt[1]; except end;
+                 try if TSt[0] = 'MultiPlayer' then MP := StrToInt(TSt[1]); except end;
+                 try if TSt[0] = 'CompoundPercent' then CompoundPercent := StrToFloat(TSt[1]); except end;
+              end;
+           end;
+           CloseFile(TF);
+
+           UnitMain.Log_.DebugWriteErrorToErrorList('settings.ini data [STEAM version]: ');
+           UnitMain.Log_.DebugWriteErrorToErrorList('Loco: ' + LocoGlobal);
+           UnitMain.Log_.DebugWriteErrorToErrorList('LocoNum: ' + IntToStr(LocoNum));
+           UnitMain.Log_.DebugWriteErrorToErrorList('Route: ' + Route);
+           UnitMain.Log_.DebugWriteErrorToErrorList('RoutePath: ' + Naprav);
+           UnitMain.Log_.DebugWriteErrorToErrorList('WagonsAmount: ' + IntToStr(WagonsAmount));
+           UnitMain.Log_.DebugWriteErrorToErrorList('Freight: ' + IntToStr(Freight));
+           UnitMain.Log_.DebugWriteErrorToErrorList('WagsName: ' + ConName);
+           UnitMain.Log_.DebugWriteErrorToErrorList('Winter: ' + IntToStr(Winter));
+           UnitMain.Log_.DebugWriteErrorToErrorList('SceneryName: ' + SceneryName);
+           UnitMain.Log_.DebugWriteErrorToErrorList('MultiPlayer: ' + IntToStr(MP));
+           UnitMain.Log_.DebugWriteErrorToErrorList('CompoundPercent: ' + FloatToStr(CompoundPercent));
+
+           try CloseHandle(UnitMain.pHandle); except end;
         end;
-        //MessageDLG('!'+ReadKeyFromMemoryString(addr_settings_ini, 'CompoundPercent', 6666)+'!', mterror, mbOKCancel, 0);
-
-        UnitMain.Log_.DebugWriteErrorToErrorList('settings.ini data: ');
-        UnitMain.Log_.DebugWriteErrorToErrorList('Route: ' + Route);
-        UnitMain.Log_.DebugWriteErrorToErrorList('RoutePath: ' + Naprav);
-        UnitMain.Log_.DebugWriteErrorToErrorList('Loco: ' + LocoGlobal);
-        UnitMain.Log_.DebugWriteErrorToErrorList('WagonsAmount: ' + IntToStr(WagonsAmount));
-        UnitMain.Log_.DebugWriteErrorToErrorList('LocoNum: ' + IntToStr(LocoNum));
-        UnitMain.Log_.DebugWriteErrorToErrorList('Freight: ' + IntToStr(Freight));
-        UnitMain.Log_.DebugWriteErrorToErrorList('WagsName: ' + ConName);
-        UnitMain.Log_.DebugWriteErrorToErrorList('Winter: ' + IntToStr(Winter));
-        UnitMain.Log_.DebugWriteErrorToErrorList('SceneryName: ' + SceneryName);
-        UnitMain.Log_.DebugWriteErrorToErrorList('MultiPlayer: ' + IntToStr(MP));
-        UnitMain.Log_.DebugWriteErrorToErrorList('CompoundPercent: ' + FloatToStr(CompoundPercent));
-
-        try CloseHandle(UnitMain.pHandle); except end;
      end;
 end;
 
@@ -763,7 +877,11 @@ begin
      try ReadProcessMemory(UnitMain.pHandle, ADDR_CAMERA, @Camera, 1, temp);  except end;   // Получаем положение камеры
      try ReadProcessMemory(UnitMain.pHandle, ADDR_VIGILANCE_CHECK, @VCheck, 1, temp);  except end;   // Получаем состояние проверки бдительности
      try ReadProcessMemory(UnitMain.pHandle, ADDR_SPEED_VSTRECHA, @wVstrSpeed, 4, temp);  except end;   // Получаем состояние проверки бдительности
-     try ReadProcessMemory(UnitMain.pHandle, ADDR_CAMERA_X, @CameraX, 2, temp);  except end;
+     if ZDSimSteamVersion = False then begin
+        try ReadProcessMemory(UnitMain.pHandle, ADDR_CAMERA_X, @CameraX, 2, temp);  except end;
+     end else begin
+        try ReadProcessMemory(UnitMain.pHandle, ADDR_CAMERA_X, @CameraX_Steam, 8, temp);  except end;
+     end;
      try ReadProcessMemory(UnitMain.pHandle, ADDR_AMPERAGE1, @TEDAmperage, 4, temp);  except end;
      try ReadProcessMemory(UnitMain.pHandle, ADDR_EDT_AMPERAGE, @EDTAmperage, 4, temp);  except end;
      try ReadProcessMemory(UnitMain.pHandle, ADDR_BRAKE_CYLINDERS, @BrakeCylinders, 4, temp);  except end;
@@ -931,7 +1049,26 @@ begin
        // Версия 5.6
        if VersionID = 3 then begin
           Ini:=TiniFile.Create(extractfilepath(ParamStr(0))+'tws.ini');
-          ADDR_SVISTOK := ptr(strToInt('$' + Ini.ReadString('global', 'Svistok', '-1')));
+
+          // Данные settings.ini из ОЗУ ZDSimulator
+          ADDR_LOCOMOTIVE_TYPE    := ptr(strToInt('$' + Ini.ReadString('global', 'LocomotiveType', '0')));   // OK
+          ADDR_ROUTE              := ptr(strToInt('$' + Ini.ReadString('global', 'Route', '0')));            // OK
+          ADDR_ROUTE_PATH_POINTER := ptr(strToInt('$' + Ini.ReadString('global', 'RoutePath', '0')));        // OK [POINTER]
+          ADDR_WAGONS_AMOUNT      := ptr(strToInt('$' + Ini.ReadString('global', 'NumberOfWags', '0')));     // OK
+          ADDR_LOC_NUMBER_POINTER := ptr(strToInt('$' + Ini.ReadString('global', 'LocNum', '0')));           // OK [POINTER]
+          ADDR_FREIGHT            := ptr(strToInt('$' + Ini.ReadString('global', 'FreightConsist', '0')));   // OK
+
+          ADDR_Track              := ptr(strToInt('$' + Ini.ReadString('global', 'MyTrack', '0')));          // OK
+          ADDR_SVISTOK            := ptr(strToInt('$' + Ini.ReadString('global', 'Svistok', '0')));          // OK
+          ADDR_TIFON              := ptr(strToInt('$' + Ini.ReadString('global', 'Tifon', '0')));            // OK
+          ADDR_Speed              := ptr(strToInt('$' + Ini.ReadString('global', 'SpeedKpH', '0')));         // OK
+          ADDR_AMPERAGE1          := ptr(strToInt('$' + Ini.ReadString('chs7', 'tok1', '0')));               // NOT OK
+          ADDR_CAMERA             := ptr(strToInt('$' + Ini.ReadString('global', 'CameraMode', '0')));       // OK
+          ADDR_CAMERA_X           := ptr(strToInt('$' + Ini.ReadString('global', 'MoveInCab', '0')));        // OK
+          ADDR_ACCLRT             := ptr(strToInt('$' + Ini.ReadString('global', 'Acceleration', '0')));     // OK
+          ADDR_COUPLE_STATUS      := ptr(strToInt('$' + Ini.ReadString('global', 'IsCoupled', '0')));        // OK
+          
+
           Ini.Free;
        end;
 
@@ -1436,7 +1573,7 @@ begin
            LocoPowerVoltage    := 0;            // Тип электрофикации локомотива [0, -, ~]
            LocoWithTED         := True;         // Задаем состояние наличия на данном локомотиве звука ТЭД-ов
            LocoWithReductor    := False;        // Задаем состояние наличия на данном локомотиве звука редуктора
-           LocoWithDIZ         := True;         // Задаем состояние наличия на данном локомотиве звуков дизеля
+           LocoWithDIZ         := False;        // Задаем состояние наличия на данном локомотиве звуков дизеля
            LocoWithSndKM       := False;        // Задаем состояние наличия на данном локомотиве звуков контроллера
            LocoWithSndKM_OP    := False;        // Задаем состояние наличия на данном локомотиве звука постановки ОП
            LocoWithSndTP       := False;        // Задаем состояние наличия на данном локомотиве звука ТП

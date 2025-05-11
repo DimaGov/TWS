@@ -1196,7 +1196,6 @@ object FormMain: TFormMain
   end
   object timerPerehodDizSwitch: TTimer
     Enabled = False
-    Interval = 1550
     OnTimer = timerPerehodDizSwitchTimer
     Left = 448
     Top = 440

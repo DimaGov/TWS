@@ -211,6 +211,8 @@ type
 var
   FormMain: TFormMain;			   // Главная форма программы
 
+  ZDSimSteamVersion:           Boolean = False;
+
   MainCycleFreq:               Integer;    // Частота работы программы [ms]
 
   ResPotok:                    TMemoryStream; // Поток данных для RES-декодера
@@ -349,6 +351,7 @@ var
   BV_Paketnik,       PrevBV_Paketnik: Integer;      // Пакетник БВ
   Voltage,           PrevVoltage:     Single;       // Напряжение на электровозе ЧС7
   CameraX,           PrevCameraX:     WORD;         // Переменные для определения положения головы в кабине
+  CameraX_Steam,     PrevCameraX_Steam:Double;      // Переменные для определения положения головы в кабине для Steam версии
   KME_ED,            PrevKME_ED:      Integer;
   Zhaluzi,           PrevZhaluzi:     Byte;         // Состояние жалюзей [ЧС7]
   Compressor,        Prev_Compressor: Single;       // Состояние компрессоров
@@ -747,7 +750,7 @@ begin
      FormMain.Caption := FormMain.Caption + ' -camera';
   end;
 
-  PerehodDIZStep:=0.01;
+  PerehodDIZStep:=0.02;
 end;
 
 //------------------------------------------------------------------------------//
@@ -773,11 +776,16 @@ begin
     end else Result:=True;
 end;
 
-function CameraInCabinCheck(CameraX: Integer; Camera: Byte) : Boolean;
+function CameraInCabinCheck(CameraX_: Double; Camera: Byte) : Boolean;
 begin
     Result := False;
-    if Camera = 0 then
-       if ((CameraX<=49130) and (CameraX>=32000)) or (CameraX<16384) or (CameraX=0) then Result:=True;
+    if Camera = 0 then begin
+       if ZDSimSteamVersion = False then begin
+          if ((CameraX_<=49130) and (CameraX_>=32000)) or (CameraX_<16384) or (CameraX_=0) then Result:=True;
+       end else begin
+          if (CameraX_>-0.9) and (CameraX_<2.1) then Result:=True;
+       end;
+    end;
 end;
 
 // === Процедура для получения границ станций из файла start_kilometers === //
@@ -882,7 +890,11 @@ try
          try
             if Route <> '' then begin
                Log_.DebugWriteErrorToErrorList('Loading route ' + Route + ' stations borders');
-               GetStationsBordersFromFile('routes/' + Route + '/start_kilometers.dat');
+               if ZDSimSteamVersion = False then begin
+                  GetStationsBordersFromFile('routes/' + Route + '/start_kilometers.dat');
+               end else begin
+                  GetStationsBordersFromFile('routes/' + Route + '/start_kilometers_Russian.dat');
+               end;
             end;
          except
             Log_.DebugWriteErrorToErrorList('Fatal error 0x04 (error loading route stations borders in mainTimer)');
@@ -996,7 +1008,11 @@ try
          end;
       end;
 
-      isCameraInCabin := CameraInCabinCheck(CameraX, Camera);
+      if ZDSimSteamVersion = False then begin
+         isCameraInCabin := CameraInCabinCheck(CameraX, Camera);
+      end else begin
+         isCameraInCabin := CameraInCabinCheck(CameraX_Steam, Camera);
+      end;
 
       if NapravOrdinata = 'Tuda' then
          OrdinataEstimate := OrdinataEstimate + (Speed / 3600 * MainCycleFreq)
@@ -1837,7 +1853,7 @@ end;	// Конец блока если игра не на паузе!!!!!
 PrevConMem:=isConnectedMemory;
 //end;
 except
-   // НИЧЕГО
+   Log_.DebugWriteErrorToErrorList('Fatal error (error in mainTimer body)');
 end;
 end;
 
@@ -1974,24 +1990,29 @@ begin
   // ******************************* //
   // ПЕРЕХОД МЕЖДУ ДОРОЖКАМИ ДИЗЕЛЕЙ //
   if PerehodDIZ=True then begin
-    if DIZVolume>DIZVlm then DIZVolume:=DIZVlm;
-    if DIZVolume2>DIZVlm then DIZVolume2:=DIZVlm;
-    if DIZVolume<0 then DIZVolume:=0;
-    if DIZVolume2<0 then DIZVolume2:=0;
+    if DIZVolume  > DIZVlm then DIZVolume  := DIZVlm;
+    if DIZVolume2 > DIZVlm then DIZVolume2 := DIZVlm;
+
+    if DIZVolume  < 0 then DIZVolume  := 0;
+    if DIZVolume2 < 0 then DIZVolume2 := 0;
+
     if ChannelNumDIZ=0 then begin
       try BASS_ChannelGetAttribute(DIZChannel , BASS_ATTRIB_VOL, DIZVolume ); except DIZVolume:=0; end;
       try BASS_ChannelGetAttribute(DizChannel2, BASS_ATTRIB_VOL, DIZVolume2); except DIZVolume2:=DIZVlm; end;
-      if DIZVolume  > 0      then DIZVolume  := DIZVolume  - PerehodDIZStep;
-      if DIZVolume2 < DIZVlm then DIZVolume2 := DIZVolume2 + PerehodDIZStep*2;
+
+      if DIZVolume  > 0      then DIZVolume  := DIZVolume  - PerehodDIZStep/2;
+      if DIZVolume2 < DIZVlm then DIZVolume2 := DIZVolume2 + PerehodDIZStep;
+
       BASS_ChannelSetAttribute(DIZChannel, BASS_ATTRIB_VOL, DIZVolume);
       BASS_ChannelSetAttribute(DIZChannel2, BASS_ATTRIB_VOL, DIZVolume2);
       if (DIZVolume<=0) and (DIZVolume2>=DIZVlm) then begin PerehodDIZ:=False; BASS_ChannelStop(DIZChannel); BASS_StreamFree(DIZChannel); end;
     end;
+
     if ChannelNumDIZ=1 then begin
       try BASS_ChannelGetAttribute(DIZChannel2 , BASS_ATTRIB_VOL, DIZVolume ); except DIZVolume:=0; end;
       try BASS_ChannelGetAttribute(DIZChannel, BASS_ATTRIB_VOL, DIZVolume2); except DIZVolume2:=DIZVlm; end;
-      if DIZVolume  > 0      then DIZVolume  := DIZVolume  - PerehodDIZStep;
-      if DIZVolume2 < DIZVlm then DIZVolume2 := DIZVolume2 + PerehodDIZStep*2;
+      if DIZVolume  > 0      then DIZVolume  := DIZVolume  - PerehodDIZStep/2;
+      if DIZVolume2 < DIZVlm then DIZVolume2 := DIZVolume2 + PerehodDIZStep;
       BASS_ChannelSetAttribute(DIZChannel2, BASS_ATTRIB_VOL, DIZVolume );
       BASS_ChannelSetAttribute(DIZChannel , BASS_ATTRIB_VOL, DIZVolume2);
       if (DIZVolume<=0) and (DIZVolume2>=DIZVlm) then begin PerehodDIZ:=False; BASS_ChannelStop(DIZChannel2); BASS_StreamFree(DIZChannel2); end;

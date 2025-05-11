@@ -17,11 +17,13 @@ type
     Label93: TLabel;
     Memo3: TMemo;
     btnShowWagonsLenghts: TButton;
+    btnWorkInProgress: TButton;
     procedure tmrRefreshDebugDataTimer(Sender: TObject);
     procedure ListView1ColumnClick(Sender: TObject; Column: TListColumn);
     procedure FormCreate(Sender: TObject);
     procedure btnStationsBorderClick(Sender: TObject);
     procedure btnShowWagonsLenghtsClick(Sender: TObject);
+    procedure btnWorkInProgressClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -30,6 +32,8 @@ type
 
 var
   FormDebug: TFormDebug;
+  WorkInProgress: Boolean = False;
+  dizBassVol_1, dizBassVol_2: Single;
 
 implementation
 
@@ -85,6 +89,7 @@ procedure RefreshDebugger();
 begin
 	FormDebug.ListView1.Items.Clear();
 	With FormMain do begin
+           if WorkInProgress = False then begin
            AddNewLineToDebugger('Скорость', Speed, 'ZDS переменная');
            AddNewLineToDebugger('Ускорение', Acceleretion, 'ZDS переменная');
            AddNewLineToDebugger('Трек головы', Track, 'ZDS переменная');
@@ -99,7 +104,11 @@ begin
            AddNewLineToDebugger('Ограничение скорости', OgrSpeed, 'ZDS переменная');
            AddNewLineToDebugger('Расстояние до светофора', SvetoforDist, 'ZDS переменная');
            AddNewLineToDebugger('Номер вида', Camera, 'ZDS переменная');
-           AddNewLineToDebugger('Положение камеры в кабине', CameraX, 'ZDS переменная');
+           if ZDSimSteamVersion = False then begin
+              AddNewLineToDebugger('Положение камеры в кабине', CameraX, 'ZDS переменная');
+           end else begin
+              AddNewLineToDebugger('Положение камеры в кабине', CameraX_Steam, 'ZDS переменная');
+           end;
            AddNewLineToDebugger('Дождь', Rain, 'ZDS переменная');
            AddNewLineToDebugger('Проверка бдительности', VCheck, 'ZDS переменная');
            AddNewLineToDebugger('Клавиатура КЛУБ-у', KLUBOpen, 'ZDS переменная');
@@ -195,6 +204,23 @@ begin
            AddNewLineToDebugger('Количество вагонов (settings.ini)', WagonsAmount, 'ZDS переменная');
            AddNewLineToDebugger('Vent2SecWait', CHS8__.Vent2SecWait, 'TWS переменная');
            AddNewLineToDebugger('Svistok', Svistok, 'ZDS переменная');
+           AddNewLineToDebugger('LocoGlobal', LocoGlobal, 'TWS переменная');
+           AddNewLineToDebugger('Steam версия', ZDSimSteamVersion, 'TWS переменная');
+           end else begin
+           AddNewLineToDebugger('Timer perehod diz switch enabled', timerPerehodDizSwitch.Enabled, 'TWS переменная');
+           AddNewLineToDebugger('Timer perehod diz switch interval', timerPerehodDizSwitch.Interval, 'TWS переменная');
+           AddNewLineToDebugger('Дизель 1-й секции статус', BV, 'TWS переменная');
+           AddNewLineToDebugger('Дизель 2-й секции статус', diesel2, 'TWS переменная');
+           AddNewLineToDebugger('KM_POS_1', KM_Pos_1, 'TWS переменная');
+           AddNewLineToDebugger('KM_POS_2', KM_Pos_2, 'TWS переменная');
+           AddNewLineToDebugger('diz_now', DizNow, 'TWS переменная');
+           AddNewLineToDebugger('dizChannel_1_IsActive', BASS_ChannelIsActive(DizChannel), 'TWS переменная');
+           AddNewLineToDebugger('dizChannel_2_IsActive', BASS_ChannelIsActive(DizChannel2), 'TWS переменная');
+           AddNewLineToDebugger('diz_1_Volume', DizVolume, 'TWS переменная');
+           AddNewLineToDebugger('diz_2_Volume', DizVolume2, 'TWS переменная');
+           AddNewLineToDebugger('diz_1_Volume[BASS]', dizBassVol_1, 'TWS переменная');
+           AddNewLineToDebugger('diz_2_Volume[BASS]', dizBassVol_2, 'TWS переменная');
+           end;
         end;
 end;
 
@@ -202,12 +228,15 @@ procedure TFormDebug.tmrRefreshDebugDataTimer(Sender: TObject);
 var
 	I, J: Integer;
         ListItem: TListItem;
+  CamX: Double;
 begin
 	try
+        if ZDSimSteamVersion = False then CamX := CameraX else CamX := CameraX_Steam;
         With FormMain do begin
         for I:=0 to ListView1.Items.Count do begin
            ListItem := ListView1.Items[I];
            J := StrToInt(ListView1.Items[I].Caption);
+           if WorkInProgress = False then begin
            Case J Of
               1: ListItem.SubItems[3] := IntToStr(UnitMain.Speed);
               2: ListItem.SubItems[3] := FloatToStr(Acceleretion);
@@ -223,7 +252,7 @@ begin
               12: ListItem.SubItems[3] := IntToStr(OgrSpeed);
               13: ListItem.SubItems[3] := IntToStr(SvetoforDist);
               14: ListItem.SubItems[3] := IntToStr(Camera);
-              15: ListItem.SubItems[3] := IntToStr(CameraX);
+              15: ListItem.SubItems[3] := FloatToStr(CamX);
               16: ListItem.SubItems[3] := IntToStr(Rain);
               17: ListItem.SubItems[3] := IntToStr(VCheck);
               18: ListItem.SubItems[3] := IntToStr(KLUBOpen);
@@ -319,6 +348,28 @@ begin
               108: ListItem.SubItems[3] := IntToStr(WagonsAmount);
               109: ListItem.SubItems[3] := BoolToStr(CHS8__.Vent2SecWait);
               110: ListItem.SubItems[3] := IntToStr(Svistok);
+              111: ListItem.SubItems[3] := LocoGlobal;
+              112: ListItem.SubItems[3] := BoolToStr(ZDSimSteamVersion);
+           end;
+           end else begin
+              BASS_ChannelGetAttribute(DizChannel, BASS_ATTRIB_VOL, dizBassVol_1);
+              BASS_ChannelGetAttribute(DizChannel2, BASS_ATTRIB_VOL, dizBassVol_2);
+
+              case J Of
+              1: ListItem.SubItems[3] := BoolToStr(timerPerehodDizSwitch.Enabled);
+              2: ListItem.SubItems[3] := IntToStr(timerPerehodDizSwitch.Interval);
+              3: ListItem.SubItems[3] := IntToStr(BV);
+              4: ListItem.SubItems[3] := FloatToStr(diesel2);
+              5: ListItem.SubItems[3] := IntToStr(KM_Pos_1);
+              6: ListItem.SubItems[3] := IntToStr(KM_Pos_2);
+              7: ListItem.SubItems[3] := IntToStr(DizNow);
+              8: ListItem.SubItems[3] := IntToStr(BASS_ChannelIsActive(DizChannel));
+              9: ListItem.SubItems[3] := IntToStr(BASS_ChannelIsActive(DizChannel2));
+              10: ListItem.SubItems[3] := FloatToStr(DizVolume);
+              11: ListItem.SubItems[3] := FloatToStr(DizVolume2);
+              12: ListItem.SubItems[3] := FloatToStr(dizBassVol_1);
+              13: ListItem.SubItems[3] := FloatToStr(dizBassVol_2);
+              end;
            end;
         end;
         end;
@@ -407,6 +458,14 @@ begin
    end;
 
    ShowMessage(OutStr);
+end;
+
+procedure TFormDebug.btnWorkInProgressClick(Sender: TObject);
+begin
+   if WorkInProgress = False then WorkInProgress := True
+                             else WorkInProgress := False;
+
+   RefreshDebugger();
 end;
 
 end.

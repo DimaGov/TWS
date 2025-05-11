@@ -116,6 +116,15 @@ object FormDebug: TFormDebug
     TabOrder = 5
     OnClick = btnShowWagonsLenghtsClick
   end
+  object btnWorkInProgress: TButton
+    Left = 400
+    Top = 576
+    Width = 241
+    Height = 25
+    Caption = #1055#1086#1082#1072#1079#1072#1090#1100' '#1087#1077#1088#1077#1084#1077#1085#1085#1099#1077' Work In Progress'
+    TabOrder = 6
+    OnClick = btnWorkInProgressClick
+  end
   object tmrRefreshDebugData: TTimer
     Enabled = False
     Interval = 20
