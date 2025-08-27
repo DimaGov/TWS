@@ -579,14 +579,6 @@ object FormMain: TFormMain
         ScrollBars = ssVertical
         TabOrder = 0
       end
-      object CheckBox1: TCheckBox
-        Left = 24
-        Top = 48
-        Width = 97
-        Height = 50
-        Caption = 'CheckBox1'
-        TabOrder = 1
-      end
     end
   end
   object groupBoxSOVIDescription: TGroupBox
@@ -920,14 +912,14 @@ object FormMain: TFormMain
         WordWrap = True
         OnClick = cbKLUBSoundsClick
       end
-      object cbBLOKSounds: TCheckBox
-        Left = 3
+      object mda: TCheckBox
+        Left = 5
         Top = 49
-        Width = 97
+        Width = 142
         Height = 17
         Caption = #1047#1074#1091#1082#1080' '#1041#1051#1054#1050
         TabOrder = 2
-        OnClick = cbBLOKSoundsClick
+        OnClick = cb3SL2mSoundsClick
       end
     end
     object cbSignalsSounds: TCheckBox

@@ -921,13 +921,12 @@ object FormMain: TFormMain
         OnClick = cbKLUBSoundsClick
       end
       object cbBLOKSounds: TCheckBox
-        Left = 3
+        Left = 5
         Top = 49
         Width = 97
         Height = 17
         Caption = #1047#1074#1091#1082#1080' '#1041#1051#1054#1050
         TabOrder = 2
-        OnClick = cbBLOKSoundsClick
       end
     end
     object cbSignalsSounds: TCheckBox

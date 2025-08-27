@@ -1424,14 +1424,6 @@ begin
           BASS_ChannelPlay(Ogr_Speed_KLUB, True); BASS_ChannelSetAttribute(Ogr_Speed_KLUB, BASS_ATTRIB_VOL, trcBarLocoClicksVol.Position/100);
        except end;
     end;
-    // === БЛОК езда по ограничению ===
-    if (cbBLOKSounds.Checked=True) and (isPlayOgrSpKlub=1) then begin
-       try
-          BASS_ChannelStop(Ogr_Speed_KLUB); BASS_StreamFree(Ogr_Speed_KLUB); isPlayOgrSpKlub:=-1;
-          Ogr_Speed_KLUB := BASS_StreamCreateFile(FALSE, PChar('TWS/BLOK/block_pick.wav'), 0, 0, BASS_SAMPLE_LOOP {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF});
-          BASS_ChannelPlay(Ogr_Speed_KLUB, True); BASS_ChannelSetAttribute(Ogr_Speed_KLUB, BASS_ATTRIB_VOL, trcBarLocoClicksVol.Position/100);
-       except end;
-    end;
     // === СИЛОВОЕ ОБОРУДОВАНИЕ ЛОКОМОТИВА(БВ, ФР) === //
     if isPlayLocoPowerEquipment=False then begin
        //try

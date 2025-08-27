@@ -141,7 +141,7 @@ type
     ReadME1: TMenuItem;
     timerDoorCloseZvonok: TTimer;
     lblCameraActive: TLabel;
-    cbBLOKSounds: TCheckBox;
+    CheckBox1: TCheckBox;
     
     procedure ChangeVolume(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -199,7 +199,6 @@ type
     procedure btnSOVIHelpClick(Sender: TObject);
     procedure timerDoorCloseZvonokTimer(Sender: TObject);
     procedure Button1Click(Sender: TObject);
-    procedure cbBLOKSoundsClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -1326,16 +1325,30 @@ try
 
         //end;
      end;
-     if cbBLOKSounds.Checked=True then begin   // БЛОК
+     if cb3SL2mSounds.Checked=True then begin	// 3��2�
+        // ������� �� � ���
+        if RB<>PrevRB then begin
+           if RB=1 then begin RBF:=PChar('TWS/RB_MexDown.wav'); isPlayRB:=False; end;
+           if RB=0 then begin RBF:=PChar('TWS/RB_MexUp.wav'); isPlayRB:=False; end;
+        end;
+
+        if RBS<>PrevRBS then begin
+           if RBS=1 then begin RBF:=PChar('TWS/RB_MexDown.wav'); isPlayRB:=False; end;
+           if RBS=0 then begin RBF:=PChar('TWS/RB_MexUp.wav'); isPlayRB:=False; end;
+        end;
+
+        SL2M__.step();
+     end;
+if cbBLOKSounds.Checked=True then begin   // БЛОК
    // Нажатие РБ и РБС
    if RB<>PrevRB then begin
-      if RB=1 then begin RBF:=PChar('TWS/BLOK/block_pick.wav'); isPlayRB:=False; end;
-      if RB=0 then begin RBF:=PChar('TWS/BLOK/block_pick.wav'); isPlayRB:=False; end;
+      if RB=1 then begin RBF:=PChar('TWS/KLUB_pick.wav'); isPlayRB:=False; end;
+      if RB=0 then begin RBF:=PChar('TWS/KLUB_pick.wav'); isPlayRB:=False; end;
    end;
 
    if RBS<>PrevRBS then begin
-      if RBS=1 then begin RBF:=PChar('TWS/BLOK/block_pick.wav'); isPlayRB:=False; end;
-      if RBS=0 then begin RBF:=PChar('TWS/BLOK/block_pick.wav'); isPlayRB:=False; end;
+      if RBS=1 then begin RBF:=PChar('TWS/KLUB_pick.wav'); isPlayRB:=False; end;
+      if RBS=0 then begin RBF:=PChar('TWS/KLUB_pick.wav'); isPlayRB:=False; end;
    end;
    
    // Контроль ограничивающей скорости (аналогично КЛУБ-У)
@@ -1359,21 +1372,6 @@ try
       if NextOgrSpeed = 0 then NextOgrPeekStatus := 0;
    end;
 end;
-     if cb3SL2mSounds.Checked=True then begin	// 3��2�
-        // ������� �� � ���
-        if RB<>PrevRB then begin
-           if RB=1 then begin RBF:=PChar('TWS/RB_MexDown.wav'); isPlayRB:=False; end;
-           if RB=0 then begin RBF:=PChar('TWS/RB_MexUp.wav'); isPlayRB:=False; end;
-        end;
-
-        if RBS<>PrevRBS then begin
-           if RBS=1 then begin RBF:=PChar('TWS/RB_MexDown.wav'); isPlayRB:=False; end;
-           if RBS=0 then begin RBF:=PChar('TWS/RB_MexUp.wav'); isPlayRB:=False; end;
-        end;
-
-        SL2M__.step();
-     end;
-
   end;
   // ********************** //
   // ���� ����������������� ���������� ������ //
@@ -2188,17 +2186,6 @@ begin
 end;
 
 // === ������� �� ������� "���� ������ ������� ��� ����������" === //
-procedure TFormMain.cbBLOKSoundsClick(Sender: TObject);
-begin
-   if cbBLOKSounds.Checked=True then begin
-      cbKLUBSounds.Checked:=False;
-      cb3SL2mSounds.Checked:=False;
-   end else begin
-      BASS_ChannelStop(Ogr_Speed_KLUB); BASS_StreamFree(Ogr_Speed_KLUB);
-      isPlayOgrSpKlub:=0;
-   end;
-end;
-
 procedure TFormMain.cbBrakingSoundsClick(Sender: TObject);
 begin
 	if cbBrakingSounds.Checked=False then begin

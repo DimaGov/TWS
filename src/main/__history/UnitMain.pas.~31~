@@ -1329,13 +1329,13 @@ try
      if cbBLOKSounds.Checked=True then begin   // БЛОК
    // Нажатие РБ и РБС
    if RB<>PrevRB then begin
-      if RB=1 then begin RBF:=PChar('TWS/BLOK/block_pick.wav'); isPlayRB:=False; end;
-      if RB=0 then begin RBF:=PChar('TWS/BLOK/block_pick.wav'); isPlayRB:=False; end;
+      if RB=1 then begin RBF:=PChar('TWS/KLUB_pick.wav'); isPlayRB:=False; end;
+      if RB=0 then begin RBF:=PChar('TWS/KLUB_pick.wav'); isPlayRB:=False; end;
    end;
 
    if RBS<>PrevRBS then begin
-      if RBS=1 then begin RBF:=PChar('TWS/BLOK/block_pick.wav'); isPlayRB:=False; end;
-      if RBS=0 then begin RBF:=PChar('TWS/BLOK/block_pick.wav'); isPlayRB:=False; end;
+      if RBS=1 then begin RBF:=PChar('TWS/KLUB_pick.wav'); isPlayRB:=False; end;
+      if RBS=0 then begin RBF:=PChar('TWS/KLUB_pick.wav'); isPlayRB:=False; end;
    end;
    
    // Контроль ограничивающей скорости (аналогично КЛУБ-У)
