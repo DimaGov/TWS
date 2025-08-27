@@ -1,0 +1,136 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{8244e9a4-81d5-40de-a2cf-a5a61a39c68e}</ProjectGuid>
+    <MainSource>TWS.dpr</MainSource>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+    <DCC_DependencyCheckOutputName>D:\Games\zdsimulator55.008(3)\TWS.exe</DCC_DependencyCheckOutputName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_DebugInformation>False</DCC_DebugInformation>
+    <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+    <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+    <DCC_ExeOutput>D:\Games\zdsimulator55.008(3)</DCC_ExeOutput>
+    <DCC_UnitSearchPath>G:\Projects\TWS - копия\src</DCC_UnitSearchPath>
+    <DCC_ResourcePath>G:\Projects\TWS - копия\src</DCC_ResourcePath>
+    <DCC_ObjPath>G:\Projects\TWS - копия\src</DCC_ObjPath>
+    <DCC_IncludePath>G:\Projects\TWS - копия\src</DCC_IncludePath>
+    <DCC_Define>RELEASE</DCC_Define>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_ExeOutput>D:\Games\zdsimulator55.008(3)</DCC_ExeOutput>
+    <DCC_UnitSearchPath>G:\Projects\TWS - копия\src</DCC_UnitSearchPath>
+    <DCC_ResourcePath>G:\Projects\TWS - копия\src</DCC_ResourcePath>
+    <DCC_ObjPath>G:\Projects\TWS - копия\src</DCC_ObjPath>
+    <DCC_IncludePath>G:\Projects\TWS - копия\src</DCC_IncludePath>
+    <DCC_Define>DEBUG</DCC_Define>
+  </PropertyGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Delphi.Personality</Borland.Personality>
+    <Borland.ProjectType>VCLApplication</Borland.ProjectType>
+    <BorlandProject>
+<BorlandProject xmlns=""> <Delphi.Personality>   <Parameters>
+      <Parameters Name="UseLauncher">False</Parameters>
+      <Parameters Name="LoadAllSymbols">True</Parameters>
+      <Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+    </Parameters>
+    <Language>
+      <Language Name="RootDir">C:\Program Files (x86)\Borland\Delphi7\Bin\</Language>
+    </Language>
+    <VersionInfo>
+      <VersionInfo Name="IncludeVerInfo">True</VersionInfo>
+      <VersionInfo Name="AutoIncBuild">False</VersionInfo>
+      <VersionInfo Name="MajorVer">2</VersionInfo>
+      <VersionInfo Name="MinorVer">8</VersionInfo>
+      <VersionInfo Name="Release">0</VersionInfo>
+      <VersionInfo Name="Build">0</VersionInfo>
+      <VersionInfo Name="Debug">False</VersionInfo>
+      <VersionInfo Name="PreRelease">False</VersionInfo>
+      <VersionInfo Name="Special">False</VersionInfo>
+      <VersionInfo Name="Private">False</VersionInfo>
+      <VersionInfo Name="DLL">False</VersionInfo>
+      <VersionInfo Name="Locale">1058</VersionInfo>
+      <VersionInfo Name="CodePage">1251</VersionInfo>
+    </VersionInfo>
+    <VersionInfoKeys>
+      <VersionInfoKeys Name="CompanyName">DimaGVRH Production</VersionInfoKeys>
+      <VersionInfoKeys Name="FileDescription"></VersionInfoKeys>
+      <VersionInfoKeys Name="FileVersion">2.8.0.0</VersionInfoKeys>
+      <VersionInfoKeys Name="InternalName"></VersionInfoKeys>
+      <VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys>
+      <VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys>
+      <VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys>
+      <VersionInfoKeys Name="ProductName"></VersionInfoKeys>
+      <VersionInfoKeys Name="ProductVersion">2.8</VersionInfoKeys>
+    </VersionInfoKeys>
+    <Source>
+      <Source Name="MainSource">TWS.dpr</Source>
+    </Source>
+  </Delphi.Personality> </BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <ItemGroup />
+  <ItemGroup>
+    <DelphiCompile Include="TWS.dpr">
+      <MainSource>MainSource</MainSource>
+    </DelphiCompile>
+    <DCCReference Include="src\bass\BASS.pas" />
+    <DCCReference Include="src\bass\bass_fx.pas" />
+    <DCCReference Include="src\camera\Camera.pas" />
+    <DCCReference Include="src\debug\Debug.pas" />
+    <DCCReference Include="src\debug\UnitDebug.pas">
+      <Form>FormDebug</Form>
+    </DCCReference>
+    <DCCReference Include="src\extra\ExtraUtils.pas" />
+    <DCCReference Include="src\extra\SoundRes.pas" />
+    <DCCReference Include="src\fileManager\FileManager.pas" />
+    <DCCReference Include="src\kr21\KR21.pas" />
+    <DCCReference Include="src\kvt254\KVT254.pas" />
+    <DCCReference Include="src\loc\2ES5K\ES5K.pas" />
+    <DCCReference Include="src\loc\2TE10U\TE10U.pas" />
+    <DCCReference Include="src\loc\CHS2K\CHS2K.pas" />
+    <DCCReference Include="src\loc\CHS4KVR\CHS4KVR.pas" />
+    <DCCReference Include="src\loc\CHS4T\CHS4T.pas" />
+    <DCCReference Include="src\loc\CHS4\CHS4.pas" />
+    <DCCReference Include="src\loc\CHS7\CHS7.pas" />
+    <DCCReference Include="src\loc\CHS8\CHS8.pas" />
+    <DCCReference Include="src\loc\ED4M\ED4M.pas" />
+    <DCCReference Include="src\loc\ED9M\ED9M.pas" />
+    <DCCReference Include="src\loc\EP1M\EP1M.pas" />
+    <DCCReference Include="src\loc\M62\M62.pas" />
+    <DCCReference Include="src\loc\TEM18dm\TEM18dm.pas" />
+    <DCCReference Include="src\loc\TEP70bs\TEP70bs.pas" />
+    <DCCReference Include="src\loc\TEP70\TEP70.pas" />
+    <DCCReference Include="src\loc\VL11M\VL11M.pas" />
+    <DCCReference Include="src\loc\VL80T\VL80T.pas" />
+    <DCCReference Include="src\loc\VL82m\VL82M.pas" />
+    <DCCReference Include="src\loc\VL85\VL85.pas" />
+    <DCCReference Include="src\main\UnitAuthors.pas">
+      <Form>FormAuthors</Form>
+    </DCCReference>
+    <DCCReference Include="src\main\UnitMain.pas">
+      <Form>FormMain</Form>
+    </DCCReference>
+    <DCCReference Include="src\ramMemoryModule\RAMMemModule.pas" />
+    <DCCReference Include="src\rrs\UnitSoundRRS.pas" />
+    <DCCReference Include="src\savp\SAVP.pas" />
+    <DCCReference Include="src\savp\UnitSAVPEHelp.pas">
+      <Form>FormSAVPEHelp</Form>
+    </DCCReference>
+    <DCCReference Include="src\savp\UnitSOVIHelp.pas">
+      <Form>FormSOVIHelp</Form>
+    </DCCReference>
+    <DCCReference Include="src\savp\UnitUSAVP.pas">
+      <Form>FormUSAVP</Form>
+    </DCCReference>
+    <DCCReference Include="src\settings\UnitSettings.pas">
+      <Form>FormSettings</Form>
+    </DCCReference>
+    <DCCReference Include="src\SL2m\sl2m.pas" />
+    <DCCReference Include="src\soundManager\SoundManager.pas" />
+    <DCCReference Include="src\vr242\VR242.pas" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
+</Project>

@@ -141,7 +141,6 @@ type
     ReadME1: TMenuItem;
     timerDoorCloseZvonok: TTimer;
     lblCameraActive: TLabel;
-    CheckBox1: TCheckBox;
     
     procedure ChangeVolume(Sender: TObject);
     procedure FormCreate(Sender: TObject);
